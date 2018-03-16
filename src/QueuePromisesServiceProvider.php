@@ -2,6 +2,7 @@
 
 namespace Tochka\Queue\Promises;
 
+use Illuminate\Foundation\Console\PromiseMakeCommand;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Queue;
@@ -16,6 +17,12 @@ class QueuePromisesServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                PromiseMakeCommand::class,
+            ]);
+        }
+
         $this->publishes([
             __DIR__ . '/../config/promises.php' => config_path('promises.php'),
         ], 'config');
