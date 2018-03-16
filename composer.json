@@ -1,0 +1,30 @@
+{
+  "name": "tochka-developers/queue-promises",
+  "description": "Promises for Laravel queue jobs",
+  "type": "package",
+  "authors": [
+    {
+      "name": "Babushkin Pavel",
+      "email": "darkdarin@tochka.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Tochka\\Queue\\Promises": "src/"
+    },
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "require": {
+    "php": ">=7.0.0",
+    "laravel/framework": ">=5.4"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Tochka\\Queue\\Promises\\QueuePromisesServiceProvider"
+      ]
+    }
+  }
+}
