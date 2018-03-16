@@ -1,6 +1,6 @@
 <?php
 
-namespace Illuminate\Foundation\Console;
+namespace Tochka\Queue\Promises\Console;
 
 use Illuminate\Console\GeneratorCommand;
 

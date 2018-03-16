@@ -2,7 +2,7 @@
 
 namespace Tochka\Queue\Promises;
 
-use Illuminate\Foundation\Console\PromiseMakeCommand;
+use Tochka\Queue\Promises\Console\PromiseMakeCommand;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Queue;
