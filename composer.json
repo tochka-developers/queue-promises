@@ -10,7 +10,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Tochka\\Queue\\Promises": "src/"
+      "Tochka\\Queue\\Promises\\": "src/"
     },
     "files": [
       "src/helpers.php"
