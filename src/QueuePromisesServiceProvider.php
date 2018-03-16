@@ -56,7 +56,12 @@ class QueuePromisesServiceProvider extends ServiceProvider
             }
 
             $job->setJobStatus(MayPromised::JOB_STATUS_ERROR);
-            $job->setJobErrors([$event->exception]);
+            $error = [
+                'code' => $event->exception->getCode(),
+                'message' => $event->exception->getMessage(),
+                'trace' => $event->exception->getTraceAsString(),
+            ];
+            $job->setJobErrors([$error]);
 
             Promise::checkPromise($job);
 

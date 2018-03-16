@@ -32,7 +32,7 @@ interface MayPromised
      * Получает ID связанного промиса
      * @return int
      */
-    public function getPromiseId(): int;
+    public function getPromiseId();
 
     /**
      * Устанавливает статус задачи

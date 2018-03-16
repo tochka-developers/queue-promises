@@ -49,7 +49,7 @@ trait Promised
      * Получает ID связанного промиса
      * @return int
      */
-    public function getPromiseId(): int
+    public function getPromiseId()
     {
         return $this->parent_promise_id;
     }
