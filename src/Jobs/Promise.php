@@ -28,13 +28,13 @@ abstract class Promise implements ShouldQueue, MayPromised
     public $tries = 3;
 
     /** @var MayPromised[] */
-    protected $jobs = [];
+    protected $promise_jobs = [];
 
     /** @var MayPromised[] */
-    protected $results = [];
+    protected $promise_results = [];
 
-    protected $type = self::PROMISE_TYPE_ASYNC;
-    protected $status = self::STATUS_SUCCESS;
+    protected $promise_type = self::PROMISE_TYPE_ASYNC;
+    protected $promise_status = self::STATUS_SUCCESS;
 
     /**
      * Добавляет задачу в очередь
@@ -45,7 +45,7 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     public function add(MayPromised $job): self
     {
-        $this->jobs[$job->getUniqueId()] = $job;
+        $this->promise_jobs[$job->getUniqueId()] = $job;
 
         if ($this->promise_id === null) {
             $this->save();
@@ -66,10 +66,10 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     public function run($type = self::PROMISE_TYPE_ASYNC)
     {
-        $this->type = $type;
+        $this->promise_type = $type;
 
         if ($type === self::PROMISE_TYPE_ASYNC) {
-            foreach ($this->jobs as $job) {
+            foreach ($this->promise_jobs as $job) {
                 if ($job instanceof self) {
                     $job->run();
                 } else {
@@ -158,22 +158,22 @@ abstract class Promise implements ShouldQueue, MayPromised
         }
 
         // если такого запроса нет - игнорируем
-        if (!isset($promise->jobs[$job->getUniqueId()])) {
+        if (!isset($promise->promise_jobs[$job->getUniqueId()])) {
             return;
         }
 
         // убираем из списка запросов и запоминаем ответ
-        unset($promise->jobs[$job->getUniqueId()]);
+        unset($promise->promise_jobs[$job->getUniqueId()]);
 
-        $promise->results[$job->getUniqueId()] = $job;
+        $promise->promise_results[$job->getUniqueId()] = $job;
 
         // если ответ с ошибкой - статус Promise меняем на ошибку
         if ($job->getJobStatus() === MayPromised::JOB_STATUS_ERROR) {
-            $promise->status = self::STATUS_ERROR;
+            $promise->promise_status = self::STATUS_ERROR;
         }
 
         // если закончились запросы, либо если у нас вызов цепочкой и в одном из запросов произошла ошибка
-        if (empty($promise->jobs) || ($promise->type === self::PROMISE_TYPE_SYNC && $promise->status === self::STATUS_ERROR)) {
+        if (empty($promise->promise_jobs) || ($promise->promise_type === self::PROMISE_TYPE_SYNC && $promise->promise_status === self::STATUS_ERROR)) {
             $promise->deleteRaw();
 
             // вызываем Promise
@@ -182,8 +182,8 @@ abstract class Promise implements ShouldQueue, MayPromised
             $promise->save();
 
             // если вызываем запросы цепочкой - отправим следующий запрос
-            if ($promise->type === self::PROMISE_TYPE_SYNC) {
-                $next_job = reset($promise->jobs);
+            if ($promise->promise_type === self::PROMISE_TYPE_SYNC) {
+                $next_job = reset($promise->promise_jobs);
 
                 if ($promise->runNextJob($next_job)) {
                     dispatch($next_job);
@@ -231,15 +231,23 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     public function handle(): bool
     {
-        if ($this->status === self::STATUS_SUCCESS) {
-            return $this->dispatchMethodWithParams('success');
+        $result = $this->dispatchMethodWithParams('before');
+
+        if ($result) {
+            if ($this->promise_status === self::STATUS_SUCCESS) {
+                $result = $this->dispatchMethodWithParams('success');
+            } else {
+                $result = $this->dispatchMethodWithParams('errors');
+            }
         }
 
-        return $this->dispatchMethodWithParams('errors');
+        $this->dispatchMethodWithParams('after');
+
+        return $result;
     }
 
     /**
-     * @param $method
+     * @param string $method
      *
      * @return bool
      * @throws \ReflectionException
@@ -247,10 +255,7 @@ abstract class Promise implements ShouldQueue, MayPromised
     protected function dispatchMethodWithParams($method): bool
     {
         if (!method_exists($this, $method)) {
-            if (!method_exists($this, 'done')) {
-                return true;
-            }
-            $method = 'done';
+            return true;
         }
 
         $params = [];
@@ -290,7 +295,7 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     public function getResults(): array
     {
-        return $this->results;
+        return $this->promise_results;
     }
 
     /**
@@ -311,7 +316,7 @@ abstract class Promise implements ShouldQueue, MayPromised
 
     public function getJobStatus(): string
     {
-        if ($this->status === self::STATUS_SUCCESS) {
+        if ($this->promise_status === self::STATUS_SUCCESS) {
             return MayPromised::JOB_STATUS_SUCCESS;
         }
 

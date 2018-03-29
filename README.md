@@ -17,8 +17,8 @@ composer require tochka-developers/queue-promises
 ```bash
 php artisan vendor:publish --provider="Tochka\Queue\Promises\QueuePromisesServiceProvider"
 ```
-* В файле `config/promises.php` можно указать настройки подключения к БД, а также таблицу дял хранения промежуточных данных.
-* Создайте таблицу для хранения промежуточных данных запросов (если вам это необходимо):
+* В файле `config/promises.php` можно указать настройки подключения к БД, а также таблицу для хранения промежуточных данных.
+* Создайте таблицу для хранения данных промисов:
 ```bash
 php artisan migrate
 ```
@@ -42,7 +42,7 @@ use Tochka\Queue\Promises\Jobs\Promise;
 class TestPromise extends Promise
 {
     /**
-     * Create a new promise instance.
+     * Действия при создании экземпляра промиса
      *
      * @return void
      */
@@ -50,31 +50,54 @@ class TestPromise extends Promise
     {
         //
     }
+    
+    /**
+     * Метод вызывается после всех выполненных задач промиса, но до вызова метода success или errors
+     * Если метод возвращает FALSE - методы success и errors вызываться не будут
+     *
+     * @return bool
+     */
+    public function before(): bool
+    {
+        // ...
+        return true;
+    }
 
     /**
-     * Actions after successfully completed tasks
+     * Метод вызывается, если все задачи промиса были успешно завершены
      *
      * @return bool
      */
     public function success(): bool
     {
-        //
+        // ...
         return true;
     }
 
     /**
-     * Actions after tasks completed with errors
+     * Метод вызывается, если хотя бы одна из задач промиса завершилась с ошибкой
      *
      * @return bool
      */
     public function errors(): bool
     {
-        //
+        // ...
         return true;
+    }
+    
+    /**
+     * Метод вызывается всегда после всех выполненных задач, а также после выполнения методов success или errors
+     *
+     * @return bool
+     */
+    public function after()
+    {
+        // ...
     }
 }
 ```
-Кроме того, вместо этих методов можно использовать метод `done`, который будет вызван при любом исходе (но только если в классе нет подходящего метода `success` или `errors`).
+Любой из указанных методов может отсутствовать в промисе - тогда предполагается что такие методы возвращают значение TRUE, т.е. обработка прошла успешно.
+
 ### Запуск цепочки
 Для того, чтобы задачи могли использоваться вместе с промисами, необходимо реализовать в них интерфейс `Tochka\Queue\Promises\Contracts\MayPromised`. Реализация для наиболее частых случаев уже выполнена в трейте `Tochka\Queue\Promises\Jobs\Promised`. Достаточно просто указать зависимость от интерфейса и использовать трейт:
 ```php
@@ -127,7 +150,7 @@ $promise->runAsync(); // запуск в асинхронном режиме
 ### Обработка результатов
 Для получения массива результатов работы всех задач в цепочке воспользуйтесь методом `getResults`:
 ```php
-public function done(): bool
+public function before(): bool
 {
     $results = $this->getResults();
     foreach ($results as $result) {
