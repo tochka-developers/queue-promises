@@ -2,11 +2,13 @@
 
 namespace Tochka\Queue\Promises;
 
-use Tochka\Queue\Promises\Console\PromiseMakeCommand;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use Tochka\Queue\JobVisibility\Contracts\InstanceReturner;
+use Tochka\Queue\JobVisibility\Contracts\JobReturner;
+use Tochka\Queue\Promises\Console\PromiseMakeCommand;
 use Tochka\Queue\Promises\Contracts\MayPromised;
 use Tochka\Queue\Promises\Jobs\Promise;
 
@@ -35,21 +37,25 @@ class QueuePromisesServiceProvider extends ServiceProvider
     protected function processQueueEvents()
     {
         Queue::after(function (JobProcessed $event) {
-            $job = $this->getJobFromPayload($event);
+            $job = $this->getJobFromEvent($event);
 
-            if (!($job instanceof MayPromised) ||!$job->hasResult()) {
+            if (!($job instanceof MayPromised) || !$job->hasResult()) {
                 return true;
             }
 
             $job->setJobStatus(MayPromised::JOB_STATUS_SUCCESS);
 
-            Promise::checkPromise($job);
+            try {
+                Promise::checkPromise($job);
+            } catch (\Exception $e) {
+                echo $e->getMessage() . "\n";
+            }
 
             return true;
         });
 
         Queue::failing(function (JobFailed $event) {
-            $job = $this->getJobFromPayload($event);
+            $job = $this->getJobFromEvent($event);
 
             if (!($job instanceof MayPromised) || !$job->hasResult()) {
                 return true;
@@ -57,24 +63,29 @@ class QueuePromisesServiceProvider extends ServiceProvider
 
             $job->setJobStatus(MayPromised::JOB_STATUS_ERROR);
             $error = [
-                'code' => $event->exception->getCode(),
+                'code'    => $event->exception->getCode(),
                 'message' => $event->exception->getMessage(),
-                'trace' => $event->exception->getTraceAsString(),
+                'trace'   => $event->exception->getTraceAsString(),
             ];
             $job->setJobErrors([$error]);
 
-            Promise::checkPromise($job);
+            try {
+                Promise::checkPromise($job);
+            } catch (\Exception $e) {
+                echo $e->getMessage() . "\n";
+            }
 
             return true;
         });
     }
 
-    private function getJobFromPayload($event)
+    private function getJobFromEvent($event)
     {
-        $payload = $event->job->payload();
-
-        if (!empty($payload['data']['command'])) {
-            return unserialize($payload['data']['command']);
+        if ($event->job instanceof InstanceReturner) {
+            $handler = $event->job->getInstance();
+            if ($handler instanceof JobReturner) {
+                return $handler->getJob();
+            }
         }
 
         return null;

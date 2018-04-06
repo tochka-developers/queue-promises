@@ -2,6 +2,7 @@
 
 namespace Tochka\Queue\Promises\Jobs;
 
+use ReflectionClass;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,6 +36,7 @@ abstract class Promise implements ShouldQueue, MayPromised
 
     protected $promise_type = self::PROMISE_TYPE_ASYNC;
     protected $promise_status = self::STATUS_SUCCESS;
+    protected $promise_queue = null;
 
     /**
      * Добавляет задачу в очередь
@@ -58,29 +60,41 @@ abstract class Promise implements ShouldQueue, MayPromised
 
     /**
      * Запускает очередь задач
-     *
-     * @param int $type Как будут выполняться задачи
-     * PROMISE_TYPE_ASYNC - все задачи запускаются одновременно, промис выполнится, как только все задачи завершатся
-     * PROMISE_TYPE_SYNC - задачи запускаются по очереди, промис выполнится, как только все задачи завершатся,
-     * либо когда одна из задач завершится с ошибкой
      */
-    public function run($type = self::PROMISE_TYPE_ASYNC)
+    public function run()
     {
-        $this->promise_type = $type;
-
-        if ($type === self::PROMISE_TYPE_ASYNC) {
+        if ($this->promise_type === self::PROMISE_TYPE_ASYNC) {
             foreach ($this->promise_jobs as $job) {
-                if ($job instanceof self) {
-                    $job->run();
-                } else {
-                    dispatch($job);
-                }
+                $this->dispatchJob($job);
             }
         } else {
-            dispatch(reset($jobs));
+            $this->dispatchJob(reset($this->promise_jobs));
         }
 
         $this->save();
+    }
+
+    /**
+     * Диспатчит указанную джобу
+     * @param ShouldQueue $job
+     */
+    protected function dispatchJob($job)
+    {
+        // если задана очередь по умолчанию для всех - устанавливаем эту очередь
+        if (null !== $this->promise_queue) {
+            $job->onQueue($this->promise_queue);
+        }
+
+        if ($job instanceof self) {
+            // если задана очередь по умолчанию для всех - устанавливаем эту очередь
+            if (null !== $this->promise_queue) {
+                $job->setQueueForAll($this->promise_queue);
+            }
+
+            $job->run();
+        } else {
+            dispatch($job);
+        }
     }
 
     /**
@@ -89,7 +103,8 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     public function runAsync()
     {
-        $this->run(self::PROMISE_TYPE_ASYNC);
+        $this->setPromiseType(self::PROMISE_TYPE_ASYNC);
+        $this->run();
     }
 
     /**
@@ -99,7 +114,22 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     public function runSync()
     {
-        $this->run(self::PROMISE_TYPE_SYNC);
+        $this->setPromiseType(self::PROMISE_TYPE_SYNC);
+        $this->run();
+    }
+
+    /**
+     * Устанавливает тип запуска задач
+     * @param $type
+     */
+    public function setPromiseType($type)
+    {
+        $this->promise_type = $type;
+    }
+
+    public function setQueueForAll($queue)
+    {
+        $this->promise_queue = $queue;
     }
 
     /**
@@ -165,7 +195,7 @@ abstract class Promise implements ShouldQueue, MayPromised
         // убираем из списка запросов и запоминаем ответ
         unset($promise->promise_jobs[$job->getUniqueId()]);
 
-        $promise->promise_results[$job->getUniqueId()] = $job;
+        $promise->promise_results[$job->getUniqueId()] = $promise->getJobResults($job);
 
         // если ответ с ошибкой - статус Promise меняем на ошибку
         if ($job->getJobStatus() === MayPromised::JOB_STATUS_ERROR) {
@@ -175,6 +205,10 @@ abstract class Promise implements ShouldQueue, MayPromised
         // если закончились запросы, либо если у нас вызов цепочкой и в одном из запросов произошла ошибка
         if (empty($promise->promise_jobs) || ($promise->promise_type === self::PROMISE_TYPE_SYNC && $promise->promise_status === self::STATUS_ERROR)) {
             $promise->deleteRaw();
+
+            if (null !== $promise->promise_queue) {
+                $promise->onQueue($promise->promise_queue);
+            }
 
             // вызываем Promise
             dispatch($promise);
@@ -186,7 +220,7 @@ abstract class Promise implements ShouldQueue, MayPromised
                 $next_job = reset($promise->promise_jobs);
 
                 if ($promise->runNextJob($next_job)) {
-                    dispatch($next_job);
+                    $promise->dispatchJob($next_job);
                 }
             }
         }
@@ -321,5 +355,25 @@ abstract class Promise implements ShouldQueue, MayPromised
         }
 
         return MayPromised::JOB_STATUS_ERROR;
+    }
+
+    protected function getJobResults($job)
+    {
+        $properties = (new ReflectionClass($job))->getProperties();
+
+        /** @var \ReflectionProperty $property */
+        foreach ($properties as $property) {
+            if (\in_array($property->getName(), $this->getNullableJobProperties())) {
+                $property->setAccessible(true);
+                $property->setValue($job, null);
+            }
+        }
+
+        return $job;
+    }
+
+    protected function getNullableJobProperties()
+    {
+        return ['job'];
     }
 }

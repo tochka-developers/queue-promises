@@ -18,7 +18,8 @@
   },
   "require": {
     "php": ">=7.0.0",
-    "laravel/framework": ">=5.4"
+    "laravel/framework": ">=5.4",
+    "tochka-developers/laravel-job-visibility": "0.1.*"
   },
   "extra": {
     "laravel": {
