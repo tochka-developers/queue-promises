@@ -19,7 +19,7 @@
   "require": {
     "php": ">=7.0.0",
     "laravel/framework": ">=5.4",
-    "tochka-developers/laravel-job-visibility": "0.1.*"
+    "tochka-developers/laravel-job-visibility": "^0.1.2"
   },
   "extra": {
     "laravel": {

@@ -6,8 +6,6 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
-use Tochka\Queue\JobVisibility\Contracts\InstanceReturner;
-use Tochka\Queue\JobVisibility\Contracts\JobReturner;
 use Tochka\Queue\Promises\Console\PromiseMakeCommand;
 use Tochka\Queue\Promises\Contracts\MayPromised;
 use Tochka\Queue\Promises\Jobs\Promise;
@@ -37,7 +35,7 @@ class QueuePromisesServiceProvider extends ServiceProvider
     protected function processQueueEvents()
     {
         Queue::after(function (JobProcessed $event) {
-            $job = $this->getJobFromEvent($event);
+            $job = app('QueueCurrentJob');
 
             if (!($job instanceof MayPromised) || !$job->hasResult()) {
                 return true;
@@ -55,7 +53,7 @@ class QueuePromisesServiceProvider extends ServiceProvider
         });
 
         Queue::failing(function (JobFailed $event) {
-            $job = $this->getJobFromEvent($event);
+            $job = app('QueueCurrentJob');
 
             if (!($job instanceof MayPromised) || !$job->hasResult()) {
                 return true;
@@ -78,17 +76,4 @@ class QueuePromisesServiceProvider extends ServiceProvider
             return true;
         });
     }
-
-    private function getJobFromEvent($event)
-    {
-        if ($event->job instanceof InstanceReturner) {
-            $handler = $event->job->getInstance();
-            if ($handler instanceof JobReturner) {
-                return $handler->getJob();
-            }
-        }
-
-        return null;
-    }
-
 }
