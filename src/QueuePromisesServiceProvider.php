@@ -35,7 +35,11 @@ class QueuePromisesServiceProvider extends ServiceProvider
     protected function processQueueEvents()
     {
         Queue::after(function (JobProcessed $event) {
-            $job = app('QueueCurrentJob');
+            try {
+                $job = app('QueueCurrentJob');
+            } catch (\Exception $e) {
+                return true;
+            }
 
             if (!($job instanceof MayPromised) || !$job->hasResult()) {
                 return true;
@@ -53,7 +57,11 @@ class QueuePromisesServiceProvider extends ServiceProvider
         });
 
         Queue::failing(function (JobFailed $event) {
-            $job = app('QueueCurrentJob');
+            try {
+                $job = app('QueueCurrentJob');
+            } catch (\Exception $e) {
+                return true;
+            }
 
             if (!($job instanceof MayPromised) || !$job->hasResult()) {
                 return true;
