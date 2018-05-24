@@ -12,7 +12,7 @@ trait Promised
     protected $parent_promise_id;
 
     protected $promise_job_status;
-    protected $promise_job_errors;
+    protected $promise_job_errors = [];
 
     /**
      * Получение уникального идентификатора отложенной задачи
