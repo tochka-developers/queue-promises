@@ -2,7 +2,6 @@
 
 namespace Tochka\Queue\Promises\Jobs;
 
-use ReflectionClass;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -11,6 +10,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use ReflectionClass;
+use ReflectionProperty;
 use Tochka\Queue\Promises\Contracts\MayPromised;
 
 abstract class Promise implements ShouldQueue, MayPromised
@@ -76,6 +77,7 @@ abstract class Promise implements ShouldQueue, MayPromised
 
     /**
      * Диспатчит указанную джобу
+     *
      * @param ShouldQueue $job
      */
     protected function dispatchJob($job)
@@ -120,6 +122,7 @@ abstract class Promise implements ShouldQueue, MayPromised
 
     /**
      * Устанавливает тип запуска задач
+     *
      * @param $type
      */
     public function setPromiseType($type)
@@ -173,12 +176,16 @@ abstract class Promise implements ShouldQueue, MayPromised
      * Проверяет, пришла ли пора вызвать Promise
      *
      * @param MayPromised $job
+     *
+     * @throws \ReflectionException
      */
     public static function checkPromise(MayPromised $job)
     {
         if ($job->getPromiseId() === null) {
             return;
         }
+
+        DB::beginTransaction();
 
         // получаем сам Promise
         $promise = self::resolve($job->getPromiseId());
@@ -205,6 +212,7 @@ abstract class Promise implements ShouldQueue, MayPromised
         // если закончились запросы, либо если у нас вызов цепочкой и в одном из запросов произошла ошибка
         if (empty($promise->promise_jobs) || ($promise->promise_type === self::PROMISE_TYPE_SYNC && $promise->promise_status === self::STATUS_ERROR)) {
             $promise->deleteRaw();
+            DB::commit();
 
             if (null !== $promise->promise_queue) {
                 $promise->onQueue($promise->promise_queue);
@@ -214,6 +222,7 @@ abstract class Promise implements ShouldQueue, MayPromised
             dispatch($promise);
         } else {
             $promise->save();
+            DB::commit();
 
             // если вызываем запросы цепочкой - отправим следующий запрос
             if ($promise->promise_type === self::PROMISE_TYPE_SYNC) {
@@ -249,7 +258,9 @@ abstract class Promise implements ShouldQueue, MayPromised
     {
         $table = self::getDatabaseTable();
 
-        $row = $table->where('id', $promise_id)->first();
+        $row = $table->where('id', $promise_id)
+            ->lockForUpdate()
+            ->first();
         if (!$row) {
             return null;
         }
@@ -357,6 +368,12 @@ abstract class Promise implements ShouldQueue, MayPromised
         return MayPromised::JOB_STATUS_ERROR;
     }
 
+    /**
+     * @param $job
+     *
+     * @return mixed
+     * @throws \ReflectionException
+     */
     protected function getJobResults($job)
     {
         $properties = (new ReflectionClass($job))->getProperties();
@@ -375,5 +392,25 @@ abstract class Promise implements ShouldQueue, MayPromised
     protected function getNullableJobProperties()
     {
         return ['job'];
+    }
+
+    /**
+     * @return array
+     * @throws \ReflectionException
+     */
+    public function __sleep()
+    {
+        $properties = (new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED);
+
+        foreach ($properties as $property) {
+            $property->setValue($this, $this->getSerializedPropertyValue(
+                $this->getPropertyValue($property)
+            ));
+        }
+
+        return array_values(array_filter(array_map(function ($p) {
+            /** @var ReflectionProperty $p */
+            return $p->isStatic() ? null : $p->getName();
+        }, $properties)));
     }
 }
