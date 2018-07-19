@@ -252,9 +252,9 @@ abstract class Promise implements ShouldQueue, MayPromised
      *
      * @param int $promise_id
      *
-     * @return self
+     * @return self|null
      */
-    public static function resolve(int $promise_id): self
+    public static function resolve(int $promise_id)
     {
         $table = self::getDatabaseTable();
 
