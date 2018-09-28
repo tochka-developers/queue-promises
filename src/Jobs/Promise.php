@@ -64,6 +64,18 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     public function run()
     {
+        // если в очереди запросов нет ничего - сразу запускаем Promise
+        if (empty($this->promise_jobs)) {
+            if (null !== $this->promise_queue) {
+                $this->onQueue($this->promise_queue);
+            }
+
+            // вызываем Promise
+            dispatch($this);
+
+            return;
+        }
+
         if ($this->promise_type === self::PROMISE_TYPE_ASYNC) {
             foreach ($this->promise_jobs as $job) {
                 $this->dispatchJob($job);
@@ -78,7 +90,7 @@ abstract class Promise implements ShouldQueue, MayPromised
     /**
      * Диспатчит указанную джобу
      *
-     * @param ShouldQueue $job
+     * @param MayPromised $job
      */
     protected function dispatchJob($job)
     {

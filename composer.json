@@ -18,7 +18,9 @@
   },
   "require": {
     "php": ">=7.0.0",
+    "ext-json": "*",
     "laravel/framework": ">=5.4",
+    "nesbot/carbon": "1.*",
     "tochka-developers/laravel-job-visibility": "^0.1.2"
   },
   "extra": {
