@@ -189,7 +189,7 @@ public function errors(SomeJob $job1, SomeJob $job2, SomeJob $job3, SomeJob $job
 ```
 Учтите! Если вы использовали асинхронный запуск задач, то результаты их работы могут придти в порядке, отличном от заданного вами порядка, потому в последнем примере возможна, например, следующая ситуация:
 ```php
-public function errors(SomeJob $job1, SomeJob $job2): bool
+public function errors(SomeJob $job1, SomeJob $job2, SomeJob $job3, SomeJob $job4): bool
 {
     echo $job1->text; // job 3
     echo $job2->text; // job 1
