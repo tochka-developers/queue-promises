@@ -13,8 +13,10 @@ use Illuminate\Support\Facades\DB;
 use ReflectionClass;
 use ReflectionProperty;
 use Tochka\Queue\Promises\Contracts\MayPromised;
+use Tochka\Queue\Promises\Contracts\NowDispatchingJob;
+use Tochka\Queue\Promises\Contracts\PromisedEvent;
 
-abstract class Promise implements ShouldQueue, MayPromised
+abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 {
     use InteractsWithQueue, Queueable, SerializesModels, Promised;
 
@@ -23,6 +25,7 @@ abstract class Promise implements ShouldQueue, MayPromised
 
     const STATUS_SUCCESS = 'success';
     const STATUS_ERROR = 'error';
+    const STATUS_TIMEOUT = 'timeout';
 
     public $promise_id;
 
@@ -38,6 +41,7 @@ abstract class Promise implements ShouldQueue, MayPromised
     protected $promise_type = self::PROMISE_TYPE_ASYNC;
     protected $promise_status = self::STATUS_SUCCESS;
     protected $promise_queue = null;
+    protected $promise_expired_at = null;
 
     /**
      * Добавляет задачу в очередь
@@ -76,6 +80,11 @@ abstract class Promise implements ShouldQueue, MayPromised
             return;
         }
 
+        if ($this->promise_expired_at !== null) {
+            dispatch(new PromiseTimeout($this))
+                ->delay($this->promise_expired_at);
+        }
+
         if ($this->promise_type === self::PROMISE_TYPE_ASYNC) {
             foreach ($this->promise_jobs as $job) {
                 $this->dispatchJob($job);
@@ -95,13 +104,13 @@ abstract class Promise implements ShouldQueue, MayPromised
     protected function dispatchJob($job)
     {
         // если задана очередь по умолчанию для всех - устанавливаем эту очередь
-        if (null !== $this->promise_queue) {
+        if (null !== $this->promise_queue && $job instanceof ShouldQueue) {
             $job->onQueue($this->promise_queue);
         }
 
-        if ($job instanceof self) {
+        if ($job instanceof NowDispatchingJob) {
             // если задана очередь по умолчанию для всех - устанавливаем эту очередь
-            if (null !== $this->promise_queue) {
+            if (null !== $this->promise_queue && $job instanceof self) {
                 $job->setQueueForAll($this->promise_queue);
             }
 
@@ -142,9 +151,44 @@ abstract class Promise implements ShouldQueue, MayPromised
         $this->promise_type = $type;
     }
 
+    /**
+     * Устанавливает статус промиса
+     *
+     * @param $status
+     */
+    public function setPromiseStatus($status)
+    {
+        $this->promise_status = $status;
+    }
+
+    /**
+     * Устанавливает выполнение всех связанных задач в определенной очереди
+     *
+     * @param $queue
+     */
     public function setQueueForAll($queue)
     {
         $this->promise_queue = $queue;
+    }
+
+    /**
+     * Устанавливает максимальное время ожидания выполнения зависимых задач
+     *
+     * @param $timeout
+     */
+    public function setTimeout($timeout)
+    {
+        $this->promise_expired_at = now()->addSeconds($timeout);
+    }
+
+    /**
+     * Устанавливает время истемчения срока ожилдания выполнения зависимых задач
+     *
+     * @param $expired_at
+     */
+    public function setExpiredAt($expired_at)
+    {
+        $this->promise_expired_at = $expired_at;
     }
 
     /**
@@ -248,6 +292,35 @@ abstract class Promise implements ShouldQueue, MayPromised
     }
 
     /**
+     * Проверяет, что промис еще не был выполнен - и выполняет его со статусом вылета по таймауту
+     *
+     * @param int $promise_id
+     *
+     * @throws \Exception
+     */
+    public static function promiseTimeout(int $promise_id)
+    {
+        DB::beginTransaction();
+        $promise = self::resolve($promise_id);
+
+        if (!$promise) {
+            return;
+        }
+
+        $promise->setPromiseStatus(Promise::STATUS_TIMEOUT);
+        $promise->deleteRaw();
+
+        DB::commit();
+
+        if (null !== $promise->promise_queue) {
+            $promise->onQueue($promise->promise_queue);
+        }
+
+        // вызываем Promise
+        dispatch($promise);
+    }
+
+    /**
      * Определяет
      *
      * @param MayPromised $job
@@ -291,11 +364,7 @@ abstract class Promise implements ShouldQueue, MayPromised
         $result = $this->dispatchMethodWithParams('before');
 
         if ($result) {
-            if ($this->promise_status === self::STATUS_SUCCESS) {
-                $result = $this->dispatchMethodWithParams('success');
-            } else {
-                $result = $this->dispatchMethodWithParams('errors');
-            }
+            $result = $this->dispatchMethodWithParams($this->promise_status);
         }
 
         $this->dispatchMethodWithParams('after');
@@ -330,7 +399,8 @@ abstract class Promise implements ShouldQueue, MayPromised
 
             $type = (string)$parameter->getType();
 
-            if (\in_array(MayPromised::class, class_implements($type), true)) {
+            if (\in_array(MayPromised::class, class_implements($type), true) ||
+                \in_array(PromisedEvent::class, class_implements($type), true)) {
                 if (!empty($results[$type])) {
                     $param = array_shift($results[$type]);
                 } else {
@@ -388,6 +458,10 @@ abstract class Promise implements ShouldQueue, MayPromised
      */
     protected function getJobResults($job)
     {
+        if ($job instanceof WaitEvent) {
+            return $job->getEvent();
+        }
+
         $properties = (new ReflectionClass($job))->getProperties();
 
         /** @var \ReflectionProperty $property */
