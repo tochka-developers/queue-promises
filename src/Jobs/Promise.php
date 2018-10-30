@@ -364,7 +364,17 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
         $result = $this->dispatchMethodWithParams('before');
 
         if ($result) {
-            $result = $this->dispatchMethodWithParams($this->promise_status);
+            switch ($this->promise_status) {
+                case self::STATUS_SUCCESS:
+                    $result = $this->dispatchMethodWithParams('success');
+                    break;
+                case self::STATUS_ERROR:
+                    $result = $this->dispatchMethodWithParams('errors');
+                    break;
+                case self::STATUS_TIMEOUT:
+                    $result = $this->dispatchMethodWithParams('timeout');
+                    break;
+            }
         }
 
         $this->dispatchMethodWithParams('after');
