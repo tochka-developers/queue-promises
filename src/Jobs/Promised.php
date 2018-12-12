@@ -2,6 +2,8 @@
 
 namespace Tochka\Queue\Promises\Jobs;
 
+use Illuminate\Queue\Jobs\Job;
+
 /**
  * Методы для реализации интерфейса MayPromised для использования Job вместе с Promise
  * @see MayPromised
@@ -102,5 +104,18 @@ trait Promised
         ];
 
         $this->setJobErrors([$error]);
+    }
+
+    /**
+     * Возвращает статус задачи
+     * @return bool
+     */
+    public function hasFailed(): bool
+    {
+        if ($this->job instanceof Job) {
+            return $this->job->hasFailed();
+        }
+
+        return false;
     }
 }
