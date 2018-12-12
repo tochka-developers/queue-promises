@@ -68,7 +68,10 @@ interface MayPromised
 
     /**
      * Обработка ошибок обещанных задач
+     *
+     * @param \Exception $e
+     *
      * @return mixed
      */
-    public function failed(): void;
+    public function failed(\Exception $e): void;
 }
