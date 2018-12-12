@@ -89,4 +89,18 @@ trait Promised
     {
         return $this->promise_job_errors;
     }
+
+    /**
+     * @param \Exception $e
+     */
+    public function failed(\Exception $e): void
+    {
+        $error = [
+            'code'    => $e->getCode(),
+            'message' => $e->getMessage(),
+            'trace'   => $e->getTraceAsString(),
+        ];
+
+        $this->setJobErrors([$error]);
+    }
 }

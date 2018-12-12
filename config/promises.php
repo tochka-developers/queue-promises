@@ -10,6 +10,9 @@ return [
     ],
 
     // Очередь для задач проверки таймаута
-    'timeout_queue' => 'default'
+    'timeout_queue' => 'default',
+
+    // Канал для логов
+    'log_channel' => 'default',
 
 ];

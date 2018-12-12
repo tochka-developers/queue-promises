@@ -39,53 +39,11 @@ class QueuePromisesServiceProvider extends ServiceProvider
     protected function processQueueEvents()
     {
         Queue::after(function (JobProcessed $event) {
-            try {
-                $job = app('QueueCurrentJob');
-            } catch (\Exception $e) {
-                return true;
-            }
-
-            if (!($job instanceof MayPromised) || !$job->hasResult()) {
-                return true;
-            }
-
-            $job->setJobStatus(MayPromised::JOB_STATUS_SUCCESS);
-
-            try {
-                Promise::checkPromise($job);
-            } catch (\Exception $e) {
-                echo $e->getMessage() . "\n";
-            }
-
-            return true;
+            return $this->processQueueEvent();
         });
 
         Queue::failing(function (JobFailed $event) {
-            try {
-                $job = app('QueueCurrentJob');
-            } catch (\Exception $e) {
-                return true;
-            }
-
-            if (!($job instanceof MayPromised) || !$job->hasResult()) {
-                return true;
-            }
-
-            $job->setJobStatus(MayPromised::JOB_STATUS_ERROR);
-            $error = [
-                'code'    => $event->exception->getCode(),
-                'message' => $event->exception->getMessage(),
-                'trace'   => $event->exception->getTraceAsString(),
-            ];
-            $job->setJobErrors([$error]);
-
-            try {
-                Promise::checkPromise($job);
-            } catch (\Exception $e) {
-                echo $e->getMessage() . "\n";
-            }
-
-            return true;
+            return $this->processQueueEvent();
         });
     }
 
@@ -112,6 +70,37 @@ class QueuePromisesServiceProvider extends ServiceProvider
                 }
             }
         });
+    }
+
+    /**
+     * @return bool
+     */
+    protected function processQueueEvent(): bool
+    {
+        try {
+            $job = app('QueueCurrentJob');
+        } catch (\Exception $e) {
+            return true;
+        }
+
+        if (!($job instanceof MayPromised) || !$job->hasResult()) {
+            return true;
+        }
+
+        if ($job->hasFailed()) {
+            $job->setJobStatus(MayPromised::JOB_STATUS_ERROR);
+        } else {
+            $job->setJobStatus(MayPromised::JOB_STATUS_SUCCESS);
+        }
+
+        try {
+            Promise::checkPromise($job);
+        } catch (\Exception $e) {
+            \Log::channel(config('promises.log_channel', 'default'))
+                ->error('Error while check promise; ' . $e->getMessage());
+        }
+
+        return true;
     }
 
     protected function promisedEvent($payload)

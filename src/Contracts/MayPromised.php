@@ -59,4 +59,16 @@ interface MayPromised
      * @return \Exception[]
      */
     public function getJobErrors(): array;
+
+    /**
+     * Свалившаяся или нет задача
+     * @return bool
+     */
+    public function hasFailed(): bool;
+
+    /**
+     * Обработка ошибок обещанных задач
+     * @return mixed
+     */
+    public function failed(): void;
 }
