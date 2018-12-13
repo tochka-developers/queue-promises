@@ -2,6 +2,7 @@
 
 namespace Tochka\Queue\Promises\Jobs;
 
+use Illuminate\Queue\FailingJob;
 use Illuminate\Queue\Jobs\Job;
 
 /**
@@ -31,6 +32,7 @@ trait Promised
 
     /**
      * Связывает отложенную задачу с промисом
+     *
      * @param Promise $promise
      */
     public function setPromise(Promise $promise)
@@ -58,6 +60,7 @@ trait Promised
 
     /**
      * Устанавливает статус задачи
+     *
      * @param $status
      */
     public function setJobStatus($status)
@@ -76,6 +79,7 @@ trait Promised
 
     /**
      * Сохраняет ошибки из задачи
+     *
      * @param \Exception[]
      */
     public function setJobErrors(array $errors = [])
@@ -117,5 +121,19 @@ trait Promised
         }
 
         return false;
+    }
+
+    /**
+     * Оставливает выполнение задачи с ошибкой без дальнейших попыток выполнить задачу еще раз
+     *
+     * @param \Exception $exception
+     */
+    public function reject(\Exception $exception): void
+    {
+        app()->instance('QueueCurrentJob', $this);
+
+        if ($this->job && $this->job instanceof Job) {
+            FailingJob::handle($this->job->getConnectionName(), $this->job, $exception);
+        }
     }
 }

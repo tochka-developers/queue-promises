@@ -5,6 +5,7 @@ namespace Tochka\Queue\Promises;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
 use Tochka\Queue\Promises\Console\PromiseMakeCommand;
@@ -43,7 +44,7 @@ class QueuePromisesServiceProvider extends ServiceProvider
         });
 
         Queue::failing(function (JobFailed $event) {
-            return $this->processQueueEvent();
+            return $this->processQueueEvent($event->exception);
         });
     }
 
@@ -73,9 +74,11 @@ class QueuePromisesServiceProvider extends ServiceProvider
     }
 
     /**
+     * @param null $exception
+     *
      * @return bool
      */
-    protected function processQueueEvent(): bool
+    protected function processQueueEvent($exception = null): bool
     {
         try {
             $job = app('QueueCurrentJob');
@@ -89,6 +92,9 @@ class QueuePromisesServiceProvider extends ServiceProvider
 
         if ($job->hasFailed()) {
             $job->setJobStatus(MayPromised::JOB_STATUS_ERROR);
+            if ($exception !== null) {
+                $job->errorHandle($exception);
+            }
         } else {
             $job->setJobStatus(MayPromised::JOB_STATUS_SUCCESS);
         }
@@ -96,7 +102,7 @@ class QueuePromisesServiceProvider extends ServiceProvider
         try {
             Promise::checkPromise($job);
         } catch (\Exception $e) {
-            \Log::channel(config('promises.log_channel', 'default'))
+            Log::channel(config('promises.log_channel', 'default'))
                 ->error('Error while check promise; ' . $e->getMessage());
         }
 
