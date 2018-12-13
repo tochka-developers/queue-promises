@@ -20,12 +20,12 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 {
     use InteractsWithQueue, Queueable, SerializesModels, Promised;
 
-    const PROMISE_TYPE_ASYNC = 0;
-    const PROMISE_TYPE_SYNC = 1;
+    public const PROMISE_TYPE_ASYNC = 0;
+    public const PROMISE_TYPE_SYNC = 1;
 
-    const STATUS_SUCCESS = 'success';
-    const STATUS_ERROR = 'error';
-    const STATUS_TIMEOUT = 'timeout';
+    public const STATUS_SUCCESS = 'success';
+    public const STATUS_ERROR = 'error';
+    public const STATUS_TIMEOUT = 'timeout';
 
     public $promise_id;
 

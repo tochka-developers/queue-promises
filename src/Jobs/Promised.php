@@ -95,7 +95,7 @@ trait Promised
     /**
      * @param \Exception $e
      */
-    public function failed(\Exception $e): void
+    public function errorHandle(\Exception $e): void
     {
         $error = [
             'code'    => $e->getCode(),
@@ -112,7 +112,7 @@ trait Promised
      */
     public function hasFailed(): bool
     {
-        if ($this->job instanceof Job) {
+        if ($this->job && $this->job instanceof Job) {
             return $this->job->hasFailed();
         }
 

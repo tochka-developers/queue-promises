@@ -2,12 +2,13 @@
 
 namespace Tochka\Queue\Promises\Contracts;
 
+use Tochka\Queue\JobVisibility\Contracts\ErrorHandler;
 use Tochka\Queue\Promises\Jobs\Promise;
 
-interface MayPromised
+interface MayPromised extends ErrorHandler
 {
-    const JOB_STATUS_SUCCESS = 'success';
-    const JOB_STATUS_ERROR = 'error';
+    public const JOB_STATUS_SUCCESS = 'success';
+    public const JOB_STATUS_ERROR = 'error';
 
     /**
      * Получение уникального идентификатора отложенной задачи
@@ -65,13 +66,4 @@ interface MayPromised
      * @return bool
      */
     public function hasFailed(): bool;
-
-    /**
-     * Обработка ошибок обещанных задач
-     *
-     * @param \Exception $e
-     *
-     * @return mixed
-     */
-    public function failed(\Exception $e): void;
 }
