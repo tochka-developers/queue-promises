@@ -15,6 +15,7 @@ use ReflectionProperty;
 use Tochka\Queue\Promises\Contracts\MayPromised;
 use Tochka\Queue\Promises\Contracts\NowDispatchingJob;
 use Tochka\Queue\Promises\Contracts\PromisedEvent;
+use Tochka\Queue\Promises\Exceptions\PromiseNotFoundException;
 
 abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 {
@@ -233,7 +234,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      *
      * @param MayPromised $job
      *
-     * @throws \ReflectionException
+     * @throws \Exception
      */
     public static function checkPromise(MayPromised $job)
     {
@@ -243,51 +244,58 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
         DB::beginTransaction();
 
-        // получаем сам Promise
-        $promise = self::resolve($job->getPromiseId());
+        try {
+            // получаем сам Promise
+            $promise = self::resolve($job->getPromiseId());
 
-        if (!$promise) {
-            return;
-        }
-
-        // если такого запроса нет - игнорируем
-        if (!isset($promise->promise_jobs[$job->getUniqueId()])) {
-            return;
-        }
-
-        // убираем из списка запросов и запоминаем ответ
-        unset($promise->promise_jobs[$job->getUniqueId()]);
-
-        $promise->promise_results[$job->getUniqueId()] = $promise->getJobResults($job);
-
-        // если ответ с ошибкой - статус Promise меняем на ошибку
-        if ($job->getJobStatus() === MayPromised::JOB_STATUS_ERROR) {
-            $promise->promise_status = self::STATUS_ERROR;
-        }
-
-        // если закончились запросы, либо если у нас вызов цепочкой и в одном из запросов произошла ошибка
-        if (empty($promise->promise_jobs) || ($promise->promise_type === self::PROMISE_TYPE_SYNC && $promise->promise_status === self::STATUS_ERROR)) {
-            $promise->deleteRaw();
-            DB::commit();
-
-            if (null !== $promise->promise_queue) {
-                $promise->onQueue($promise->promise_queue);
+            if (!$promise) {
+                throw new PromiseNotFoundException('Promise #'. $job->getPromiseId() .' not found');
             }
 
-            // вызываем Promise
-            dispatch($promise);
-        } else {
-            $promise->save();
-            DB::commit();
+            // если такого запроса нет - игнорируем
+            if (!isset($promise->promise_jobs[$job->getUniqueId()])) {
+                throw new PromiseNotFoundException('Job #'. $job->getUniqueId() .' in promise ' . $job->getPromiseId() . ' not found');
+            }
 
-            // если вызываем запросы цепочкой - отправим следующий запрос
-            if ($promise->promise_type === self::PROMISE_TYPE_SYNC) {
-                $next_job = reset($promise->promise_jobs);
+            // убираем из списка запросов и запоминаем ответ
+            unset($promise->promise_jobs[$job->getUniqueId()]);
 
-                if ($promise->runNextJob($next_job)) {
-                    $promise->dispatchJob($next_job);
+            $promise->promise_results[$job->getUniqueId()] = $promise->getJobResults($job);
+
+            // если ответ с ошибкой - статус Promise меняем на ошибку
+            if ($job->getJobStatus() === MayPromised::JOB_STATUS_ERROR) {
+                $promise->promise_status = self::STATUS_ERROR;
+            }
+
+            // если закончились запросы, либо если у нас вызов цепочкой и в одном из запросов произошла ошибка
+            if (empty($promise->promise_jobs) || ($promise->promise_type === self::PROMISE_TYPE_SYNC && $promise->promise_status === self::STATUS_ERROR)) {
+                $promise->deleteRaw();
+                DB::commit();
+
+                if (null !== $promise->promise_queue) {
+                    $promise->onQueue($promise->promise_queue);
+                }
+
+                // вызываем Promise
+                dispatch($promise);
+            } else {
+                $promise->save();
+                DB::commit();
+
+                // если вызываем запросы цепочкой - отправим следующий запрос
+                if ($promise->promise_type === self::PROMISE_TYPE_SYNC) {
+                    $next_job = reset($promise->promise_jobs);
+
+                    if ($promise->runNextJob($next_job)) {
+                        $promise->dispatchJob($next_job);
+                    }
                 }
             }
+        } catch (PromiseNotFoundException $e) {
+            DB::rollBack();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 
@@ -301,23 +309,31 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     public static function promiseTimeout(int $promise_id)
     {
         DB::beginTransaction();
-        $promise = self::resolve($promise_id);
 
-        if (!$promise) {
-            return;
+        try {
+            $promise = self::resolve($promise_id);
+
+            if (!$promise) {
+                throw new PromiseNotFoundException('Promise #'. $promise_id .' not found');
+            }
+
+            $promise->setPromiseStatus(Promise::STATUS_TIMEOUT);
+            $promise->deleteRaw();
+
+            DB::commit();
+
+            if (null !== $promise->promise_queue) {
+                $promise->onQueue($promise->promise_queue);
+            }
+
+            // вызываем Promise
+            dispatch($promise);
+        } catch (PromiseNotFoundException $e) {
+            DB::rollBack();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $promise->setPromiseStatus(Promise::STATUS_TIMEOUT);
-        $promise->deleteRaw();
-
-        DB::commit();
-
-        if (null !== $promise->promise_queue) {
-            $promise->onQueue($promise->promise_queue);
-        }
-
-        // вызываем Promise
-        dispatch($promise);
     }
 
     /**
