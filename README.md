@@ -1,13 +1,12 @@
 # Queue Promises
-Позволяет создавать цепочки задач в рамках очередей Laravel, после завершения работы которых будет выполнена 
-определенная задача (промис). Промис выполнится несмотря на результат работы задач в цепочке, в нем можно настроить 
-различное поведение исходя из результатов.
-## Установка
-* Выполняем команду:
+The module allows chaining of Laravel jobs. The promise will be executed after all chained jobs are finished 
+(either completed successfully or failed). The promise has access to job results. 
+## Installation
+* Install the package with `composer`:
 ```bash
 composer require tochka-developers/queue-promises
 ```
-* (Laravel 5.4) Далее в проекте необходимо зарегистрировать ServiceProvider в файле ```config/app.php```
+* (Laravel 5.4) Register a `ServiceProvider` in `config/app.php`
 ```php
 'providers' => [
     ...
@@ -15,29 +14,28 @@ composer require tochka-developers/queue-promises
     ...
 ]
 ```
-* Опубликуйте конфигурацию:
+* Publish the configuration:
 ```bash
 php artisan vendor:publish --provider="Tochka\Queue\Promises\QueuePromisesServiceProvider"
 ```
-* В файле `config/promises.php` можно указать настройки подключения к БД, а также таблицу для хранения промежуточных 
-данных.
-* Создайте таблицу для хранения данных промисов:
+* Configure the promise storage in `config/promises.php`. 
+
+* Create the promise storage tables:
 ```bash
 php artisan migrate
 ```
 
-## Использование
-### Создание класса промиса
-Промис - это класс, отнаследованный от абстрактного класса `Tochka\Queue\Promises\Jobs\Promise`. Для создания 
-шаблонного класса используйте команду artisan:
+## Usage
+### Creating a Promise
+All promises are derived from `Tochka\Queue\Promises\Jobs\Promise`. You can create a template promise with `artisan`:
 ```bash
 php artisan make:promise TestPromise
 ```
 
-### Структура класса
-Класс промиса имеет простую структуру. Обычно содержит два метода `success` и `errors`. Метод `success` будет вызван, 
-если все задачи в цепочке выполнились успешно. Метод `errors` будет вызван, если хотя бы одна из задач в цепочке была 
-завершена с ошибкой.
+### Class details
+The promise class is rather straightforward, as only two methods are needed: `success` and `errors`. The `success` 
+is called by the provider if all chained jobs have completed successfully. The `errors` is called if any
+of the jobs failed.
 ```php
 <?php
 
@@ -48,18 +46,18 @@ use Tochka\Queue\Promises\Jobs\Promise;
 class TestPromise extends Promise
 {
     /**
-     * Действия при создании экземпляра промиса
+     * Instance initialization
      *
      * @return void
      */
     public function __construct()
     {
-        //
+        // Jobs chaining may be done here
     }
     
     /**
-     * Метод вызывается после всех выполненных задач промиса, но до вызова метода success или errors
-     * Если метод возвращает FALSE - методы success и errors вызываться не будут
+     * This will be called after all jobs of the promise have finished execution, but before success or errors.
+     * If this method returns false, success and errors won't be called. 
      *
      * @return bool
      */
@@ -70,7 +68,7 @@ class TestPromise extends Promise
     }
 
     /**
-     * Метод вызывается, если все задачи промиса были успешно завершены
+     * This will be called if all the jobs have completed successfully.
      *
      * @return bool
      */
@@ -81,7 +79,7 @@ class TestPromise extends Promise
     }
 
     /**
-     * Метод вызывается, если хотя бы одна из задач промиса завершилась с ошибкой
+     * This will be called if one or more jobs have failed.
      *
      * @return bool
      */
@@ -92,7 +90,7 @@ class TestPromise extends Promise
     }
     
     /**
-     * Метод вызывается, если было установлено время ожидания, и оно вышло
+     * This will be called if the promise timed out.
      *
      * @return bool
      */
@@ -103,7 +101,7 @@ class TestPromise extends Promise
     }
     
     /**
-     * Метод вызывается всегда после всех выполненных задач, а также после выполнения методов success или errors
+     * This will be called after the execution of success or errors
      *
      * @return bool
      */
@@ -114,13 +112,12 @@ class TestPromise extends Promise
     }
 }
 ```
-Любой из указанных методов может отсутствовать в промисе - тогда предполагается что такие методы возвращают значение 
-TRUE, т.е. обработка прошла успешно.
+Any of the methods shown above may not be implemented. If a methods is missing it is assumed to do nothing and return `true`.
 
-### Запуск цепочки
-Для того, чтобы задачи могли использоваться вместе с промисами, необходимо реализовать в них интерфейс 
-`Tochka\Queue\Promises\Contracts\MayPromised`. Реализация для наиболее частых случаев уже выполнена в трейте 
-`Tochka\Queue\Promises\Jobs\Promised`. Достаточно просто указать зависимость от интерфейса и использовать трейт:
+### Chain Initialization
+In order for jobs to attach to a promise they must implement the `Tochka\Queue\Promises\Contracts\MayPromised` interface. 
+The most common use cases are collected in the `Tochka\Queue\Promises\Jobs\Promised` trait.
+You may simply attach these to your class like this:
 ```php
 <?php
 
@@ -151,7 +148,7 @@ class SomeJob implements ShouldQueue, MayPromised
     }
 }
 ```
-Для создания цепочки, необходимо добавить необходимые задачи в промис:
+The chain is constructed by adding any number of jobs to the promise:
 ```php
 $promise = new TestPromise();
 
@@ -160,35 +157,31 @@ $promise->add(new SomeJob('job 1'))
     ->add(new SomeJob('job 3'))
     ->add(new SomeJob('job 4'));
 ```
-После добавления необходимых задач в цепочку можно их запустить в двух режимах: синхронный и асинхронный:
+After that the promise can be run in one of two modes:
 ```php
-$promise->runSync(); // запуск в синхронном режиме
-$promise->runAsync(); // запуск в асинхронном режиме
+$promise->runSync();    // Run the promise synchronously 
+$promise->runAsync();   // Run the promise asynchronously
 ```
-* При синхронном режиме задачи в цепочке будут запускаться по очереди, пока все задачи не завершатся, либо какая-нибудь
- из задач не завершится с ошибкой. После этого будет вызван соответствующий метод промиса.
-* При асинхронном режиме все задачи поставятся в очередь сразу, и промис будет вызван как только все задачи завершатся.
+* In synchronous mode all chained jobs will be run sequentially, one at a time, until either one of them fails or
+all complete successfully. After that, the `success` or `errors` of the promise will be executed.
+* In asynchronous mode all jobs will be queued immediately, and the promise will wait for all of them to finish.
 
-### Ожидание наступления событий
-Иногда есть необходимость выполнять промис не только после выполнения нескольких задач, но и при наступлении одного или 
-нескольких событий в системе. Для того чтобы заставить промис ждать наступления события, достаточно добавить в цепочку 
-задач специальную задачу `Tochka\Queue\Promises\Jobs\WaitEvent`:
+### Waiting For Events
+Sometimes it is necessary to execute a promise not just after a number of jobs completed, but also when an event is dispatched.
+Waiting for the events is done with a `Tochka\Queue\Promises\Jobs\WaitEvent` job:
 ```php
 $promise = new TestPromise();
 
 $promise->add(new WaitEvent(SomeEvent1::class, 100))
-    ->add(new WaitEvent(SomeEvent2::class, 100));
+        ->add(new WaitEvent(SomeEvent2::class, 100));
     
 $promise->run()
 ```
-В конструктор класса WaitEvent передается два параметра: имя класса-события, которое ожидается, а также уникальный 
-идентификатор события. Уникальный идентификатор необходим в том случае, если промис должен быть завязан на событие, 
-произошедшее с конкретным объектом системы. Если вы просто ждете какого-либо события системы, можно не указывать этот 
-параметр, но в таком случае данная задача в цепочке будет считаться успешно выполненной, как только произойдет любое 
-событие указанного класса.
 
-Кроме того, для правильной работы этого функционала необходимо, чтобы класс-событие реализовывал интерфейс 
-`Tochka\Queue\Promises\Contracts\PromisedEvent`:
+The constructor of a `WaitEvent` takes a class of the event to wait for and an unique identifier (of unspecified type).
+If the identifier is not provided, the `WaitEvent` will wait for any event of the expected class.
+If the identifier is given to the constructor, the `WaitEvent` will complete only when the event with this identifier is dispatched. 
+In order for this to work, the event must implement the `Tochka\Queue\Promises\Contracts\PromisedEvent` interface:
 ```php
 class SomeEvent implements PromisedEvent
 {
@@ -202,7 +195,7 @@ class SomeEvent implements PromisedEvent
     }
 
     /**
-     * Получение уникального идентификатора события
+     * Get the event id
      * @return string
      */
     public function getUniqueId()
@@ -211,42 +204,45 @@ class SomeEvent implements PromisedEvent
     }
 }
 ```
-Метод `getUniqueId` должен возвращать уникальный идентификатор события, либо null, если такого идентификатора нет.
+`getUniqueId` must return either an identifier or `null` if no identifier exists.
 
-Учтите, что промис не будет выполнен, если в цепочке задач будет задано ожидание события, класс которого не реализует 
-указанный выше интерфейс.
+**Note that `WaitEvent` will never complete if it waits for a class that does not implement the interface.**
 
-### Установка времени ожидания (таймаут)
-Иногда необходимо выполнить промис в любом случае спустя некоторое время, даже если связанные с ним задачи еще не 
-были завершены. 
-Для слежения за временем ожидания промиса используются специальные отложенные задачи.
-Для их работы необходимо:
-* указать в конфигурации в параметре `timeout_queue` имя очереди, в которую будут ставиться отложенные задачи проверки. 
-По умолчанию такие задачи будут ставиться в очередь `default`
-* запустить слушателя указанной очереди (либо указать эту очередь в списке обрабатываемых уже существуюим слушателем)
+### Promise Timeout
+It may be useful at times to execute the promise after a timeout event if some of chained jobs haven't yet finished. 
+This is achieved with a special delayed checker job.
 
-Для установки времени ожидания у промиса есть два метода:
-* setTimeout($timeout) - промис выполнится через указанное в секундах время (либо раньше, если все входящие в него 
-задачи будут завершены)
-* setExpiredAt(Carbon $expired_at) - промис выполнится в указанное время (либо раньше, если все входящие в него задачи 
-будут завершены)
+You have to configure the timeout subsystem:
+* set the configuration parameter `timeout_queue` to contain the name of the queue where the checker jobs 
+will be posted.
+By default the checker jobs are posted to the `default` queue. 
+* run a listener for the timeout queue or add it to a list of queues for existing listener.
 
-Если промис выполняется по истечении времени ожидания - то в промисе будет вызван метод `timeout` (если он есть).
+After that the promises may be set to expire. Two ways of setting a timeout are possible:
+* `setTimeout($timeout)` &mdash; the promise will be executed in the given time (in seconds) or after all jobs have 
+completed (whatever happens first).
+* `setExpiredAt(Carbon $expired_at)` &mdash; the promise will be executed at the given timestamp (more or less accurately) 
+or after all jobs have completed (whatever happens first).
 
-### Обработка результатов
-Для получения массива результатов работы всех задач в цепочке воспользуйтесь методом `getResults`:
+If the promise times out, the `timeout` method is called (if defined).
+
+### Processing The Results
+The `getResults` method returns the results of all chained jobs:
 ```php
 public function before(): bool
 {
     $results = $this->getResults();
     foreach ($results as $result) {
-        $status = $result->getJobStatus(); // вернет статус работы задачи
+        $status = $result->getJobStatus(); // This returns the job execution status
     }
 }
 ```
-Данный метод возвращает классы, реализующие интерфейс `Tochka\Queue\Promises\Contracts\MayPromised`.
-Также вы можете воспользоваться DependencyInjection в объявлении методов `before`, `success`, `errors`, `timeout` и 
-`after`:
+Job results are returned as classes implementing `Tochka\Queue\Promises\Contracts\MayPromised`.
+
+#### Dependency Injection
+
+An alternative way to get the job results is dependency injection versions of generic methods 
+`before`, `success`, `errors`, `timeout`, and `after`:
 ```php
 public function errors(SomeJob1 $job1, SomeJob2 $job2): bool
 {
@@ -254,19 +250,19 @@ public function errors(SomeJob1 $job1, SomeJob2 $job2): bool
     echo $job2->getJobStatus();
 }
 ```
-DI работает так:
-* если вы указали в качестве типа класс с интерфейсом `Tochka\Queue\Promises\Contracts\MayPromised`, то при вызове 
-метода в качестве аргумента будет передан результат работы задачи с указанным классом
-* если вы указали в качестве аргумента класс с интерфейсом `Tochka\Queue\Promises\Contracts\PromisedEvent`, то при 
-вызове методы в качестве аргумента будет передан класс события, которое ожидалось промисом
-* если в результатах имеется несколько подходящих классов - то будет передан первый из них
-* если вы указали несколько аргументов с одинаковым типом, а в результатах имеется несколько подходящих классов - 
-в качестве аргументов будут передаваться результаты по очереди:
+The DI works like follows: 
+* if a parameter has a type implementing `Tochka\Queue\Promises\Contracts\MayPromised`, the corresponding result will be
+injected into this parameter;
+* if a parameter has a type implementing `Tochka\Queue\Promises\Contracts\PromisedEvent` (which is useful when 
+the promise waits for an event), the event itself will be passed as this parameter;
+* if there are more than one result of the required class, only the first one will bind;
+* if there are more than one *parameter* of the same class (for example, if the promise waits for several jobs of the same class),
+the order of results corresponds to the order of the jobs in the chain:
 ```php
 $promise->add(new SomeJob('job 1'))
-    ->add(new SomeJob('job 2'))
-    ->add(new SomeJob('job 3'))
-    ->add(new SomeJob('job 4'));
+        ->add(new SomeJob('job 2'))
+        ->add(new SomeJob('job 3'))
+        ->add(new SomeJob('job 4'));
     
 //...
 
@@ -278,8 +274,8 @@ public function errors(SomeJob $job1, SomeJob $job2, SomeJob $job3, SomeJob $job
     echo $job4->text; // job 4
 }
 ```
-Учтите! Если вы использовали асинхронный запуск задач, то результаты их работы могут придти в порядке, отличном от 
-заданного вами порядка, потому в последнем примере возможна, например, следующая ситуация:
+**Note that if the promise is run asynchronously, the order of job execution cannot be guaranteed.** 
+This may have undesired consequences:
 ```php
 public function errors(SomeJob $job1, SomeJob $job2, SomeJob $job3, SomeJob $job4): bool
 {
@@ -289,25 +285,23 @@ public function errors(SomeJob $job1, SomeJob $job2, SomeJob $job3, SomeJob $job
     echo $job4->text; // job 4
 }
 ```
-* если в результатах нет или уже не осталось подходящих классов - то в качестве аргумента будет передан null
-* если вы указали в качестве типа класс без интерфейса `Tochka\Queue\Promises\Contracts\MayPromised`, то в качестве 
-аргумента будет передан объект, созданный стандартным механизмом DI Laravel, как если бы вы вызвали функцию app с 
-указанным классом.
+* if there is no appropriate result for a parameter, `null` is passed;
+* if a parameter type does not implement `Tochka\Queue\Promises\Contracts\MayPromised`, then the value passed to it 
+will be constructed with Laravel DI (like the result of calling `app()` with the class name).
 
-Объекты с реализованным интерфесом `Tochka\Queue\Promises\Contracts\MayPromised` всегда содержат методы:
+`Tochka\Queue\Promises\Contracts\MayPromised` interface declares the following methods:
 ```php
 /**
- * Возвращает статус задачи
- * Одна из констант MayPromised::JOB_STATUS_SUCCESS или MayPromised::JOB_STATUS_ERROR
+ * Get the job execution status 
+ * Returns either MayPromised::JOB_STATUS_SUCCESS or MayPromised::JOB_STATUS_ERROR
  * @return string
  */
 public function getJobStatus(): string;
 
 /**
- * Возвращает ошибки из задачи
- * Ассоциативный массив с ключами code и message
+ * Get the job execution errors
+ * Returns an array ['code' => ..., 'message' => ...]
  * @return array
  */
 public function getJobErrors(): array;
- 
 ```
