@@ -282,12 +282,12 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
         // Для асинхронного - все зависит от флагов.
         if ($jobStatus === MayPromised::JOB_STATUS_SUCCESS) {
-            return !$this->promise_finish_on_first_success;
+            return $this->promise_finish_on_first_success;
         }
 
         // Если мы здесь, то джоб либо завершен с ошибкой, либо в неизвестном статусе
         // Неизвестный статус приравниваем к ошибке
-        return !$this->promise_finish_on_first_error;
+        return $this->promise_finish_on_first_error;
     }
 
     /**
@@ -342,7 +342,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
         $nextJob = reset($this->promise_jobs);
 
         if ($nextJob && $this->runNextJob($nextJob)) {
-            $nextJob->dispatchJob($nextJob);
+            $this->dispatchJob($nextJob);
         }
     }
 
