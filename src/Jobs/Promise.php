@@ -45,6 +45,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     protected $promise_status = self::STATUS_SUCCESS;
     protected $promise_queue = null;
     protected $promise_expired_at = null;
+    protected $promise_heartbeat_interval = null;
 
     /**
      * Добавляет задачу в очередь
@@ -87,6 +88,8 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
             dispatch(new PromiseTimeout($this))
                 ->delay($this->promise_expired_at);
         }
+
+        $this->charge();
 
         if ($this->promise_type === self::PROMISE_TYPE_SYNC) {
             $this->dispatchJob(reset($this->promise_jobs));
@@ -131,7 +134,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      * Все задачи запускаются одновременно, промис выполнится, как только все задачи завершатся
      *
      * @param bool $finishOnFirstSuccess следует ли остановиться при первой же завершенной задаче
-     * @param bool $finishOnFirstError следует ли остановиться при первой же ошибке
+     * @param bool $finishOnFirstError   следует ли остановиться при первой же ошибке
      */
     public function runAsync($finishOnFirstSuccess = false, $finishOnFirstError = false)
     {
@@ -179,8 +182,8 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      */
     public function setPromiseFinishConditions($onFirstSuccess = false, $onFirstError = false): void
     {
-        $this->promise_finish_on_first_success = (bool)$onFirstSuccess;
-        $this->promise_finish_on_first_error = (bool)$onFirstError;
+        $this->promise_finish_on_first_success = (bool) $onFirstSuccess;
+        $this->promise_finish_on_first_error = (bool) $onFirstError;
     }
 
     /**
@@ -214,13 +217,23 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     }
 
     /**
-     * Устанавливает время истемчения срока ожилдания выполнения зависимых задач
+     * Устанавливает время истечения срока ожилдания выполнения зависимых задач
      *
      * @param $expired_at
      */
     public function setExpiredAt($expired_at)
     {
         $this->promise_expired_at = $expired_at;
+    }
+
+    /**
+     * Задать интервал между запусками интервального таймера (в секундах)
+     *
+     * @param int|null $interval
+     */
+    public function setHeartbeatInterval(?int $interval = null)
+    {
+        $this->promise_heartbeat_interval = $interval;
     }
 
     /**
@@ -262,6 +275,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
     /**
      * Следует ли промису завершиться при завершении джобы
+     *
      * @param MayPromised $job
      *
      * @return bool
@@ -302,7 +316,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     {
         // если такого запроса нет - игнорируем
         if (!isset($this->promise_jobs[$job->getUniqueId()])) {
-            throw new PromiseNotFoundException('Job #'. $job->getUniqueId() .' in promise ' . $job->getPromiseId() . ' not found');
+            throw new PromiseNotFoundException('Job #' . $job->getUniqueId() . ' in promise ' . $job->getPromiseId() . ' not found');
         }
 
         // убираем из списка запросов и запоминаем ответ
@@ -355,7 +369,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      *
      * @throws \Exception
      */
-    protected static function transaction(callable $callable, ?int $promiseId = null, ?MayPromised $job = null)
+    final protected static function transaction(callable $callable, ?int $promiseId = null, ?MayPromised $job = null)
     {
         if (!$promiseId) {
             return;
@@ -370,7 +384,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
             $promise = self::resolve($promiseId);
 
             if (!$promise) {
-                throw new PromiseNotFoundException('Promise #'. $promiseId .' not found');
+                throw new PromiseNotFoundException('Promise #' . $promiseId . ' not found');
             }
 
             // Коммит должен произойти внутри этой функции!
@@ -399,7 +413,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      */
     public static function checkPromise(MayPromised $job)
     {
-        self::transaction(function(self $promise, MayPromised $job) {
+        self::transaction(function (self $promise, MayPromised $job) {
             $promise->finalizeJob($job);
 
             // промис будет выполнен сам, если:
@@ -428,7 +442,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      */
     public static function promiseTimeout(int $promise_id)
     {
-        self::transaction(function(self $promise) {
+        self::transaction(function (self $promise) {
             $promise->setPromiseStatus(Promise::STATUS_TIMEOUT);
             $promise->deleteRaw();
             DB::commit();
@@ -437,7 +451,59 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     }
 
     /**
-     * Определяет
+     * Выполняет интервальный таймер
+     *
+     * @param int $promise_id
+     *
+     * @throws \Exception
+     */
+    final public static function promiseHeartbeat(int $promise_id)
+    {
+        self::transaction(function (self $promise) {
+            // method not found но это норм, т.к. мы сюда не зайдем, если метода нет.
+            $promise->heartbeat();
+            $promise->charge();
+        }, $promise_id);
+    }
+
+    /**
+     * Разряд!
+     * (При необходимости) запустить следующий шаг интервального таймера
+     */
+    final protected function charge(): void
+    {
+        if (
+            $this->promise_heartbeat_interval &&
+            method_exists($this, 'heartbeat') &&
+            $this->willHeartbeatBeforeTimeout()
+        ) {
+            dispatch(new PromiseHeartbeat($this))
+                ->delay($this->promise_heartbeat_interval);
+        }
+    }
+
+    /**
+     * Успеет ли сработать хоть один таймер до общего таймаута
+     *
+     * @return bool
+     */
+    final protected function willHeartbeatBeforeTimeout(): bool
+    {
+        // Если общий таймаут не установлен или он не карбон, то, наверное, успеет.
+        if (
+            !$this->promise_expired_at ||
+            !($this->promise_expired_at instanceof Carbon)
+        ) {
+            return true;
+        }
+
+        // Иначе сравним время
+        return $this->promise_expired_at->toDateTimeString() >
+            Carbon::now()->addSeconds($this->promise_heartbeat_interval)->toDateTimeString();
+    }
+
+    /**
+     * Определяет, следует ли запускать следующую джобу из цепочки
      *
      * @param MayPromised $job
      *
@@ -523,7 +589,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
         foreach ($reflectionMethod->getParameters() as $i => $parameter) {
             $param = null;
 
-            $type = (string)$parameter->getType();
+            $type = (string) $parameter->getType();
 
             if (\in_array(MayPromised::class, class_implements($type), true) ||
                 \in_array(PromisedEvent::class, class_implements($type), true)) {
@@ -544,6 +610,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
     /**
      * Возвращает результаты работы задач
+     *
      * @return MayPromised[]
      */
     public function getResults(): array
