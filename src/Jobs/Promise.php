@@ -350,12 +350,12 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      * Обернуть какое-то действие в транзакцию
      *
      * @param callable    $callable
-     * @param int         $promiseId
+     * @param int|null    $promiseId
      * @param MayPromised $job
      *
      * @throws \Exception
      */
-    protected static function transaction(callable $callable, int $promiseId, ?MayPromised $job = null)
+    protected static function transaction(callable $callable, ?int $promiseId = null, ?MayPromised $job = null)
     {
         if (!$promiseId) {
             return;
