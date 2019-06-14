@@ -224,6 +224,15 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     }
 
     /**
+     * Получить момент времени, когда промис завершится
+     * @return mixed
+     */
+    public function getExpiredAt()
+    {
+        return $this->promise_expired_at;
+    }
+
+    /**
      * Сохранение информации о Promise
      */
     protected function save()
