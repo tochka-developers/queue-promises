@@ -19,7 +19,7 @@ use Tochka\Queue\Promises\Exceptions\PromiseNotFoundException;
 
 abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 {
-    use InteractsWithQueue, Queueable, SerializesModels, Promised;
+    use InteractsWithQueue, Queueable, SerializesModels, Promised, PromiseFinishConditions;
 
     public const PROMISE_TYPE_ASYNC = 0;
     public const PROMISE_TYPE_SYNC = 1;
@@ -40,8 +40,6 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     protected $promise_results = [];
 
     protected $promise_type = self::PROMISE_TYPE_ASYNC;
-    protected $promise_finish_on_first_error = false;
-    protected $promise_finish_on_first_success = false;
     protected $promise_status = self::STATUS_SUCCESS;
     protected $promise_queue = null;
     protected $promise_expired_at = null;
@@ -88,6 +86,8 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
                 ->delay($this->promise_expired_at);
         }
 
+        $this->ensureFinishConditionsConfigured();
+
         if ($this->promise_type === self::PROMISE_TYPE_SYNC) {
             $this->dispatchJob(reset($this->promise_jobs));
             $this->save();
@@ -109,20 +109,35 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      */
     protected function dispatchJob($job)
     {
-        // если задана очередь по умолчанию для всех - устанавливаем эту очередь
-        if (null !== $this->promise_queue && $job instanceof ShouldQueue) {
+        $this->setQueue($job);
+
+        if ($job instanceof NowDispatchingJob) {
+            $job->run();
+
+            return;
+        }
+
+        dispatch($job);
+    }
+
+    /**
+     * Задать очереди для исполнения джобов (при необходимости)
+     *
+     * @param MayPromised $job
+     */
+    final protected function setQueue($job): void
+    {
+        if (!$this->promise_queue) {
+            return;
+        }
+
+        if ($job instanceof ShouldQueue) {
             $job->onQueue($this->promise_queue);
         }
 
-        if ($job instanceof NowDispatchingJob) {
-            // если задана очередь по умолчанию для всех - устанавливаем эту очередь
-            if (null !== $this->promise_queue && $job instanceof self) {
-                $job->setQueueForAll($this->promise_queue);
-            }
-
-            $job->run();
-        } else {
-            dispatch($job);
+        // если задана очередь по умолчанию для всех - устанавливаем эту очередь
+        if ($job instanceof self) {
+            $job->setQueueForAll($this->promise_queue);
         }
     }
 
@@ -131,9 +146,9 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      * Все задачи запускаются одновременно, промис выполнится, как только все задачи завершатся
      *
      * @param bool $finishOnFirstSuccess следует ли остановиться при первой же завершенной задаче
-     * @param bool $finishOnFirstError следует ли остановиться при первой же ошибке
+     * @param bool $finishOnFirstError   следует ли остановиться при первой же ошибке
      */
-    public function runAsync($finishOnFirstSuccess = false, $finishOnFirstError = false)
+    public function runAsync(bool $finishOnFirstSuccess = false, bool $finishOnFirstError = false)
     {
         $this->setPromiseType(self::PROMISE_TYPE_ASYNC);
         $this->setPromiseFinishConditions($finishOnFirstSuccess, $finishOnFirstError);
@@ -144,10 +159,15 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      * Запускает очередь задач
      * Задачи запускаются по очереди, промис выполнится, как только все задачи завершатся, либо когда одна из задач
      * завершится с ошибкой
+     *
+     * @param bool $finishOnFirstSuccess следует ли остановиться при первой же завершенной задаче
+     * @param bool $finishOnFirstError   следует ли остановиться при первой же ошибке
      */
-    public function runSync()
+    public function runSync(bool $finishOnFirstSuccess = false, bool $finishOnFirstError = true)
     {
         $this->setPromiseType(self::PROMISE_TYPE_SYNC);
+        $this->setPromiseFinishConditions($finishOnFirstSuccess, $finishOnFirstError);
+
         $this->run();
     }
 
@@ -169,28 +189,6 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     public function setPromiseStatus($status)
     {
         $this->promise_status = $status;
-    }
-
-    /**
-     * Установить условия выполнения промиса
-     *
-     * @param $onFirstSuccess
-     * @param $onFirstError
-     */
-    public function setPromiseFinishConditions($onFirstSuccess = false, $onFirstError = false): void
-    {
-        $this->promise_finish_on_first_success = (bool)$onFirstSuccess;
-        $this->promise_finish_on_first_error = (bool)$onFirstError;
-    }
-
-    /**
-     * Получить условия выполнения промиса
-     *
-     * @return bool[]
-     */
-    public function getPromiseFinishConditions(): array
-    {
-        return [$this->promise_finish_on_first_success, $this->promise_finish_on_first_error];
     }
 
     /**
@@ -221,6 +219,16 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     public function setExpiredAt($expired_at)
     {
         $this->promise_expired_at = $expired_at;
+    }
+
+    /**
+     * Получить момент времени, когда промис завершится
+     *
+     * @return mixed
+     */
+    public function getExpiredAt()
+    {
+        return $this->promise_expired_at;
     }
 
     /**
@@ -261,36 +269,6 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     }
 
     /**
-     * Следует ли промису завершиться при завершении джобы
-     * @param MayPromised $job
-     *
-     * @return bool
-     */
-    protected function shouldFinish(MayPromised $job): bool
-    {
-        // Если других джобов не осталось - завершаемся в любом случае
-        if (empty($this->promise_jobs)) {
-            return true;
-        }
-
-        $jobStatus = $job->getJobStatus();
-
-        // Для синхронного исполнения промис завершается при первой же ошибке
-        if ($this->promise_type === self::PROMISE_TYPE_SYNC) {
-            return $jobStatus === MayPromised::JOB_STATUS_ERROR;
-        }
-
-        // Для асинхронного - все зависит от флагов.
-        if ($jobStatus === MayPromised::JOB_STATUS_SUCCESS) {
-            return $this->promise_finish_on_first_success;
-        }
-
-        // Если мы здесь, то джоб либо завершен с ошибкой, либо в неизвестном статусе
-        // Неизвестный статус приравниваем к ошибке
-        return $this->promise_finish_on_first_error;
-    }
-
-    /**
      * Выполнить действия, связанные с завершением джобы (установить статусы, очистить очереди и т.д.)
      *
      * @param MayPromised $job
@@ -302,9 +280,22 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     {
         // если такого запроса нет - игнорируем
         if (!isset($this->promise_jobs[$job->getUniqueId()])) {
-            throw new PromiseNotFoundException('Job #'. $job->getUniqueId() .' in promise ' . $job->getPromiseId() . ' not found');
+            throw new PromiseNotFoundException('Job #' . $job->getUniqueId() . ' in promise ' . $job->getPromiseId() . ' not found');
         }
 
+        $this->setJobResults($job);
+    }
+
+    /**
+     * Записать результат выполнения джоба в промис.
+     * Выставить статус самого промиса, если надо.
+     *
+     * @param MayPromised $job
+     *
+     * @throws \ReflectionException
+     */
+    final public function setJobResults(MayPromised $job): void
+    {
         // убираем из списка запросов и запоминаем ответ
         unset($this->promise_jobs[$job->getUniqueId()]);
 
@@ -370,7 +361,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
             $promise = self::resolve($promiseId);
 
             if (!$promise) {
-                throw new PromiseNotFoundException('Promise #'. $promiseId .' not found');
+                throw new PromiseNotFoundException('Promise #' . $promiseId . ' not found');
             }
 
             // Коммит должен произойти внутри этой функции!
@@ -399,13 +390,12 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      */
     public static function checkPromise(MayPromised $job)
     {
-        self::transaction(function(self $promise, MayPromised $job) {
+        self::transaction(function (self $promise, MayPromised $job) {
             $promise->finalizeJob($job);
 
             // промис будет выполнен сам, если:
             // - либо закончились запросы
-            // - либо у нас асинхронный вызов и условия заставляют нас прекратить исполнение
-            // - либо если у нас вызов цепочкой и в одном из запросов произошла ошибка
+            // - либо условия заставляют нас прекратить исполнение
             if ($promise->shouldFinish($job)) {
                 $promise->deleteRaw();
                 DB::commit();
@@ -428,7 +418,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      */
     public static function promiseTimeout(int $promise_id)
     {
-        self::transaction(function(self $promise) {
+        self::transaction(function (self $promise) {
             $promise->setPromiseStatus(Promise::STATUS_TIMEOUT);
             $promise->deleteRaw();
             DB::commit();
@@ -455,7 +445,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      *
      * @return self|null
      */
-    public static function resolve(int $promise_id)
+    public static function resolve(int $promise_id): ?self
     {
         $table = self::getDatabaseTable();
 
@@ -468,7 +458,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
         $data = json_decode($row->payload, true);
 
-        return unserialize($data['command']);
+        return unserialize($data['command'], null);
     }
 
     /**
@@ -523,7 +513,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
         foreach ($reflectionMethod->getParameters() as $i => $parameter) {
             $param = null;
 
-            $type = (string)$parameter->getType();
+            $type = (string) $parameter->getType();
 
             if (\in_array(MayPromised::class, class_implements($type), true) ||
                 \in_array(PromisedEvent::class, class_implements($type), true)) {
@@ -544,6 +534,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
     /**
      * Возвращает результаты работы задач
+     *
      * @return MayPromised[]
      */
     public function getResults(): array
