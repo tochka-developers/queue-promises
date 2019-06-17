@@ -148,7 +148,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      * @param bool $finishOnFirstSuccess следует ли остановиться при первой же завершенной задаче
      * @param bool $finishOnFirstError   следует ли остановиться при первой же ошибке
      */
-    public function runAsync($finishOnFirstSuccess = false, $finishOnFirstError = false)
+    public function runAsync(bool $finishOnFirstSuccess = false, bool $finishOnFirstError = false)
     {
         $this->setPromiseType(self::PROMISE_TYPE_ASYNC);
         $this->setPromiseFinishConditions($finishOnFirstSuccess, $finishOnFirstError);
@@ -163,7 +163,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      * @param bool $finishOnFirstSuccess следует ли остановиться при первой же завершенной задаче
      * @param bool $finishOnFirstError   следует ли остановиться при первой же ошибке
      */
-    public function runSync($finishOnFirstSuccess = false, $finishOnFirstError = true)
+    public function runSync(bool $finishOnFirstSuccess = false, bool $finishOnFirstError = true)
     {
         $this->setPromiseType(self::PROMISE_TYPE_SYNC);
         $this->setPromiseFinishConditions($finishOnFirstSuccess, $finishOnFirstError);
@@ -194,13 +194,13 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     /**
      * Установить условия выполнения промиса
      *
-     * @param $onFirstSuccess
-     * @param $onFirstError
+     * @param bool $onFirstSuccess Останавливаться при первом же успехе
+     * @param bool $onFirstError Останавливаться при первой же ошибке
      */
-    public function setPromiseFinishConditions($onFirstSuccess = false, $onFirstError = false): void
+    public function setPromiseFinishConditions(bool $onFirstSuccess = false, bool $onFirstError = false): void
     {
-        $this->promise_finish_on_first_success = (bool) $onFirstSuccess;
-        $this->promise_finish_on_first_error = (bool) $onFirstError;
+        $this->promise_finish_on_first_success = $onFirstSuccess;
+        $this->promise_finish_on_first_error = $onFirstError;
     }
 
     /**
