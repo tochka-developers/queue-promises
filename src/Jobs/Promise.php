@@ -19,7 +19,7 @@ use Tochka\Queue\Promises\Exceptions\PromiseNotFoundException;
 
 abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 {
-    use InteractsWithQueue, Queueable, SerializesModels, Promised;
+    use InteractsWithQueue, Queueable, SerializesModels, Promised, PromiseFinishConditions;
 
     public const PROMISE_TYPE_ASYNC = 0;
     public const PROMISE_TYPE_SYNC = 1;
@@ -40,8 +40,6 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     protected $promise_results = [];
 
     protected $promise_type = self::PROMISE_TYPE_ASYNC;
-    protected $promise_finish_on_first_error = false;
-    protected $promise_finish_on_first_success = false;
     protected $promise_status = self::STATUS_SUCCESS;
     protected $promise_queue = null;
     protected $promise_expired_at = null;
@@ -87,6 +85,8 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
             dispatch(new PromiseTimeout($this))
                 ->delay($this->promise_expired_at);
         }
+
+        $this->ensureFinishConditionsConfigured();
 
         if ($this->promise_type === self::PROMISE_TYPE_SYNC) {
             $this->dispatchJob(reset($this->promise_jobs));
@@ -192,28 +192,6 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
     }
 
     /**
-     * Установить условия выполнения промиса
-     *
-     * @param bool $onFirstSuccess Останавливаться при первом же успехе
-     * @param bool $onFirstError Останавливаться при первой же ошибке
-     */
-    public function setPromiseFinishConditions(bool $onFirstSuccess = false, bool $onFirstError = false): void
-    {
-        $this->promise_finish_on_first_success = $onFirstSuccess;
-        $this->promise_finish_on_first_error = $onFirstError;
-    }
-
-    /**
-     * Получить условия выполнения промиса
-     *
-     * @return bool[]
-     */
-    public function getPromiseFinishConditions(): array
-    {
-        return [$this->promise_finish_on_first_success, $this->promise_finish_on_first_error];
-    }
-
-    /**
      * Устанавливает выполнение всех связанных задач в определенной очереди
      *
      * @param $queue
@@ -288,32 +266,6 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
         $table = self::getDatabaseTable();
 
         $table->where('id', $this->promise_id)->delete();
-    }
-
-    /**
-     * Следует ли промису завершиться при завершении джобы
-     *
-     * @param MayPromised $job
-     *
-     * @return bool
-     */
-    protected function shouldFinish(MayPromised $job): bool
-    {
-        // Если других джобов не осталось - завершаемся в любом случае
-        if (empty($this->promise_jobs)) {
-            return true;
-        }
-
-        $jobStatus = $job->getJobStatus();
-
-        // Если задача завершилась успешно, то проверим, надо ли завершиться самому промису.
-        if ($jobStatus === MayPromised::JOB_STATUS_SUCCESS) {
-            return $this->promise_finish_on_first_success;
-        }
-
-        // Если мы здесь, то джоб либо завершен с ошибкой, либо в неизвестном статусе
-        // Неизвестный статус приравниваем к ошибке
-        return $this->promise_finish_on_first_error;
     }
 
     /**
@@ -493,7 +445,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
      *
      * @return self|null
      */
-    public static function resolve(int $promise_id)
+    public static function resolve(int $promise_id): ?self
     {
         $table = self::getDatabaseTable();
 
@@ -506,7 +458,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
         $data = json_decode($row->payload, true);
 
-        return unserialize($data['command']);
+        return unserialize($data['command'], null);
     }
 
     /**
