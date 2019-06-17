@@ -7,38 +7,32 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Tochka\Queue\Promises\Contracts\MayPromised;
-use Tochka\Queue\Promises\Contracts\NowDispatchingJob;
+use Tochka\Queue\Promises\Contracts\IntervalTimer;
 
 /**
  * Интервальный таймер для промиса. Добавляется в промис как обычный джоб, например так:
- * $promise->add(new PromiseIntervalTimer(60, MyTimerJob::class, true);
+ * $promise->add(new PromiseIntervalTimer(60, new MyTimerJob()));
  *
  * @package Tochka\Queue\Promises\Jobs
  */
-class PromiseIntervalTimer implements ShouldQueue, MayPromised, NowDispatchingJob
+class PromiseIntervalTimer extends Promise
 {
-    use InteractsWithQueue, Queueable, SerializesModels, Promised;
-
+    // сколько угодно раз будем перезапускаться
     public $tries = PHP_INT_MAX;
 
     public $invocationInterval;
-    public $timerJobClassName;
-    public $timerJobParams;
+    public $timerJob;
 
     protected $promise = null;
 
     /**
-     * @param int    $invocationInterval Интервал запуска таймера в секундах
-     * @param string $timerJobClassName Имя класса джоба, который будет запускаться по заданному интервалу
-     *                                  Этот класс должен принимать Promise первым параметром конструктора
-     * @param mixed  ...$timerJobParams Прочие параметры конструктора джоба (фиксированные на момент запуска таймера)
+     * @param int           $invocationInterval Интервал запуска таймера в секундах
+     * @param IntervalTimer $timerJob           Экземпляр джобы таймера
      */
-    public function __construct(int $invocationInterval, string $timerJobClassName, ...$timerJobParams)
+    public function __construct(int $invocationInterval, IntervalTimer $timerJob)
     {
         $this->invocationInterval = $invocationInterval;
-        $this->timerJobClassName = $timerJobClassName;
-        $this->timerJobParams = $timerJobParams;
+        $this->timerJob = $timerJob;
     }
 
     /**
@@ -53,6 +47,7 @@ class PromiseIntervalTimer implements ShouldQueue, MayPromised, NowDispatchingJo
 
     /**
      * Поставить в очередь следующий запуск таймера, если это нужно и имеет смысл
+     *
      * @return bool
      */
     final protected function shouldEnqueue(): bool
@@ -94,6 +89,7 @@ class PromiseIntervalTimer implements ShouldQueue, MayPromised, NowDispatchingJo
      * Обработать очередной запуск таймера
      *
      * @return bool
+     * @throws \ReflectionException
      */
     public function handle(): bool
     {
@@ -103,8 +99,11 @@ class PromiseIntervalTimer implements ShouldQueue, MayPromised, NowDispatchingJo
         }
 
         // Создадим экземпляр джоба и тут же его обработаем.
-        // Если джоб вернул не true, то не будем планировать следующий запуск
-        if (!(new $this->timerJobClassName($promise, ...$this->timerJobParams))->handle()) {
+        // Если джоб вернул не true, то не будем планировать следующий запуск,
+        // и к тому же еще закинем результат джобы в промис.
+        if (!$this->timerJob->handle()) {
+            $promise->setJobResults($this->timerJob);
+
             return true;
         }
 

@@ -166,15 +166,14 @@ $promise->runAsync();   // Run the promise asynchronously
 all complete successfully. After that, the `success` or `errors` of the promise will be executed.
 * In asynchronous mode all jobs will be queued immediately, and the promise will wait for them to finish.
 
-The termination conditions for asynchronous execution are configurable via method call: 
+The termination conditions can be finely configured via method call: 
 ```php
 $promise->setPromiseFinishConditions(
-    true, // The promise must execute when any job completes successfully.  
-    true  // The promise must execute when any job fails.
+    true, // The promise must execute when a job completes successfully for the first time.  
+    true  // The promise must execute when a job fails for the first time.
 );
 ``` 
-For convenience `runAsync` may take the same parameters. The defaults for both parameters are `false`, i.e. the promise
-must wait for _all_ jobs to complete or fail.
+For convenience, `runSync` and `runAsync` may also take the same parameters.
 
 ### Waiting For Events
 Sometimes it is necessary to execute a promise not just after a number of jobs completed, but also when an event is dispatched.
