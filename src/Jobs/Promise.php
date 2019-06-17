@@ -458,7 +458,7 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
 
         $data = json_decode($row->payload, true);
 
-        return unserialize($data['command'], null);
+        return unserialize($data['command']);
     }
 
     /**
