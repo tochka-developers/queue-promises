@@ -89,8 +89,8 @@ abstract class Promise implements ShouldQueue, MayPromised, NowDispatchingJob
         $this->ensureFinishConditionsConfigured();
 
         if ($this->promise_type === self::PROMISE_TYPE_SYNC) {
-            $this->dispatchJob(reset($this->promise_jobs));
             $this->save();
+            $this->dispatchJob(reset($this->promise_jobs));
 
             return;
         }
