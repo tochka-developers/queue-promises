@@ -2,7 +2,6 @@
 
 namespace Tochka\Queue\Promises\Jobs;
 
-use Illuminate\Queue\FailingJob;
 use Illuminate\Queue\Jobs\Job;
 
 /**
@@ -133,7 +132,7 @@ trait Promised
         app()->instance('QueueCurrentJob', $this);
 
         if ($this->job && $this->job instanceof Job) {
-            FailingJob::handle($this->job->getConnectionName(), $this->job, $exception);
+            $this->job->fail($exception);
         }
     }
 }
