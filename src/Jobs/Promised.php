@@ -132,7 +132,12 @@ trait Promised
         app()->instance('QueueCurrentJob', $this);
 
         if ($this->job && $this->job instanceof Job) {
-            $this->job->fail($exception);
+            // support for laravel 5.7
+            if (class_exists('\Illuminate\Queue\FailingJob')) {
+                \Illuminate\Queue\FailingJob::handle($this->job->getConnectionName(), $this->job, $exception);
+            } else { // // support for laravel >=5.8
+                $this->job->fail($exception);
+            }
         }
     }
 }
