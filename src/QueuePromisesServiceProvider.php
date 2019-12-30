@@ -40,6 +40,9 @@ class QueuePromisesServiceProvider extends ServiceProvider
     protected function processQueueEvents()
     {
         Queue::after(function (JobProcessed $event) {
+            if ($event->job->isReleased()) {
+                return true;
+            }
             return $this->processQueueEvent();
         });
 
