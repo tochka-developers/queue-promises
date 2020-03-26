@@ -1,15 +1,18 @@
 <?php
 
-namespace Tochka\Promises;
+namespace Tochka\Promises\Core\Support;
 
 use Tochka\Promises\Contracts\Condition;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 
 class ConditionTransition
 {
-    private Condition $condition;
-    private string $from_state;
-    private string $to_state;
+    /** @var \Tochka\Promises\Contracts\Condition */
+    private $condition;
+    /** @var string */
+    private $from_state;
+    /** @var string */
+    private $to_state;
 
     public function __construct(Condition $condition, string $from_state, string $to_state)
     {

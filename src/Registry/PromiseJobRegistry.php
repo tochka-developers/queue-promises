@@ -3,7 +3,7 @@
 namespace Tochka\Promises\Registry;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Tochka\Promises\BaseJob;
+use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 use Tochka\Promises\Models\PromiseJob;
@@ -15,6 +15,7 @@ class PromiseJobRegistry
     public function load(int $id): BaseJob
     {
         /** @var PromiseJob $jobModel */
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $jobModel = PromiseJob::find($id);
         if (!$jobModel) {
             throw (new ModelNotFoundException())->setModel(PromiseJob::class, $id);
@@ -26,6 +27,7 @@ class PromiseJobRegistry
     public function loadByPromiseId(int $promise_id): array
     {
         /** @var PromiseJob[]|\Illuminate\Support\Collection $jobModels */
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $jobModels = PromiseJob::where('promise_id', $promise_id)->get();
         $jobs = $jobModels->map([$this, 'mapJobModel']);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tochka\Promises;
+namespace Tochka\Promises\Core\Support;
 
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
@@ -12,9 +12,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class PromiseQueueJob implements ShouldQueue
 {
     /** @var \Tochka\Promises\Contracts\PromiseHandler */
-    private PromiseHandler $promiseHandler;
+    private $promiseHandler;
     /** @var string  */
-    private string $status;
+    private $status;
 
     public function __construct(PromiseHandler $promiseHandler, string $status)
     {

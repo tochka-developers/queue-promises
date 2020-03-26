@@ -1,16 +1,16 @@
 <?php
 
-namespace Tochka\Promises\Support;
+namespace Tochka\Promises\Core\Support;
 
-use Tochka\Promises\BaseJob;
+use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\States;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 
 class QueuePromiseMiddleware
 {
-    /** @var \Tochka\Promises\BaseJob */
-    private BaseJob $baseJob;
+    /** @var \Tochka\Promises\Core\BaseJob */
+    private $baseJob;
 
     public function __construct(BaseJob $baseJob)
     {

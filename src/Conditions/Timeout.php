@@ -2,13 +2,13 @@
 
 namespace Tochka\Promises\Conditions;
 
-use Tochka\Promises\BasePromise;
+use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Contracts\Condition;
 
 class Timeout implements Condition
 {
     /** @var int */
-    private int $timeout;
+    private $timeout;
 
     public function __construct(int $timeout)
     {

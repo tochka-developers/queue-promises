@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Support;
 
-use Tochka\Promises\BaseJob;
+use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Conditions\AllJobsIsSuccessState;
 use Tochka\Promises\Conditions\JobIsSuccessState;
 use Tochka\Promises\Conditions\OneJobIsFailedState;

@@ -1,10 +1,11 @@
 <?php
 
-namespace Tochka\Promises;
+namespace Tochka\Promises\Core;
 
 trait FSM
 {
-    private ?string $state = null;
+    /** @var string|null */
+    private $state = null;
 
     public function getState(): ?string
     {

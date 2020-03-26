@@ -1,9 +1,11 @@
 <?php
 
-namespace Tochka\Promises;
+namespace Tochka\Promises\Core;
 
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Core\Support\ConditionTransitions;
+use Tochka\Promises\Core\Support\PromiseQueueJob;
 use Tochka\Promises\Facades\PromiseRegistry;
 
 /**
@@ -15,8 +17,10 @@ class BasePromise implements States
 {
     use FSM, ConditionTransitions;
 
-    private PromiseHandler $promiseHandler;
-    private ?int $id = null;
+    /** @var \Tochka\Promises\Contracts\PromiseHandler */
+    private $promiseHandler;
+    /** @var int|null */
+    private $id = null;
 
     public function __construct(PromiseHandler $promiseHandler)
     {
@@ -42,6 +46,8 @@ class BasePromise implements States
     public function dispatch(): void
     {
         $this->setState(self::RUNNING);
+
+        PromiseRegistry::save($this);
     }
 
     public function transitionFromRunningToSuccess(): void

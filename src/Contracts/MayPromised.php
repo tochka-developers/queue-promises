@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Contracts;
 
-use Tochka\Promises\BaseJob;
+use Tochka\Promises\Core\BaseJob;
 
 interface MayPromised
 {

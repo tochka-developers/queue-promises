@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Contracts;
 
-use Tochka\Promises\BasePromise;
+use Tochka\Promises\Core\BasePromise;
 
 interface Condition
 {

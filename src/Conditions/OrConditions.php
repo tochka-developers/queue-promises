@@ -2,13 +2,13 @@
 
 namespace Tochka\Promises\Conditions;
 
-use Tochka\Promises\BasePromise;
+use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Contracts\Condition;
 
 class OrConditions implements Condition
 {
     /** @var \Tochka\Promises\Contracts\Condition[] */
-    private array $conditions = [];
+    private $conditions = [];
 
     public function addCondition(Condition $condition): self
     {

@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Registry;
 
-use Tochka\Promises\ConditionTransition;
+use Tochka\Promises\Core\Support\ConditionTransition;
 
 trait SerializeConditions
 {

@@ -2,14 +2,15 @@
 
 namespace Tochka\Promises\Support;
 
-use Tochka\Promises\BaseJob;
+use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Core\Support\QueuePromiseMiddleware;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 
 trait PromisedJob
 {
     /** @var BaseJob */
-    private BaseJob $baseJob;
+    private $baseJob;
 
     public function setBaseJob(BaseJob $baseJob): void
     {

@@ -1,18 +1,23 @@
 <?php
 
-namespace Tochka\Promises;
+namespace Tochka\Promises\Core;
 
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Core\Support\ConditionTransitions;
 
 class BaseJob implements States
 {
     use FSM, ConditionTransitions;
 
-    private ?int $id = null;
-    private int $promise_id;
-    private MayPromised $initial_job;
-    private MayPromised $result_job;
+    /** @var int|null */
+    private $id = null;
+    /** @var int */
+    private $promise_id;
+    /** @var \Tochka\Promises\Contracts\MayPromised */
+    private $initial_job;
+    /** @var \Tochka\Promises\Contracts\MayPromised */
+    private $result_job;
 
     public function __construct(int $promise_id, MayPromised $initial_job, MayPromised $result_job = null)
     {

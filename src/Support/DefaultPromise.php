@@ -2,9 +2,9 @@
 
 namespace Tochka\Promises\Support;
 
-use Tochka\Promises\BaseJob;
-use Tochka\Promises\BasePromise;
-use Tochka\Promises\ConditionTransition;
+use Tochka\Promises\Core\BaseJob;
+use Tochka\Promises\Core\BasePromise;
+use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Contracts\DefaultTransitions;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\States;
@@ -14,7 +14,7 @@ use Tochka\Promises\Facades\PromiseRegistry;
 trait DefaultPromise
 {
     /** @var MayPromised[] */
-    private array $jobs = [];
+    private $jobs = [];
 
     public function add(MayPromised $entity): void
     {

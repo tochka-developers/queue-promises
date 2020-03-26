@@ -14,7 +14,7 @@
     }
   },
   "require": {
-    "php": "^7.4",
+    "php": "^7.3",
     "ext-json": "*",
     "laravel/framework": "5.8|^6.0",
     "nesbot/carbon": ">=2.0"

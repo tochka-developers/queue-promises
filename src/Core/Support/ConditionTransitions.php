@@ -1,11 +1,11 @@
 <?php
 
-namespace Tochka\Promises;
+namespace Tochka\Promises\Core\Support;
 
 trait ConditionTransitions
 {
-    /** @var \Tochka\Promises\ConditionTransition[] */
-    private array $conditions = [];
+    /** @var \Tochka\Promises\Core\Support\ConditionTransition[] */
+    private $conditions = [];
 
     public function addCondition(ConditionTransition $conditionTransition): self
     {

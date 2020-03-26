@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Conditions;
 
-use Tochka\Promises\BasePromise;
+use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Contracts\Condition;
 
 class Positive implements Condition
