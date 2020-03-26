@@ -3,8 +3,8 @@
 namespace Tochka\Promises\Registry;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Contracts\MayPromised;
+use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 use Tochka\Promises\Models\PromiseJob;
 
@@ -48,8 +48,16 @@ class PromiseJobRegistry
         $jobModel->promise_id = $job->getPromiseId();
         $jobModel->state = $job->getState();
         $jobModel->conditions = $this->getSerializedConditions($job->getConditions());
-        $jobModel->initial_job = serialize($job->getInitialJob());
-        $jobModel->result_job = serialize($job->getResultJob());
+        $jobModel->initial_job = json_encode(
+            serialize(clone $job->getInitialJob()),
+            JSON_THROW_ON_ERROR,
+            512
+        );
+        $jobModel->result_job = json_encode(
+            serialize(clone $job->getResultJob()),
+            JSON_THROW_ON_ERROR,
+            512
+        );
 
         $jobModel->save();
 
@@ -60,8 +68,14 @@ class PromiseJobRegistry
 
     private function mapJobModel(PromiseJob $jobModel): BaseJob
     {
-        $initialJob = unserialize($jobModel->initial_job, ['allowed_classes' => true]);
-        $resultJob = unserialize($jobModel->result_job, ['allowed_classes' => true]);
+        $initialJob = unserialize(
+            json_decode($jobModel->initial_job, true, 512, JSON_THROW_ON_ERROR),
+            ['allowed_classes' => true]
+        );
+        $resultJob = unserialize(
+            json_decode($jobModel->result_job, true, 512, JSON_THROW_ON_ERROR),
+            ['allowed_classes' => true]
+        );
         if (!$initialJob instanceof MayPromised || !$resultJob instanceof MayPromised) {
             throw new IncorrectResolvingClass(
                 sprintf(

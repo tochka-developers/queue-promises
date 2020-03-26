@@ -2,15 +2,15 @@
 
 namespace Tochka\Promises\Conditions;
 
+use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Contracts\Condition;
 
-class AndConditions implements Condition
+class AndConditions implements ConditionContract
 {
-    /** @var \Tochka\Promises\Contracts\Condition[] */
+    /** @var \Tochka\Promises\Contracts\ConditionContract[] */
     private $conditions = [];
 
-    public function addCondition(Condition $condition): self
+    public function addCondition(ConditionContract $condition): self
     {
         $this->conditions[] = $condition;
 
@@ -19,8 +19,9 @@ class AndConditions implements Condition
 
     public function condition(BasePromise $basePromise): bool
     {
-        return array_reduce($this->conditions, static function (bool $carry, Condition $item) use ($basePromise) {
-            return $carry && $item->condition($basePromise);
-        }, true);
+        return array_reduce($this->conditions,
+            static function (bool $carry, ConditionContract $item) use ($basePromise) {
+                return $carry && $item->condition($basePromise);
+            }, true);
     }
 }

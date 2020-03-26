@@ -4,22 +4,20 @@ namespace Tochka\Promises\Conditions;
 
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Contracts\Condition;
-use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Contracts\ConditionContract;
+use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 
-class AllJobsIsFinished implements Condition
+class AllJobsIsFinished implements ConditionContract
 {
     public function condition(BasePromise $basePromise): bool
     {
         $jobs = PromiseJobRegistry::loadByPromiseId($basePromise->getPromiseId());
 
-        return array_reduce($jobs, static function (bool $carry, BaseJob $item) {
-            return $carry && (
-                    $item->getState() === States::SUCCESS
-                    || $item->getState() === States::FAILED
-                    || $item->getState() === States::TIMEOUT
-                );
+        return array_reduce($jobs, static function (bool $carry, BaseJob $job) {
+            $state = $job->getState();
+
+            return $carry && $state && $state->in([StateEnum::SUCCESS, StateEnum::FAILED, StateEnum::TIMEOUT]);
         }, true);
     }
 }

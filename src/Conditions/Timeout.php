@@ -3,9 +3,9 @@
 namespace Tochka\Promises\Conditions;
 
 use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Contracts\Condition;
+use Tochka\Promises\Contracts\ConditionContract;
 
-class Timeout implements Condition
+class Timeout implements ConditionContract
 {
     /** @var int */
     private $timeout;

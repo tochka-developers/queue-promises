@@ -40,6 +40,7 @@ class PromiseRegistry
     {
         return LazyCollection::make(function () {
             /** @var Promise $promise */
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
             foreach (Promise::cursor() as $promise) {
                 yield $this->mapPromiseModel($promise);
             }

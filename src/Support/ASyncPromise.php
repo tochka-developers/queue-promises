@@ -9,16 +9,16 @@ use Tochka\Promises\Conditions\AndConditions;
 use Tochka\Promises\Conditions\OneJobIsFailedState;
 use Tochka\Promises\Conditions\Positive;
 use Tochka\Promises\Conditions\Timeout;
-use Tochka\Promises\Contracts\Condition;
+use Tochka\Promises\Contracts\ConditionContract;
 
 trait ASyncPromise
 {
-    public function getSuccessCondition(): Condition
+    public function getSuccessCondition(): ConditionContract
     {
         return new AllJobsIsSuccessState();
     }
 
-    public function getFailedCondition(): Condition
+    public function getFailedCondition(): ConditionContract
     {
         $andCondition = new AndConditions();
         $andCondition->addCondition(new AllJobsIsFinished());
@@ -27,12 +27,12 @@ trait ASyncPromise
         return $andCondition;
     }
 
-    public function getTimeoutCondition(): Condition
+    public function getTimeoutCondition(): ConditionContract
     {
         return new Timeout(10);
     }
 
-    public function getJobRunningCondition(?BaseJob $previousJob): Condition
+    public function getJobRunningCondition(?BaseJob $previousJob): ConditionContract
     {
         return new Positive();
     }

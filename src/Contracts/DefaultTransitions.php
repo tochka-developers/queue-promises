@@ -6,11 +6,11 @@ use Tochka\Promises\Core\BaseJob;
 
 interface DefaultTransitions
 {
-    public function getSuccessCondition(): Condition;
+    public function getSuccessCondition(): ConditionContract;
 
-    public function getFailedCondition(): Condition;
+    public function getFailedCondition(): ConditionContract;
 
-    public function getTimeoutCondition(): Condition;
+    public function getTimeoutCondition(): ConditionContract;
 
-    public function getJobRunningCondition(?BaseJob $previousJob): Condition;
+    public function getJobRunningCondition(?BaseJob $previousJob): ConditionContract;
 }

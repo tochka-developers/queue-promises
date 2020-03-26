@@ -2,10 +2,10 @@
 
 namespace Tochka\Promises\Conditions;
 
+use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Contracts\Condition;
 
-class Positive implements Condition
+class Positive implements ConditionContract
 {
     public function condition(BasePromise $basePromise): bool
     {

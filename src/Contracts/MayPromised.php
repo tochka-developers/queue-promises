@@ -2,10 +2,15 @@
 
 namespace Tochka\Promises\Contracts;
 
-use Tochka\Promises\Core\BaseJob;
-
 interface MayPromised
 {
-    public function setBaseJob(BaseJob $baseJob): void;
-    public function getBaseJob(): BaseJob;
+    /**
+     * @param int $base_job_id
+     */
+    public function setBaseJobId(int $base_job_id): void;
+
+    /**
+     * @return int
+     */
+    public function getBaseJobId(): int;
 }

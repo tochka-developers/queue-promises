@@ -2,36 +2,37 @@
 
 namespace Tochka\Promises\Core\Support;
 
-use Tochka\Promises\Contracts\Condition;
+use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 
 class ConditionTransition
 {
-    /** @var \Tochka\Promises\Contracts\Condition */
+    /** @var \Tochka\Promises\Contracts\ConditionContract */
     private $condition;
-    /** @var string */
+    /** @var \Tochka\Promises\Enums\StateEnum */
     private $from_state;
-    /** @var string */
+    /** @var \Tochka\Promises\Enums\StateEnum */
     private $to_state;
 
-    public function __construct(Condition $condition, string $from_state, string $to_state)
+    public function __construct(ConditionContract $condition, StateEnum $from_state, StateEnum $to_state)
     {
         $this->condition = $condition;
         $this->from_state = $from_state;
         $this->to_state = $to_state;
     }
 
-    public function getCondition(): Condition
+    public function getCondition(): ConditionContract
     {
         return $this->condition;
     }
 
-    public function getFromState(): string
+    public function getFromState(): StateEnum
     {
         return $this->from_state;
     }
 
-    public function getToState(): string
+    public function getToState(): StateEnum
     {
         return $this->to_state;
     }
@@ -40,8 +41,8 @@ class ConditionTransition
     {
         return [
             'condition'  => serialize($this->condition),
-            'from_state' => $this->from_state,
-            'to_state'   => $this->to_state,
+            'from_state' => $this->from_state->value,
+            'to_state'   => $this->to_state->value,
         ];
     }
 
@@ -64,16 +65,19 @@ class ConditionTransition
         }
 
         $condition = unserialize($value['condition'], ['allowed_classes' => true]);
-        if (!$condition instanceof Condition) {
+        if (!$condition instanceof ConditionContract) {
             throw new IncorrectResolvingClass(
                 sprintf(
                     'Condition must implements contract [%s], but class [%s] is incorrect',
-                    Condition::class,
+                    ConditionContract::class,
                     get_class($condition)
                 )
             );
         }
 
-        return new self($condition, $value['from_state'], $value['to_state']);
+        $from_state = StateEnum::coerce($value['from_state']);
+        $to_state = StateEnum::coerce($value['to_state']);
+
+        return new self($condition, $from_state, $to_state);
     }
 }

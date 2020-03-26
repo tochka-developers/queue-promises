@@ -7,11 +7,9 @@ trait ConditionTransitions
     /** @var \Tochka\Promises\Core\Support\ConditionTransition[] */
     private $conditions = [];
 
-    public function addCondition(ConditionTransition $conditionTransition): self
+    public function addCondition(ConditionTransition $conditionTransition): void
     {
         $this->conditions[] = $conditionTransition;
-
-        return $this;
     }
 
     public function getConditions(): array

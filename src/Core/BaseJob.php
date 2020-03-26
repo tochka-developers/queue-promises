@@ -2,13 +2,16 @@
 
 namespace Tochka\Promises\Core;
 
+use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Contracts\ConditionTransitionsContract;
+use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Contracts\MayPromised;
-use Tochka\Promises\Contracts\States;
 use Tochka\Promises\Core\Support\ConditionTransitions;
+use Tochka\Promises\Core\Support\States;
 
-class BaseJob implements States
+class BaseJob implements StatesContract, ConditionTransitionsContract
 {
-    use FSM, ConditionTransitions;
+    use States, ConditionTransitions;
 
     /** @var int|null */
     private $id = null;
@@ -24,7 +27,7 @@ class BaseJob implements States
         $this->promise_id = $promise_id;
         $this->initial_job = $initial_job;
         $this->result_job = $result_job ?: $initial_job;
-        $this->state = self::WAITING;
+        $this->state = StateEnum::WAITING();
     }
 
     public function setResult(MayPromised $job): void

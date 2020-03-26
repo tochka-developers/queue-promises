@@ -2,19 +2,18 @@
 
 namespace Tochka\Promises\Core\Support;
 
-use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Contracts\MayPromised;
-use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 
 class QueuePromiseMiddleware
 {
-    /** @var \Tochka\Promises\Core\BaseJob */
-    private $baseJob;
+    /** @var int */
+    private $base_job_id;
 
-    public function __construct(BaseJob $baseJob)
+    public function __construct(int $base_job_id)
     {
-        $this->baseJob = $baseJob;
+        $this->base_job_id = $base_job_id;
     }
 
     /**
@@ -26,15 +25,16 @@ class QueuePromiseMiddleware
     public function handle(MayPromised $job, $next): void
     {
         try {
+            $baseJob = PromiseJobRegistry::load($this->base_job_id);
             $next($job);
         } catch (\Exception $e) {
-            $this->baseJob->setResult($job);
-            PromiseJobRegistry::save($this->baseJob);
+            $baseJob->setResult($job);
+            PromiseJobRegistry::save($baseJob);
             throw $e;
         }
 
-        $this->baseJob->setResult($job);
-        $this->baseJob->setState(States::SUCCESS);
-        PromiseJobRegistry::save($this->baseJob);
+        $baseJob->setResult($job);
+        $baseJob->setState(StateEnum::SUCCESS());
+        PromiseJobRegistry::save($baseJob);
     }
 }

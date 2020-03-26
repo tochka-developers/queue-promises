@@ -4,7 +4,7 @@ namespace Tochka\Promises\Contracts;
 
 use Tochka\Promises\Core\BasePromise;
 
-interface Condition
+interface ConditionContract
 {
     public function condition(BasePromise $basePromise): bool;
 }

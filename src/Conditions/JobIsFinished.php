@@ -2,13 +2,13 @@
 
 namespace Tochka\Promises\Conditions;
 
+use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Contracts\Condition;
-use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 
-class JobIsFinished implements Condition
+class JobIsFinished implements ConditionContract
 {
     /** @var int */
     private $job_id;
@@ -26,6 +26,8 @@ class JobIsFinished implements Condition
             return true;
         }
 
-        return $job->getState() === States::SUCCESS || $job->getState() === States::FAILED || $job->getState() === States::TIMEOUT;
+        $state = $job->getState();
+
+        return $state && $state->in([StateEnum::SUCCESS, StateEnum::FAILED, StateEnum::TIMEOUT]);
     }
 }

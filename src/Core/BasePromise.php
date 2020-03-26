@@ -2,10 +2,13 @@
 
 namespace Tochka\Promises\Core;
 
+use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\PromiseHandler;
-use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\Support\ConditionTransitions;
 use Tochka\Promises\Core\Support\PromiseQueueJob;
+use Tochka\Promises\Core\Support\States;
 use Tochka\Promises\Facades\PromiseRegistry;
 
 /**
@@ -13,9 +16,9 @@ use Tochka\Promises\Facades\PromiseRegistry;
  *
  * @package App\Promises\Package
  */
-class BasePromise implements States
+class BasePromise implements StatesContract, ConditionTransitionsContract
 {
-    use FSM, ConditionTransitions;
+    use States, ConditionTransitions;
 
     /** @var \Tochka\Promises\Contracts\PromiseHandler */
     private $promiseHandler;
@@ -25,7 +28,7 @@ class BasePromise implements States
     public function __construct(PromiseHandler $promiseHandler)
     {
         $this->promiseHandler = $promiseHandler;
-        $this->state = self::WAITING;
+        $this->state = StateEnum::WAITING();
     }
 
     public function getPromiseHandler(): PromiseHandler
@@ -45,7 +48,7 @@ class BasePromise implements States
 
     public function dispatch(): void
     {
-        $this->setState(self::RUNNING);
+        $this->setState(StateEnum::RUNNING());
 
         PromiseRegistry::save($this);
     }
