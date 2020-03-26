@@ -2,16 +2,19 @@
 
 namespace Tochka\Promises\Support;
 
+use Tochka\Promises\BaseJob;
 use Tochka\Promises\BasePromise;
+use Tochka\Promises\ConditionTransition;
 use Tochka\Promises\Contracts\DefaultTransitions;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\States;
-use Tochka\Promises\BaseJob;
+use Tochka\Promises\Facades\PromiseJobRegistry;
+use Tochka\Promises\Facades\PromiseRegistry;
 
 trait DefaultPromise
 {
     /** @var MayPromised[] */
-    private $jobs = [];
+    private array $jobs = [];
 
     public function add(MayPromised $entity): void
     {
@@ -20,15 +23,23 @@ trait DefaultPromise
 
     public function run(): void
     {
+        /** @var \Tochka\Promises\Contracts\PromiseHandler $this */
         $basePromise = new BasePromise($this);
 
+        // добавляем условия перехода между состояниями промиса
         if ($this instanceof DefaultTransitions) {
-            $basePromise->addCondition($this->getSuccessCondition(), States::RUNNING, States::SUCCESS);
-            $basePromise->addCondition($this->getFailedCondition(), States::RUNNING, States::FAILED);
-            $basePromise->addCondition($this->getTimeoutCondition(), States::RUNNING, States::TIMEOUT);
+            $basePromise->addCondition(
+                new ConditionTransition($this->getSuccessCondition(), States::RUNNING, States::SUCCESS)
+            );
+            $basePromise->addCondition(
+                new ConditionTransition($this->getFailedCondition(), States::RUNNING, States::FAILED)
+            );
+            $basePromise->addCondition(
+                new ConditionTransition($this->getTimeoutCondition(), States::RUNNING, States::TIMEOUT)
+            );
         }
 
-        $basePromise->save();
+        PromiseRegistry::save($basePromise);
 
         if (empty($this->jobs)) {
             $basePromise->setState(BasePromise::SUCCESS);
@@ -39,10 +50,13 @@ trait DefaultPromise
         $prevJob = null;
 
         foreach ($this->jobs as $job) {
-            $queuedJob = new BaseJob($basePromise, $job);
+            $queuedJob = new BaseJob($basePromise->getPromiseId(), $job);
             if ($this instanceof DefaultTransitions) {
-                $queuedJob->addCondition($this->getJobRunningCondition($prevJob), States::WAITING, States::RUNNING);
+                $queuedJob->addCondition(
+                    new ConditionTransition($this->getJobRunningCondition($prevJob), States::WAITING, States::RUNNING)
+                );
             }
+            PromiseJobRegistry::save($queuedJob);
             $prevJob = $queuedJob;
         }
 

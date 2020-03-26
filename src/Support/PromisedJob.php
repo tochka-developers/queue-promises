@@ -4,11 +4,12 @@ namespace Tochka\Promises\Support;
 
 use Tochka\Promises\BaseJob;
 use Tochka\Promises\Contracts\States;
+use Tochka\Promises\Facades\PromiseJobRegistry;
 
 trait PromisedJob
 {
     /** @var BaseJob */
-    private $baseJob;
+    private BaseJob $baseJob;
 
     public function setBaseJob(BaseJob $baseJob): void
     {
@@ -23,7 +24,7 @@ trait PromisedJob
     public function failed(): void
     {
         $this->baseJob->setState(States::FAILED);
-        $this->baseJob->save();
+        PromiseJobRegistry::save($this->baseJob);
     }
 
     public function middleware(): array

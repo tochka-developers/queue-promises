@@ -6,12 +6,15 @@ use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+/**
+ * Задача, выполняющая обработку результата промиса
+ */
 class PromiseQueueJob implements ShouldQueue
 {
     /** @var \Tochka\Promises\Contracts\PromiseHandler */
-    private $promiseHandler;
+    private PromiseHandler $promiseHandler;
     /** @var string  */
-    private $status;
+    private string $status;
 
     public function __construct(PromiseHandler $promiseHandler, string $status)
     {
@@ -23,7 +26,7 @@ class PromiseQueueJob implements ShouldQueue
      * @return bool
      * @throws \ReflectionException
      */
-    public function handle()
+    public function handle(): bool
     {
         $result = $this->dispatchMethodWithParams('before');
 

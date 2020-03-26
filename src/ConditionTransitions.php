@@ -2,21 +2,25 @@
 
 namespace Tochka\Promises;
 
-use Tochka\Promises\Contracts\Condition;
-
 trait ConditionTransitions
 {
-    /** @var array */
-    private $conditions = [];
+    /** @var \Tochka\Promises\ConditionTransition[] */
+    private array $conditions = [];
 
-    public function addCondition(Condition $condition, string $from_state, string $to_state): self
+    public function addCondition(ConditionTransition $conditionTransition): self
     {
-        $this->conditions[] = [
-            'condition'  => $condition,
-            'from_state' => $from_state,
-            'to_state'   => $to_state,
-        ];
+        $this->conditions[] = $conditionTransition;
 
         return $this;
+    }
+
+    public function getConditions(): array
+    {
+        return $this->conditions;
+    }
+
+    public function setConditions(array $conditions): void
+    {
+        $this->conditions = $conditions;
     }
 }

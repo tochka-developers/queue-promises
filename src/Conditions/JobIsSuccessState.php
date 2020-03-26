@@ -10,11 +10,11 @@ use Tochka\Promises\Contracts\States;
 class JobIsSuccessState implements Condition
 {
     /** @var int */
-    private $job_id;
+    private int $job_id;
 
     public function __construct(BaseJob $job)
     {
-        $this->job_id = $job->getId();
+        $this->job_id = $job->getJobId();
     }
 
     public function condition(BasePromise $basePromise): bool

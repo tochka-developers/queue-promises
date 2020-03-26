@@ -4,7 +4,7 @@ namespace Tochka\Promises;
 
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Contracts\States;
-use Tochka\Promises\Support\Database;
+use Tochka\Promises\Facades\PromiseRegistry;
 
 /**
  * Class BasePromise
@@ -13,17 +13,15 @@ use Tochka\Promises\Support\Database;
  */
 class BasePromise implements States
 {
-    use FSM, ConditionTransitions, Database;
+    use FSM, ConditionTransitions;
 
-    /** @var \Tochka\Promises\Contracts\PromiseHandler */
-    private $promiseHandler;
+    private PromiseHandler $promiseHandler;
+    private ?int $id = null;
 
     public function __construct(PromiseHandler $promiseHandler)
     {
         $this->promiseHandler = $promiseHandler;
         $this->state = self::WAITING;
-
-        $this->save();
     }
 
     public function getPromiseHandler(): PromiseHandler
@@ -31,19 +29,15 @@ class BasePromise implements States
         return $this->promiseHandler;
     }
 
-    /**
-     * @return \App\Promises\Package\Contracts\MayPromised[]
-     */
-    public function getJobs(): array
+    public function getPromiseId(): ?int
     {
-
+        return $this->id;
     }
 
-    public function getJob(int $id): BaseJob
+    public function setPromiseId(int $id): void
     {
-
+        $this->id = $id;
     }
-
 
     public function dispatch(): void
     {
@@ -54,20 +48,20 @@ class BasePromise implements States
     {
         dispatch(new PromiseQueueJob($this->promiseHandler, 'success'));
 
-        $this->save();
+        PromiseRegistry::save($this);
     }
 
     public function transitionFromRunningToFailed(): void
     {
         dispatch(new PromiseQueueJob($this->promiseHandler, 'failed'));
 
-        $this->save();
+        PromiseRegistry::save($this);
     }
 
     public function transitionFromRunningToTimeout(): void
     {
         dispatch(new PromiseQueueJob($this->promiseHandler, 'timeout'));
 
-        $this->save();
+        PromiseRegistry::save($this);
     }
 }

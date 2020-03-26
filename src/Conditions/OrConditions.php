@@ -8,7 +8,7 @@ use Tochka\Promises\Contracts\Condition;
 class OrConditions implements Condition
 {
     /** @var \Tochka\Promises\Contracts\Condition[] */
-    private $conditions = [];
+    private array $conditions = [];
 
     public function addCondition(Condition $condition): self
     {

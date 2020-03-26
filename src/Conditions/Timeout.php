@@ -8,7 +8,7 @@ use Tochka\Promises\Contracts\Condition;
 class Timeout implements Condition
 {
     /** @var int */
-    private $timeout;
+    private int $timeout;
 
     public function __construct(int $timeout)
     {

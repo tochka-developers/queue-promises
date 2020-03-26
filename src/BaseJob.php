@@ -4,51 +4,51 @@ namespace Tochka\Promises;
 
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\States;
-use Tochka\Promises\Support\Database;
 
 class BaseJob implements States
 {
-    use FSM, ConditionTransitions, Database;
+    use FSM, ConditionTransitions;
 
-    /** @var int */
-    private $promise_id;
-    /** @var \Tochka\Promises\Contracts\MayPromised */
-    private $initial_job;
-    /** @var \Tochka\Promises\Contracts\MayPromised */
-    private $result_job;
+    private ?int $id = null;
+    private int $promise_id;
+    private MayPromised $initial_job;
+    private MayPromised $result_job;
 
-    public function __construct(BasePromise $promise, MayPromised $job)
+    public function __construct(int $promise_id, MayPromised $initial_job, MayPromised $result_job = null)
     {
-        $this->promise_id = $promise->getId();
-        $this->initial_job = $job;
+        $this->promise_id = $promise_id;
+        $this->initial_job = $initial_job;
+        $this->result_job = $result_job ?: $initial_job;
         $this->state = self::WAITING;
-
-        $this->save();
     }
-
 
     public function setResult(MayPromised $job): void
     {
         $this->result_job = $job;
     }
 
-    protected function saveFields()
+    public function getJobId(): ?int
     {
-        return [
-            'conditions'  => serialize($this->conditions),
-            'state'       => $this->state,
-            'promise_id'  => $this->promise_id,
-            'initial_job' => serialize($this->initial_job),
-            'result_job'  => serialize($this->result_job),
-        ];
+        return $this->id;
     }
 
-    protected function getFields(array $fields)
+    public function setJobId(int $id): void
     {
-        $this->conditions = unserialize($fields['conditions']);
-        $this->state = $fields['state'] ?? null;
-        $this->promise_id = $fields['promise_id'] ?? null;
-        $this->initial_job = unserialize($fields['initial_job']);
-        $this->result_job = unserialize($fields['result_job']);
+        $this->id = $id;
+    }
+
+    public function getPromiseId(): int
+    {
+        return $this->promise_id;
+    }
+
+    public function getInitialJob(): MayPromised
+    {
+        return $this->initial_job;
+    }
+
+    public function getResultJob(): MayPromised
+    {
+        return $this->result_job;
     }
 }

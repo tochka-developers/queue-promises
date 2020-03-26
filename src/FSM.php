@@ -19,6 +19,11 @@ trait FSM
         $this->onTransition($old_state, $state);
     }
 
+    public function restoreState(string $state): void
+    {
+        $this->state = $state;
+    }
+
     public function onTransition(?string $from_state, string $to_state): void
     {
         $eventMethodName = $this->getEventMethodName($from_state, $to_state);
