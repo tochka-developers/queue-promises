@@ -9,7 +9,7 @@ interface StatesContract
     /**
      * @return StateEnum
      */
-    public function getState(): ?StateEnum;
+    public function getState(): StateEnum;
 
     /**
      * @param StateEnum $state

@@ -39,20 +39,26 @@ trait DefaultPromise
             );
         }
 
-        PromiseRegistry::save($basePromise);
-
         if (empty($this->jobs)) {
             $basePromise->setState(StateEnum::SUCCESS());
+            PromiseRegistry::save($basePromise);
 
             return;
         }
 
+        PromiseRegistry::save($basePromise);
+
         $prevJob = null;
 
         foreach ($this->jobs as $job) {
-            $queuedJob = new BaseJob($basePromise->getPromiseId(), $job);
+            $baseJob = new BaseJob($basePromise->getPromiseId(), $job);
+            PromiseJobRegistry::save($baseJob);
+
+            $job->setBaseJobId($baseJob->getJobId());
+            $baseJob->setInitial($job);
+
             if ($this instanceof DefaultTransitions) {
-                $queuedJob->addCondition(
+                $baseJob->addCondition(
                     new ConditionTransition(
                         $this->getJobRunningCondition($prevJob),
                         StateEnum::WAITING(),
@@ -60,8 +66,10 @@ trait DefaultPromise
                     )
                 );
             }
-            PromiseJobRegistry::save($queuedJob);
-            $prevJob = $queuedJob;
+
+            PromiseJobRegistry::save($baseJob);
+
+            $prevJob = $baseJob;
         }
 
         $basePromise->dispatch();

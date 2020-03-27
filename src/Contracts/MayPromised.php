@@ -12,5 +12,5 @@ interface MayPromised
     /**
      * @return int
      */
-    public function getBaseJobId(): int;
+    public function getBaseJobId(): ?int;
 }

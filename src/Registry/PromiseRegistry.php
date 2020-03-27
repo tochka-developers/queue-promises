@@ -34,7 +34,7 @@ class PromiseRegistry
     }
 
     /**
-     * @return \Illuminate\Support\LazyCollection
+     * @return \Illuminate\Support\LazyCollection|BasePromise[]
      */
     public function loadAllCursor(): LazyCollection
     {

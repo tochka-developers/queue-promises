@@ -12,12 +12,11 @@ class AllJobsIsSuccessState implements ConditionContract
 {
     public function condition(BasePromise $basePromise): bool
     {
-        $jobs = PromiseJobRegistry::loadByPromiseId($basePromise->getPromiseId());
-
-        return array_reduce($jobs, static function (bool $carry, BaseJob $job) {
-            $state = $job->getState();
-
-            return $carry && $state && $state->is(StateEnum::SUCCESS);
-        }, true);
+        return PromiseJobRegistry::loadByPromiseIdCursor($basePromise->getPromiseId())->reduce(
+            static function (bool $carry, BaseJob $job) {
+                return $carry && $job->getState()->is(StateEnum::SUCCESS);
+            },
+            true
+        );
     }
 }

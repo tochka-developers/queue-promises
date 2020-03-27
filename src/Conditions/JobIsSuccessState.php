@@ -2,9 +2,9 @@
 
 namespace Tochka\Promises\Conditions;
 
+use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 
@@ -25,8 +25,7 @@ class JobIsSuccessState implements ConditionContract
         if (!$job) {
             return true;
         }
-        $state = $job->getState();
 
-        return $state && $state->is(StateEnum::SUCCESS);
+        return $job->getState()->is(StateEnum::SUCCESS);
     }
 }

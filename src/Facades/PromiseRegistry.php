@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static save(\Tochka\Promises\Core\BasePromise $promise)
  * @method static \Tochka\Promises\Core\BasePromise load(int $id)
- * @method static \Tochka\Promises\Core\BasePromise loadAllCursor()
+ * @method static \Tochka\Promises\Core\BasePromise[]|\Illuminate\Support\LazyCollection loadAllCursor()
  * @see \Tochka\Promises\Registry\PromiseRegistry
  */
 class PromiseRegistry extends Facade

@@ -8,33 +8,29 @@ use Tochka\Promises\Facades\PromiseJobRegistry;
 
 class QueuePromiseMiddleware
 {
-    /** @var int */
-    private $base_job_id;
-
-    public function __construct(int $base_job_id)
-    {
-        $this->base_job_id = $base_job_id;
-    }
-
     /**
-     * @param MayPromised $job
-     * @param             $next
+     * @param $job
+     * @param $next
      *
+     * @return mixed
      * @throws \Exception
      */
-    public function handle(MayPromised $job, $next): void
+    public function handle($job, $next)
     {
-        try {
-            $baseJob = PromiseJobRegistry::load($this->base_job_id);
-            $next($job);
-        } catch (\Exception $e) {
-            $baseJob->setResult($job);
-            PromiseJobRegistry::save($baseJob);
-            throw $e;
+        if (!$job instanceof MayPromised || $job->getBaseJobId() === null) {
+            return $next($job);
         }
 
-        $baseJob->setResult($job);
-        $baseJob->setState(StateEnum::SUCCESS());
-        PromiseJobRegistry::save($baseJob);
+        $baseJob = PromiseJobRegistry::load($job->getBaseJobId());
+
+        try {
+            $result = $next($job);
+            $baseJob->setState(StateEnum::SUCCESS());
+
+            return $result;
+        } finally {
+            $baseJob->setResult($job);
+            PromiseJobRegistry::save($baseJob);
+        }
     }
 }

@@ -2,23 +2,25 @@
 
 namespace Tochka\Promises\Core;
 
-use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
+use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\Support\ConditionTransitions;
 use Tochka\Promises\Core\Support\PromiseQueueJob;
 use Tochka\Promises\Core\Support\States;
+use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseRegistry;
+use Tochka\Promises\Support\BaseJobId;
 
 /**
  * Class BasePromise
  *
  * @package App\Promises\Package
  */
-class BasePromise implements StatesContract, ConditionTransitionsContract
+class BasePromise implements StatesContract, ConditionTransitionsContract, MayPromised
 {
-    use States, ConditionTransitions;
+    use States, ConditionTransitions, BaseJobId;
 
     /** @var \Tochka\Promises\Contracts\PromiseHandler */
     private $promiseHandler;
@@ -55,22 +57,16 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
 
     public function transitionFromRunningToSuccess(): void
     {
-        dispatch(new PromiseQueueJob($this->promiseHandler, 'success'));
-
-        PromiseRegistry::save($this);
+        dispatch(new PromiseQueueJob($this->getPromiseId(), $this->getPromiseHandler(), $this->getState()));
     }
 
     public function transitionFromRunningToFailed(): void
     {
-        dispatch(new PromiseQueueJob($this->promiseHandler, 'failed'));
-
-        PromiseRegistry::save($this);
+        dispatch(new PromiseQueueJob($this->getPromiseId(), $this->getPromiseHandler(), $this->getState()));
     }
 
     public function transitionFromRunningToTimeout(): void
     {
-        dispatch(new PromiseQueueJob($this->promiseHandler, 'timeout'));
-
-        PromiseRegistry::save($this);
+        dispatch(new PromiseQueueJob($this->getPromiseId(), $this->getPromiseHandler(), $this->getState()));
     }
 }

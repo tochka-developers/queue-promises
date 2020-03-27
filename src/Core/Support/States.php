@@ -6,10 +6,10 @@ use Tochka\Promises\Enums\StateEnum;
 
 trait States
 {
-    /** @var StateEnum|null */
-    private $state = null;
+    /** @var StateEnum */
+    private $state;
 
-    public function getState(): ?StateEnum
+    public function getState(): StateEnum
     {
         return $this->state;
     }
@@ -34,6 +34,12 @@ trait States
         if (method_exists($this, $eventMethodName)) {
             $this->$eventMethodName();
         }
+
+        $anyTransitionMethod = $this->getAnyEventMethodName($to_state);
+
+        if (method_exists($this, $anyTransitionMethod)) {
+            $this->$anyTransitionMethod();
+        }
     }
 
     private function getEventMethodName(?StateEnum $from_state, StateEnum $to_state): string
@@ -43,5 +49,10 @@ trait States
         }
 
         return 'transitionFrom' . ucfirst($from_state->value) . 'To' . ucfirst($to_state->value);
+    }
+
+    private function getAnyEventMethodName(StateEnum $to_state): string
+    {
+        return 'transitionAnyTo' . ucfirst($to_state->value);
     }
 }

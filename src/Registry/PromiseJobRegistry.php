@@ -3,6 +3,8 @@
 namespace Tochka\Promises\Registry;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
@@ -24,14 +26,34 @@ class PromiseJobRegistry
         return $this->mapJobModel($jobModel);
     }
 
-    public function loadByPromiseId(int $promise_id): array
+    /**
+     * @param int $promise_id
+     *
+     * @return \Illuminate\Support\Collection|BaseJob[]
+     */
+    public function loadByPromiseId(int $promise_id): Collection
     {
-        /** @var PromiseJob[]|\Illuminate\Support\Collection $jobModels */
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        $jobModels = PromiseJob::where('promise_id', $promise_id)->get();
-        $jobs = $jobModels->map([$this, 'mapJobModel']);
+        return PromiseJob::where('promise_id', $promise_id)
+            ->get()
+            ->map(function ($jobModel) {
+                return $this->mapJobModel($jobModel);
+            });
+    }
 
-        return $jobs->toArray();
+    /**
+     * @param int $promise_id
+     *
+     * @return \Illuminate\Support\LazyCollection|BaseJob[]
+     */
+    public function loadByPromiseIdCursor(int $promise_id): LazyCollection
+    {
+        return LazyCollection::make(function () use ($promise_id) {
+            /** @var PromiseJob $job */
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+            foreach (PromiseJob::where('promise_id', $promise_id)->cursor() as $job) {
+                yield $this->mapJobModel($job);
+            }
+        });
     }
 
     public function save(BaseJob $job): void

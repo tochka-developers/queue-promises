@@ -11,11 +11,8 @@ class OneJobIsFailedState implements ConditionContract
 {
     public function condition(BasePromise $basePromise): bool
     {
-        $jobs = PromiseJobRegistry::loadByPromiseId($basePromise->getPromiseId());
-
-        foreach ($jobs as $job) {
-            $state = $job->getState();
-            if ($state && $state->in([StateEnum::FAILED, StateEnum::TIMEOUT])) {
+        foreach (PromiseJobRegistry::loadByPromiseIdCursor($basePromise->getPromiseId()) as $job) {
+            if ($job->getState()->in([StateEnum::FAILED, StateEnum::TIMEOUT])) {
                 return true;
             }
         }

@@ -10,6 +10,7 @@ use BenSampo\Enum\Enum;
  * @method static static SUCCESS()
  * @method static static FAILED()
  * @method static static TIMEOUT()
+ * @method static static FINISHED()
  */
 final class StateEnum extends Enum
 {
@@ -18,4 +19,5 @@ final class StateEnum extends Enum
     public const SUCCESS = 'success';
     public const FAILED = 'failed';
     public const TIMEOUT = 'timeout';
+    public const FINISHED = 'finished';
 }
