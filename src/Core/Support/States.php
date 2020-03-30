@@ -40,6 +40,10 @@ trait States
         if (method_exists($this, $anyTransitionMethod)) {
             $this->$anyTransitionMethod();
         }
+
+        if (method_exists($this, 'anyTransition')) {
+            $this->anyTransition($from_state, $to_state);
+        }
     }
 
     private function getEventMethodName(?StateEnum $from_state, StateEnum $to_state): string

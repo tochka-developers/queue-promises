@@ -3,24 +3,23 @@
 namespace Tochka\Promises\Core;
 
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
-use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\Support\ConditionTransitions;
 use Tochka\Promises\Core\Support\PromiseQueueJob;
 use Tochka\Promises\Core\Support\States;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Facades\PromiseJobRegistry;
 use Tochka\Promises\Facades\PromiseRegistry;
-use Tochka\Promises\Support\BaseJobId;
 
 /**
  * Class BasePromise
  *
  * @package App\Promises\Package
  */
-class BasePromise implements StatesContract, ConditionTransitionsContract, MayPromised
+class BasePromise implements StatesContract, ConditionTransitionsContract
 {
-    use States, ConditionTransitions, BaseJobId;
+    use States, ConditionTransitions;
 
     /** @var \Tochka\Promises\Contracts\PromiseHandler */
     private $promiseHandler;
@@ -55,18 +54,36 @@ class BasePromise implements StatesContract, ConditionTransitionsContract, MayPr
         PromiseRegistry::save($this);
     }
 
-    public function transitionFromRunningToSuccess(): void
+    public function transitionAnyToSuccess(): void
     {
-        dispatch(new PromiseQueueJob($this->getPromiseId(), $this->getPromiseHandler(), $this->getState()));
+        dispatch(new PromiseQueueJob(
+            $this->getPromiseId(),
+            $this->getPromiseHandler(),
+            $this->getState()
+        ));
     }
 
-    public function transitionFromRunningToFailed(): void
+    public function transitionAnyToFailed(): void
     {
-        dispatch(new PromiseQueueJob($this->getPromiseId(), $this->getPromiseHandler(), $this->getState()));
+        dispatch(new PromiseQueueJob(
+            $this->getPromiseId(),
+            $this->getPromiseHandler(),
+            $this->getState()
+        ));
     }
 
-    public function transitionFromRunningToTimeout(): void
+    public function transitionAnyToTimeout(): void
     {
-        dispatch(new PromiseQueueJob($this->getPromiseId(), $this->getPromiseHandler(), $this->getState()));
+        dispatch(new PromiseQueueJob(
+            $this->getPromiseId(),
+            $this->getPromiseHandler(),
+            $this->getState()
+        ));
+    }
+
+    public function transitionAnyToFinished(): void
+    {
+        PromiseJobRegistry::deleteByPromiseId($this->getPromiseId());
+        PromiseRegistry::delete($this->getPromiseId());
     }
 }

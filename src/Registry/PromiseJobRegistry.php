@@ -8,12 +8,11 @@ use Illuminate\Support\LazyCollection;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
+use Tochka\Promises\Facades\Serializer;
 use Tochka\Promises\Models\PromiseJob;
 
 class PromiseJobRegistry
 {
-    use SerializeConditions;
-
     public function load(int $id): BaseJob
     {
         /** @var PromiseJob $jobModel */
@@ -33,6 +32,7 @@ class PromiseJobRegistry
      */
     public function loadByPromiseId(int $promise_id): Collection
     {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         return PromiseJob::where('promise_id', $promise_id)
             ->get()
             ->map(function ($jobModel) {
@@ -56,6 +56,12 @@ class PromiseJobRegistry
         });
     }
 
+    public function countByPromiseId(int $promise_id): int
+    {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+        return PromiseJob::where('promise_id', $promise_id)->count();
+    }
+
     public function save(BaseJob $job): void
     {
         $jobModel = new PromiseJob();
@@ -69,12 +75,8 @@ class PromiseJobRegistry
 
         $jobModel->promise_id = $job->getPromiseId();
         $jobModel->state = $job->getState();
-        $jobModel->conditions = $this->getSerializedConditions($job->getConditions());
-        $jobModel->initial_job = json_encode(
-            serialize(clone $job->getInitialJob()),
-            JSON_THROW_ON_ERROR,
-            512
-        );
+        $jobModel->conditions = Serializer::getSerializedConditions($job->getConditions());
+        $jobModel->initial_job = Serializer::jsonSerialize(clone $job->getInitialJob());
         $jobModel->result_job = json_encode(
             serialize(clone $job->getResultJob()),
             JSON_THROW_ON_ERROR,
@@ -88,16 +90,17 @@ class PromiseJobRegistry
         }
     }
 
+    public function deleteByPromiseId(int $promise_id): void
+    {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+        PromiseJob::where('promise_id', $promise_id)->delete();
+    }
+
     private function mapJobModel(PromiseJob $jobModel): BaseJob
     {
-        $initialJob = unserialize(
-            json_decode($jobModel->initial_job, true, 512, JSON_THROW_ON_ERROR),
-            ['allowed_classes' => true]
-        );
-        $resultJob = unserialize(
-            json_decode($jobModel->result_job, true, 512, JSON_THROW_ON_ERROR),
-            ['allowed_classes' => true]
-        );
+        $initialJob = Serializer::jsonUnSerialize($jobModel->initial_job);
+        $resultJob = Serializer::jsonUnSerialize($jobModel->result_job);
+
         if (!$initialJob instanceof MayPromised || !$resultJob instanceof MayPromised) {
             throw new IncorrectResolvingClass(
                 sprintf(
@@ -108,7 +111,7 @@ class PromiseJobRegistry
             );
         }
 
-        $conditions = $this->getUnserializedConditions($jobModel->conditions);
+        $conditions = Serializer::getUnserializedConditions($jobModel->conditions);
 
         $job = new BaseJob($jobModel->promise_id, $initialJob, $resultJob);
         $job->setConditions($conditions);

@@ -7,6 +7,7 @@ use Illuminate\Support\LazyCollection;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
+use Tochka\Promises\Facades\Serializer;
 use Tochka\Promises\Models\Promise;
 
 /**
@@ -14,8 +15,6 @@ use Tochka\Promises\Models\Promise;
  */
 class PromiseRegistry
 {
-    use SerializeConditions;
-
     /**
      * @param int $id
      *
@@ -48,6 +47,20 @@ class PromiseRegistry
     }
 
     /**
+     * @return \Illuminate\Support\LazyCollection|BasePromise[]
+     */
+    public function loadInStatesCursor(array $states): LazyCollection
+    {
+        return LazyCollection::make(function () use ($states) {
+            /** @var Promise $promise */
+            /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+            foreach (Promise::whereIn('state', $states)->cursor() as $promise) {
+                yield $this->mapPromiseModel($promise);
+            }
+        });
+    }
+
+    /**
      * @param \Tochka\Promises\Core\BasePromise $promise
      */
     public function save(BasePromise $promise): void
@@ -62,12 +75,8 @@ class PromiseRegistry
         }
 
         $promiseModel->state = $promise->getState();
-        $promiseModel->conditions = $this->getSerializedConditions($promise->getConditions());
-        $promiseModel->promise_handler = json_encode(
-            serialize(clone $promise->getPromiseHandler()),
-            JSON_THROW_ON_ERROR,
-            512
-        );
+        $promiseModel->conditions = Serializer::getSerializedConditions($promise->getConditions());
+        $promiseModel->promise_handler = Serializer::jsonSerialize(clone $promise->getPromiseHandler());
 
         $promiseModel->save();
 
@@ -76,12 +85,16 @@ class PromiseRegistry
         }
     }
 
+    public function delete(int $id): void
+    {
+        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+        Promise::where('id', $id)->delete();
+    }
+
     private function mapPromiseModel(Promise $promiseModel): BasePromise
     {
-        $promiseHandler = unserialize(
-            json_decode($promiseModel->promise_handler, true, 512, JSON_THROW_ON_ERROR),
-            ['allowed_classes' => true]
-        );
+        $promiseHandler = Serializer::jsonUnSerialize($promiseModel->promise_handler);
+
         if (!$promiseHandler instanceof PromiseHandler) {
             throw new IncorrectResolvingClass(
                 sprintf(
@@ -92,7 +105,7 @@ class PromiseRegistry
             );
         }
 
-        $conditions = $this->getUnserializedConditions($promiseModel->conditions);
+        $conditions = Serializer::getUnserializedConditions($promiseModel->conditions);
 
         $promise = new BasePromise($promiseHandler);
         $promise->setConditions($conditions);

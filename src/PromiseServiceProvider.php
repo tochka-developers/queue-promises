@@ -10,6 +10,7 @@ use Tochka\Promises\Core\Dispatchers\QueueJobDispatcher;
 use Tochka\Promises\Core\PromiseWatcher;
 use Tochka\Promises\Core\Support\BaseJobDispatcher;
 use Tochka\Promises\Core\Support\QueuePromiseMiddleware;
+use Tochka\Promises\Core\Support\Serializer;
 use Tochka\Promises\Registry\PromiseJobRegistry;
 use Tochka\Promises\Registry\PromiseRegistry;
 
@@ -39,6 +40,10 @@ class PromiseServiceProvider extends ServiceProvider
             $dispatcher->addDispatcher(new PromiseDispatcher());
 
             return $dispatcher;
+        });
+
+        $this->app->singleton(Facades\Serializer::class, static function () {
+            return new Serializer();
         });
 
         $this->app->singleton(Facades\PromiseWatcher::class, static function () {

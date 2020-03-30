@@ -5,6 +5,7 @@ namespace Tochka\Promises\Core;
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\Support\ConditionTransition;
+use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 use Tochka\Promises\Facades\PromiseRegistry;
 
@@ -17,7 +18,7 @@ class PromiseWatcher
         while (true) {
             $time = microtime(true);
 
-            foreach (PromiseRegistry::loadAllCursor() as $promise) {
+            foreach (PromiseRegistry::loadInStatesCursor([StateEnum::WAITING, StateEnum::RUNNING]) as $promise) {
                 $conditions = $this->getConditionsForState($promise, $promise);
                 $transition = $this->getTransitionForConditions($conditions, $promise);
                 if ($transition) {

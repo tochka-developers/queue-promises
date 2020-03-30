@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Core\Support;
 
+use Tochka\Promises\Contracts\JobStateContract;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
@@ -25,7 +26,12 @@ class QueuePromiseMiddleware
 
         try {
             $result = $next($job);
-            $baseJob->setState(StateEnum::SUCCESS());
+
+            if ($job instanceof JobStateContract) {
+                $baseJob->setState($job->getState());
+            } else {
+                $baseJob->setState(StateEnum::SUCCESS());
+            }
 
             return $result;
         } finally {

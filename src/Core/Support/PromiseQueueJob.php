@@ -4,16 +4,20 @@ namespace Tochka\Promises\Core\Support;
 
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Tochka\Promises\Contracts\JobStateContract;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
+use Tochka\Promises\Support\PromisedJob;
 
 /**
  * Задача, выполняющая обработку результата промиса
  */
-class PromiseQueueJob implements ShouldQueue
+class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
 {
+    use PromisedJob;
+
     /** @var int */
     private $promise_id;
     /** @var \Tochka\Promises\Contracts\PromiseHandler */
@@ -21,11 +25,14 @@ class PromiseQueueJob implements ShouldQueue
     /** @var StateEnum */
     private $state;
 
-    public function __construct(int $promise_id, PromiseHandler $promiseHandler, StateEnum $state)
+    public function __construct(int $promise_id, PromiseHandler $promise_handler, StateEnum $state)
     {
         $this->promise_id = $promise_id;
-        $this->promise_handler = $promiseHandler;
+        $this->promise_handler = $promise_handler;
         $this->state = $state;
+        if ($this->promise_handler instanceof MayPromised) {
+            $this->base_job_id = $this->promise_handler->getBaseJobId();
+        }
     }
 
     /**
@@ -98,5 +105,22 @@ class PromiseQueueJob implements ShouldQueue
         }
 
         return $this->promise_handler->$method(...$params);
+    }
+
+    public function getState(): StateEnum
+    {
+        return $this->state;
+    }
+
+    public function getPromiseId(): int
+    {
+        return $this->promise_id;
+    }
+
+    public function tags()
+    {
+        return [
+            get_class($this->promise_handler) . ':' . $this->promise_id,
+        ];
     }
 }

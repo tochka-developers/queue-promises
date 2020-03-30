@@ -2,21 +2,27 @@
 
 namespace Tochka\Promises\Conditions;
 
-use Tochka\Promises\Core\BasePromise;
+use Carbon\Carbon;
 use Tochka\Promises\Contracts\ConditionContract;
+use Tochka\Promises\Core\BasePromise;
 
 class Timeout implements ConditionContract
 {
-    /** @var int */
-    private $timeout;
+    /** @var \Carbon\Carbon */
+    private $expired_at;
 
+    /**
+     * Timeout constructor.
+     *
+     * @param int $timeout Таймаут в минутах
+     */
     public function __construct(int $timeout)
     {
-        $this->timeout = $timeout;
+        $this->expired_at = Carbon::now()->addMinutes($timeout);
     }
 
     public function condition(BasePromise $basePromise): bool
     {
-        return false;
+        return Carbon::now() >= $this->expired_at;
     }
 }
