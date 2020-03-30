@@ -7,6 +7,7 @@ return [
         'connection'     => null,  //null = подключение по умолчанию
         'table_promises' => 'promises',
         'table_jobs'     => 'promise_jobs',
+        'table_events'   => 'promise_events',
     ],
 
     // Очередь для задач проверки таймаута

@@ -3,14 +3,19 @@
 namespace Tochka\Promises;
 
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Tochka\Promises\Commands\PromiseWatch;
+use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Core\Dispatchers\PromiseDispatcher;
 use Tochka\Promises\Core\Dispatchers\QueueJobDispatcher;
+use Tochka\Promises\Core\Dispatchers\WaitEventDispatcher;
 use Tochka\Promises\Core\PromiseWatcher;
 use Tochka\Promises\Core\Support\BaseJobDispatcher;
+use Tochka\Promises\Core\Support\EventDispatcher;
 use Tochka\Promises\Core\Support\QueuePromiseMiddleware;
 use Tochka\Promises\Core\Support\Serializer;
+use Tochka\Promises\Registry\PromiseEventRegistry;
 use Tochka\Promises\Registry\PromiseJobRegistry;
 use Tochka\Promises\Registry\PromiseRegistry;
 
@@ -30,12 +35,17 @@ class PromiseServiceProvider extends ServiceProvider
         }
 
         Bus::pipeThrough([QueuePromiseMiddleware::class]);
+
+        Event::listen(PromisedEvent::class, static function (PromisedEvent $event) {
+            Facades\EventDispatcher::dispatch($event);
+        });
     }
 
     public function register(): void
     {
         $this->app->singleton(Facades\BaseJobDispatcher::class, static function () {
             $dispatcher = new BaseJobDispatcher();
+            $dispatcher->addDispatcher(new WaitEventDispatcher());
             $dispatcher->addDispatcher(new QueueJobDispatcher());
             $dispatcher->addDispatcher(new PromiseDispatcher());
 
@@ -44,6 +54,10 @@ class PromiseServiceProvider extends ServiceProvider
 
         $this->app->singleton(Facades\Serializer::class, static function () {
             return new Serializer();
+        });
+
+        $this->app->singleton(Facades\EventDispatcher::class, static function () {
+            return new EventDispatcher();
         });
 
         $this->app->singleton(Facades\PromiseWatcher::class, static function () {
@@ -56,6 +70,10 @@ class PromiseServiceProvider extends ServiceProvider
 
         $this->app->singleton(Facades\PromiseJobRegistry::class, static function () {
             return new PromiseJobRegistry();
+        });
+
+        $this->app->singleton(Facades\PromiseEventRegistry::class, static function () {
+            return new PromiseEventRegistry();
         });
     }
 }
