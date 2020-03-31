@@ -1,33 +1,44 @@
 <?php
-
-if (!function_exists('dispatchSync')) {
-
+if (!function_exists('class_uses_recursive')) {
     /**
-     * @param \Tochka\Queue\Promises\Contracts\MayPromised[] $jobs
-     * @param \Tochka\Queue\Promises\Jobs\Promise $promise
+     * Returns all traits used by a class, its parent classes and trait of their traits.
+     *
+     * @param object|string $baseClass
+     *
+     * @return array
      */
-    function dispatchSync($jobs, \Tochka\Queue\Promises\Jobs\Promise $promise)
+    function class_uses_recursive($baseClass)
     {
-        foreach ($jobs as $job) {
-            $promise->add($job);
+        if (is_object($baseClass)) {
+            $baseClass = get_class($baseClass);
         }
 
-        $promise->runSync();
+        $results = [];
+
+        foreach (array_reverse(class_parents($baseClass)) + [$baseClass => $baseClass] as $class) {
+            $results += trait_uses_recursive($class);
+        }
+
+        return array_unique($results);
     }
 }
 
-if (!function_exists('dispatchAsync')) {
-
+if (!function_exists('trait_uses_recursive')) {
     /**
-     * @param \Tochka\Queue\Promises\Contracts\MayPromised[] $jobs
-     * @param \Tochka\Queue\Promises\Jobs\Promise $promise
+     * Returns all traits used by a trait and its traits.
+     *
+     * @param string $baseTrait
+     *
+     * @return array
      */
-    function dispatchAsync($jobs, \Tochka\Queue\Promises\Jobs\Promise $promise)
+    function trait_uses_recursive($baseTrait)
     {
-        foreach ($jobs as $job) {
-            $promise->add($job);
+        $traits = class_uses($baseTrait);
+
+        foreach ($traits as $trait) {
+            $traits += trait_uses_recursive($trait);
         }
 
-        $promise->runAsync();
+        return $traits;
     }
 }

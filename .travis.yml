@@ -1,0 +1,10 @@
+language: php
+php:
+  - '7.3'
+  - '7.4'
+install:
+  - composer install
+git:
+  depth: false
+script:
+  - vendor/bin/phpunit --coverage-clover=coverage-report.clover --log-junit=test-report.xml

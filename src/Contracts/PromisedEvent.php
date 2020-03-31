@@ -1,6 +1,6 @@
 <?php
 
-namespace Tochka\Queue\Promises\Contracts;
+namespace Tochka\Promises\Contracts;
 
 interface PromisedEvent
 {
@@ -8,5 +8,5 @@ interface PromisedEvent
      * Получение уникального идентификатора события
      * @return string|null
      */
-    public function getUniqueId();
+    public function getUniqueId(): string;
 }

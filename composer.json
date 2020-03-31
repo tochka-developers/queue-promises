@@ -8,26 +8,36 @@
       "email": "darkdarin@tochka.com"
     }
   ],
-  "autoload": {
-    "psr-4": {
-      "Tochka\\Queue\\Promises\\": "src/"
-    },
-    "files": [
-      "src/helpers.php"
-    ]
-  },
   "require": {
-    "php": ">=7.1.0",
+    "php": "^7.3",
     "ext-json": "*",
-    "laravel/framework": ">=5.6",
-    "nesbot/carbon": ">=1.0",
-    "tochka-developers/laravel-job-visibility": "^0.4"
+    "laravel/framework": "5.8.*|^6.0",
+    "nesbot/carbon": ">=2.0",
+    "bensampo/laravel-enum": "^1.28"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-master",
+    "phpunit/phpunit": "^8.0",
+    "mockery/mockery": "^1.0"
   },
   "extra": {
     "laravel": {
       "providers": [
-        "Tochka\\Queue\\Promises\\QueuePromisesServiceProvider"
+        "Tochka\\Promises\\PromiseServiceProvider"
       ]
+    }
+  },
+  "autoload": {
+    "files": [
+      "src/helpers.php"
+    ],
+    "psr-4": {
+      "Tochka\\Promises\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tochka\\JsonRpc\\Tests\\": "tests/"
     }
   }
 }

@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class Create{{tableClassName}}Table extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('{{table}}', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('promise_id');
+            $table->string('state');
+            $table->text('conditions');
+            $table->text('initial_job');
+            $table->text('result_job');
+            $table->timestamps();
+
+            $table->index('promise_id');
+            $table->index('state');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('{{table}}');
+    }
+}
