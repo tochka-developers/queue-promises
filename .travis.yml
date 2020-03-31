@@ -8,7 +8,7 @@ php:
   - '7.4'
 jobs:
   include:
-    - stage: "Tests"
+    - stage: test
       install:
         - composer require ${FRAMEWORK}
       git:
