@@ -1,10 +1,17 @@
+dist: trusty
 language: php
 php:
   - '7.3'
   - '7.4'
 install:
   - composer install
+addons:
+  sonarcloud:
+    organization: "tochka-developers"
+    token:
+      secure: "RAoBpPWMBsHKyyg5CpvvTqTKfI+WWOMJQQ/nvoahZgg0840qmETVOk3vHe+9yp03pQAyLU8cDMJUdrNYC37C8mrQTN6/GtFTKXiO4sZwtolnAFBbnqwBYZyGF7ZqiFWHwoWJmjS/XWMlRSou7XdDXgsAeJifrMMbpJOqHBqHfYq4lUJNRw98FXnN3knCnCeWjLJnfq7r5ENekRgTkXlVKjazT8/UmT2sOIBKeQiwfn0dXSA6OqOVUkVcSrc3hoO1SOY33vsUfC1X6l8ENzkQVgS5WzlD5FSsU7H/yVNQZwCb3xXxXcXvQGZlW4c5FvItSuvTEwcLLfAE39oevSdc/0G+lIDOqxyfjUMVRbaTSVfYuIlNJ8EHfqmhx8KjI4TKeEDLpA+i79bpqktBg3oOMSus2NZNO/84lk1xPYKPrsTBf7/WfmMuQjovHKut/LbI+2FZ14gSryEfltcPZS8X8v15/CzMrhI8cnVyM9NVU/0XBuExKqSOrbgtuUc7lWagBqvMZIxcvN/OHxPXIt/DHSFNLyqwfau1lCqgweTaiDC1RpI69Z3EfQWQN7XkPXzIIMFoq9fwsCH7CFs1bUsIOrtV2TR6tWqgRmhXso6X3HEokV8JU7vNhYggwDfkjDP4aJbh15YAioMvHbSa4nKS+vUIs6/RxtiVBMwLrRF/2nU="
 git:
   depth: false
 script:
   - vendor/bin/phpunit --coverage-clover=coverage-report.clover --log-junit=test-report.xml
+  - sonar-scanner
