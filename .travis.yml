@@ -1,14 +1,14 @@
 language: php
+env:
+  - FRAMEWORK="laravel/framework:5.8.*"
+  - FRAMEWORK="laravel/framework:6.*"
+  - FRAMEWORK="laravel/framework:7.*"
+php:
+  - '7.3'
+  - '7.4'
 jobs:
   include:
     - stage: "Tests"
-      php:
-        - '7.3'
-        - '7.4'
-      env:
-        - FRAMEWORK="laravel/framework:5.8.*"
-        - FRAMEWORK="laravel/framework:6.*"
-        - FRAMEWORK="laravel/framework:7.*"
       install:
         - composer require ${FRAMEWORK}
       git:
