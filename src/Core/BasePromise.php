@@ -53,37 +53,4 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
 
         PromiseRegistry::save($this);
     }
-
-    public function transitionAnyToSuccess(): void
-    {
-        dispatch(new PromiseQueueJob(
-            $this->getPromiseId(),
-            $this->getPromiseHandler(),
-            $this->getState()
-        ));
-    }
-
-    public function transitionAnyToFailed(): void
-    {
-        dispatch(new PromiseQueueJob(
-            $this->getPromiseId(),
-            $this->getPromiseHandler(),
-            $this->getState()
-        ));
-    }
-
-    public function transitionAnyToTimeout(): void
-    {
-        dispatch(new PromiseQueueJob(
-            $this->getPromiseId(),
-            $this->getPromiseHandler(),
-            $this->getState()
-        ));
-    }
-
-    public function transitionAnyToFinished(): void
-    {
-        PromiseJobRegistry::deleteByPromiseId($this->getPromiseId());
-        PromiseRegistry::delete($this->getPromiseId());
-    }
 }

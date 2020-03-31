@@ -9,6 +9,9 @@
     }
   ],
   "autoload": {
+    "files": [
+      "src/helpers.php"
+    ],
     "psr-4": {
       "Tochka\\Promises\\": "src/"
     }
@@ -16,7 +19,7 @@
   "require": {
     "php": "^7.3",
     "ext-json": "*",
-    "laravel/framework": "5.8|^6.0",
+    "laravel/framework": "5.8.*|^6.0",
     "nesbot/carbon": ">=2.0",
     "bensampo/laravel-enum": "^1.28"
   },

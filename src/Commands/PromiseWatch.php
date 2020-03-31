@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tochka\Promises\Commands;
 
 use Illuminate\Console\Command;

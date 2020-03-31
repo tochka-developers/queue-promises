@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePromisesEventsTable extends Migration
+class Create{{tableClassName}}Table extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,15 @@ class CreatePromisesEventsTable extends Migration
      */
     public function up()
     {
-        Schema::create(config('promises.database.events_table', 'promise_events'), function (Blueprint $table) {
+        Schema::create('{{table}}', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('promise_id')->nullable();
+            $table->bigInteger('job_id');
             $table->string('event_name');
-            $table->string('event_id')->nullable();
+            $table->string('event_unique_id');
             $table->timestamps();
 
-            $table->index(['event_name', 'event_id']);
+            $table->index(['event_name', 'event_unique_id']);
+            $table->index('job_id');
         });
     }
 
@@ -31,6 +32,6 @@ class CreatePromisesEventsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(config('promises.database.events_table', 'promise_events'));
+        Schema::dropIfExists('{{table}}');
     }
 }

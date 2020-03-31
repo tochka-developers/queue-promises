@@ -8,7 +8,6 @@ use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\Support\ConditionTransitions;
 use Tochka\Promises\Core\Support\States;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\BaseJobDispatcher;
 
 class BaseJob implements StatesContract, ConditionTransitionsContract
 {
@@ -64,10 +63,5 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     public function getResultJob(): MayPromised
     {
         return $this->result_job;
-    }
-
-    public function transitionFromWaitingToRunning(): void
-    {
-        BaseJobDispatcher::dispatch($this->initial_job);
     }
 }
