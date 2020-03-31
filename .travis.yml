@@ -25,7 +25,7 @@ jobs:
       env: FRAMEWORK="laravel/framework:7.*"
       install:
         - pecl install pcov
-        - composer require ${FRAMEWORK}
+        - composer install
       addons:
         sonarcloud:
           organization: "tochka-developers"
