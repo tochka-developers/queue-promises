@@ -1,25 +1,43 @@
 language: php
+
 git:
   depth: false
+
+before_install:
+  - mkdir -p ~/$TRAVIS_BUILD_NUMBER
+  - aws s3 sync s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER ~/$TRAVIS_BUILD_NUMBER
+
 install:
   - composer require ${FRAMEWORK}
+
 env:
   - FRAMEWORK="laravel/framework:5.8.*"
   - FRAMEWORK="laravel/framework:6.*"
   - FRAMEWORK="laravel/framework:7.*"
+
 php:
   - '7.3'
   - '7.4'
-script: "vendor/bin/phpunit --coverage-clover=coverage-report.clover --log-junit=test-report.xml"
+
+script: "vendor/bin/phpunit --coverage-clover=~/$TRAVIS_BUILD_NUMBER/coverage-report.clover --log-junit=~/$TRAVIS_BUILD_NUMBER/test-report.xml"
 
 jobs:
   include:
     - stage: "Sonar Analyze"
       dist: trusty
+      php: 7.4
+      env: FRAMEWORK="laravel/framework:7.*"
       addons:
         sonarcloud:
           organization: "tochka-developers"
           token:
             secure: "pDZM23SiuMMj1nsd/ZBW4c9Y96bv1fQ6p7+Aja2vdGheqEsbCNQqQOPnjq0AVKdFou+z2JeMo+svpbBc5i2hGNn+tSEVwQmp7OT8KXmXJNRp1COrM/4DI7vQjnq2TUjrrDobDvbIwFiZawcW6k8EwFJVe2dPFrhzVz95KGXh1zk8MsSNWWUWgyxOGWq8yjCOLvSW4Nzs/3GAWjEiMJzzqxkKmdys6r2O9v7lud3tBQOQgKPgba8fDM/LCoOIItGRDyZUYT/Y74nUsAB+B0H1PuWtZ2ZLMTbXu1iDmVlQf/PxWvZPhw9PRmncaE7O3nM3fj7Zmhkv12BlGt4FPHpYJqBBIls+rdmC8ng5/R1+zrlR3Pq1DyXzb7FBAFQhk3MpKfKhRz2h2qreTALnp/zF51GOd7mytISoJWOUlzQxoEks6Q+vFRsDQ33NGH/lLIrOClH/GIg10SdeERlLnMCfUSF8fBO6XCagthrI5N4AvWJ7Hw84SR9JXW/erqfTLK3On1CHGQxaQeYGZWWjgtpJFPLJVSyatsnE6wa2yDsy6QTVWICPlb9Gv5o89rWYPr00RfbnMTTb4XCVxkkFdsJRgfAKFNm+Ms9fRWZ/hwoal2Dhi2XtraAAKxN2m5wYNxPqEWi71Qd+p/UJnC2OEF7sGmAwd8faiXK54iuaEfx5PRE="
       script:
+        - cp ~/$TRAVIS_BUILD_NUMBER/coverage-report.clover coverage-report.clover
+        - cp ~/$TRAVIS_BUILD_NUMBER/test-report.xml test-report.xml
         - sonar-scanner
+      after_success:
+        - aws s3 rm --recursive s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER
+
+after_success:
+  - aws s3 sync ~/$TRAVIS_BUILD_NUMBER s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER
