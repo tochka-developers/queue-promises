@@ -4,6 +4,9 @@ git:
   depth: false
 
 before_install:
+  - pyenv global 3.7.1
+  - pip install -U pip
+  - pip install awscli
   - mkdir -p ~/$TRAVIS_BUILD_NUMBER
   - aws s3 sync s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER ~/$TRAVIS_BUILD_NUMBER
 
