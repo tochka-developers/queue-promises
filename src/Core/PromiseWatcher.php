@@ -18,7 +18,7 @@ class PromiseWatcher
         while (true) {
             $time = microtime(true);
 
-            foreach (PromiseRegistry::loadInStatesCursor([StateEnum::WAITING, StateEnum::RUNNING]) as $promise) {
+            foreach (PromiseRegistry::loadInStatesCursor([StateEnum::WAITING(), StateEnum::RUNNING()]) as $promise) {
                 $conditions = $this->getConditionsForState($promise, $promise);
                 $transition = $this->getTransitionForConditions($conditions, $promise);
                 if ($transition) {

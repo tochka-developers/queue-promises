@@ -14,7 +14,7 @@ class AllJobsIsSuccessState implements ConditionContract
     {
         return PromiseJobRegistry::loadByPromiseIdCursor($basePromise->getPromiseId())->reduce(
             static function (bool $carry, BaseJob $job) {
-                return $carry && $job->getState()->is(StateEnum::SUCCESS);
+                return $carry && $job->getState()->is(StateEnum::SUCCESS());
             },
             true
         );

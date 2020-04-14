@@ -26,6 +26,6 @@ class JobIsSuccessState implements ConditionContract
             return true;
         }
 
-        return $job->getState()->is(StateEnum::SUCCESS);
+        return $job->getState()->is(StateEnum::SUCCESS());
     }
 }

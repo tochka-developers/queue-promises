@@ -14,7 +14,7 @@ class AllJobsIsFinished implements ConditionContract
     {
         return PromiseJobRegistry::loadByPromiseIdCursor($basePromise->getPromiseId())->reduce(
             static function (bool $carry, BaseJob $job) {
-                return $carry && $job->getState()->in([StateEnum::SUCCESS, StateEnum::FAILED, StateEnum::TIMEOUT]);
+                return $carry && $job->getState()->in([StateEnum::SUCCESS(), StateEnum::FAILED(), StateEnum::TIMEOUT()]);
             },
             true);
     }

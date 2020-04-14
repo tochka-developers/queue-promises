@@ -41,6 +41,8 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
      */
     public function handle(): void
     {
+        $this->promise_handler->setPromiseId($this->promise_id);
+
         $result = $this->dispatchMethodWithParams('before');
 
         if ($result !== false) {

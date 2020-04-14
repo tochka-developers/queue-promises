@@ -26,6 +26,6 @@ class JobIsFinished implements ConditionContract
             return true;
         }
 
-        return $job->getState()->in([StateEnum::SUCCESS, StateEnum::FAILED, StateEnum::TIMEOUT]);
+        return $job->getState()->in([StateEnum::SUCCESS(), StateEnum::FAILED(), StateEnum::TIMEOUT()]);
     }
 }

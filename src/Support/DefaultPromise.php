@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Support;
 
+use Illuminate\Support\Collection;
 use Tochka\Promises\Conditions\EmptyJobs;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Core\BaseJob;
@@ -17,6 +18,8 @@ trait DefaultPromise
 
     /** @var MayPromised[] */
     private $jobs = [];
+    /** @var int */
+    private $promise_id;
 
     public function add(MayPromised $entity): void
     {
@@ -62,5 +65,23 @@ trait DefaultPromise
         $promise->addCondition(
             new ConditionTransition(new EmptyJobs(), StateEnum::RUNNING(), StateEnum::SUCCESS())
         );
+    }
+
+    public function setPromiseId(int $promise_id): void
+    {
+        $this->promise_id = $promise_id;
+    }
+
+    public function getPromiseId(): int
+    {
+        return $this->promise_id;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection|BaseJob[]
+     */
+    public function getResults(): Collection
+    {
+        return PromiseJobRegistry::loadByPromiseId($this->promise_id);
     }
 }
