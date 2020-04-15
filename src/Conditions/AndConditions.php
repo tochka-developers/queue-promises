@@ -5,7 +5,7 @@ namespace Tochka\Promises\Conditions;
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 
-class AndConditions implements ConditionContract
+final class AndConditions implements ConditionContract
 {
     /** @var \Tochka\Promises\Contracts\ConditionContract[] */
     private $conditions = [];

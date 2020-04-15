@@ -14,7 +14,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     use States, ConditionTransitions;
 
     /** @var int|null */
-    private $id = null;
+    private $id;
     /** @var int */
     private $promise_id;
     /** @var \Tochka\Promises\Contracts\MayPromised */

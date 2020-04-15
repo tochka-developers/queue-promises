@@ -47,6 +47,8 @@ class PromiseRegistry
     }
 
     /**
+     * @param array $states
+     *
      * @return \Illuminate\Support\LazyCollection|BasePromise[]
      */
     public function loadInStatesCursor(array $states): LazyCollection

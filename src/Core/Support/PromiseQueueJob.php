@@ -119,7 +119,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
         return $this->promise_id;
     }
 
-    public function tags()
+    public function tags(): array
     {
         return [
             get_class($this->promise_handler) . ':' . $this->promise_id,

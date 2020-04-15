@@ -2,10 +2,9 @@
 
 namespace Tochka\Promises\Support;
 
-use Tochka\Promises\Conditions\AllJobsIsFinished;
-use Tochka\Promises\Conditions\AllJobsIsSuccessState;
+use Tochka\Promises\Conditions\AllJobsInStates;
 use Tochka\Promises\Conditions\AndConditions;
-use Tochka\Promises\Conditions\OneJobIsFailedState;
+use Tochka\Promises\Conditions\OneJobInState;
 use Tochka\Promises\Conditions\Positive;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
@@ -17,12 +16,13 @@ trait ASync
     public function promiseConditionsASync(BasePromise $promise): void
     {
         $promise->addCondition(
-            new ConditionTransition(new AllJobsIsSuccessState(), StateEnum::RUNNING(), StateEnum::SUCCESS())
+            new ConditionTransition(AllJobsInStates::success(), StateEnum::RUNNING(),
+                StateEnum::SUCCESS())
         );
 
         $andCondition = new AndConditions();
-        $andCondition->addCondition(new AllJobsIsFinished());
-        $andCondition->addCondition(new OneJobIsFailedState());
+        $andCondition->addCondition(AllJobsInStates::finished());
+        $andCondition->addCondition(OneJobInState::failed());
 
         $promise->addCondition(
             new ConditionTransition($andCondition, StateEnum::RUNNING(), StateEnum::FAILED())

@@ -19,7 +19,7 @@ class PromiseWatch extends Command
      *
      * @var string
      */
-    protected $description = 'Смотрить промисов';
+    protected $description = 'Смотритель промисов';
 
     /**
      * Выполнить отправку

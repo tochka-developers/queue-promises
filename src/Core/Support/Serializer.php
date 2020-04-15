@@ -32,6 +32,7 @@ class Serializer
      * @param mixed $value
      *
      * @return string
+     * @throws \JsonException
      */
     public function jsonSerialize($value): string
     {
@@ -42,6 +43,7 @@ class Serializer
      * @param string $value
      *
      * @return mixed
+     * @throws \JsonException
      */
     public function jsonUnSerialize(string $value)
     {

@@ -62,6 +62,11 @@ class PromiseJobRegistry
         return PromiseJob::where('promise_id', $promise_id)->count();
     }
 
+    /**
+     * @param \Tochka\Promises\Core\BaseJob $job
+     *
+     * @throws \JsonException
+     */
     public function save(BaseJob $job): void
     {
         $jobModel = new PromiseJob();

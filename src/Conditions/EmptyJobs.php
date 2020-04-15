@@ -6,7 +6,7 @@ use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Facades\PromiseJobRegistry;
 
-class EmptyJobs implements ConditionContract
+final class EmptyJobs implements ConditionContract
 {
     public function condition(BasePromise $basePromise): bool
     {
