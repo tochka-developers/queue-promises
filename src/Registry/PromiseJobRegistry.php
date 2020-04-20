@@ -82,11 +82,8 @@ class PromiseJobRegistry
         $jobModel->state = $job->getState();
         $jobModel->conditions = Serializer::getSerializedConditions($job->getConditions());
         $jobModel->initial_job = Serializer::jsonSerialize(clone $job->getInitialJob());
-        $jobModel->result_job = json_encode(
-            serialize(clone $job->getResultJob()),
-            JSON_THROW_ON_ERROR,
-            512
-        );
+        $jobModel->result_job = Serializer::jsonSerialize(clone $job->getResultJob());
+        $jobModel->exception = $job->getException() ? Serializer::jsonSerialize($job->getException()): null;
 
         $jobModel->save();
 
@@ -105,6 +102,7 @@ class PromiseJobRegistry
     {
         $initialJob = Serializer::jsonUnSerialize($jobModel->initial_job);
         $resultJob = Serializer::jsonUnSerialize($jobModel->result_job);
+        $exception = $jobModel->exception !== null ? Serializer::jsonUnSerialize($jobModel->exception) : null;
 
         if (!$initialJob instanceof MayPromised || !$resultJob instanceof MayPromised) {
             throw new IncorrectResolvingClass(
@@ -122,6 +120,7 @@ class PromiseJobRegistry
         $job->setConditions($conditions);
         $job->restoreState($jobModel->state);
         $job->setJobId($jobModel->id);
+        $job->setException($exception);
 
         return $job;
     }

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Config;
  * @property array     $conditions
  * @property string    $initial_job
  * @property string    $result_job
+ * @property string    $exception
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class PromiseJob extends Model
@@ -26,6 +27,7 @@ class PromiseJob extends Model
         'conditions'  => 'array',
         'initial_job' => 'string',
         'result_job'  => 'string',
+        'exception'   => 'string',
     ];
 
     protected $enumCasts = [

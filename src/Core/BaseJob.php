@@ -21,6 +21,8 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     private $initial_job;
     /** @var \Tochka\Promises\Contracts\MayPromised */
     private $result_job;
+    /** @var \Exception */
+    private $exception;
 
     public function __construct(int $promise_id, MayPromised $initial_job, MayPromised $result_job = null)
     {
@@ -30,14 +32,19 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         $this->state = StateEnum::WAITING();
     }
 
+    public function setInitial(MayPromised $job): void
+    {
+        $this->initial_job = $job;
+    }
+
     public function setResult(MayPromised $job): void
     {
         $this->result_job = $job;
     }
 
-    public function setInitial(MayPromised $job): void
+    public function setException(?\Exception $exception): void
     {
-        $this->initial_job = $job;
+        $this->exception = $exception;
     }
 
     public function getJobId(): ?int
@@ -63,5 +70,10 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     public function getResultJob(): MayPromised
     {
         return $this->result_job;
+    }
+
+    public function getException(): ?\Exception
+    {
+        return $this->exception;
     }
 }

@@ -36,7 +36,7 @@ final class AllJobsInStates implements ConditionContract
     public function condition(BasePromise $basePromise): bool
     {
         return PromiseJobRegistry::loadByPromiseIdCursor($basePromise->getPromiseId())->reduce(
-            static function (bool $carry, BaseJob $job) {
+            function (bool $carry, BaseJob $job) {
                 return $carry && $job->getState()->in($this->states);
             },
             true);

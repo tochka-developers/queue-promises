@@ -9,10 +9,11 @@ trait PromisedJob
 {
     use BaseJobId;
 
-    public function failed(): void
+    public function failed(\Exception $exception): void
     {
         $baseJob = PromiseJobRegistry::load($this->base_job_id);
         $baseJob->setState(StateEnum::FAILED());
+        $baseJob->setException($exception);
 
         PromiseJobRegistry::save($baseJob);
     }
