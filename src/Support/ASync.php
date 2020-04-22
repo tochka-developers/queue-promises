@@ -29,7 +29,7 @@ trait ASync
         );
     }
 
-    public function jobConditionsASync(BaseJob $job): void
+    public function jobConditionsASync(BasePromise $promise, BaseJob $job): void
     {
         $job->addCondition(new ConditionTransition(new Positive(), StateEnum::WAITING(), StateEnum::RUNNING()));
     }

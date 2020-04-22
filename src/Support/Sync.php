@@ -6,6 +6,7 @@ use Tochka\Promises\Conditions\AllJobsInStates;
 use Tochka\Promises\Conditions\JobInState;
 use Tochka\Promises\Conditions\OneJobInState;
 use Tochka\Promises\Conditions\Positive;
+use Tochka\Promises\Conditions\PromiseInState;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
@@ -25,11 +26,13 @@ trait Sync
         );
     }
 
-    public function jobConditionsSync(BaseJob $job): void
+    public function jobConditionsSync(BasePromise $promise, BaseJob $job): void
     {
         if ($this->previousJob === null) {
+            // первая задача стартует сразу
             $conditionTransition = new ConditionTransition(new Positive(), StateEnum::WAITING(), StateEnum::RUNNING());
         } else {
+            // каждая следующая задача стартует после успешного завершения предыдущей
             $conditionTransition = new ConditionTransition(
                 JobInState::success($this->previousJob),
                 StateEnum::WAITING(),
@@ -38,6 +41,11 @@ trait Sync
         }
 
         $job->addCondition($conditionTransition);
+
+        // если основной промис завершился - то все ждущие задачи переходят в состояние отмененных
+        $job->addCondition(
+            new ConditionTransition(PromiseInState::finished(), StateEnum::WAITING(), StateEnum::CANCELED())
+        );
 
         $this->previousJob = $job;
     }

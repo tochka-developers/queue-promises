@@ -50,7 +50,7 @@ trait DefaultPromise
 
             foreach ($traits as $trait) {
                 if (method_exists($this, $method = 'jobConditions' . class_basename($trait))) {
-                    $this->$method($baseJob);
+                    $this->$method($basePromise, $baseJob);
                 }
             }
 
