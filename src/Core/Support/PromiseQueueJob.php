@@ -123,6 +123,11 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
         return $this->promise_id;
     }
 
+    public function getPromiseHandler(): PromiseHandler
+    {
+        return $this->promise_handler;
+    }
+
     public function tags(): array
     {
         return [
