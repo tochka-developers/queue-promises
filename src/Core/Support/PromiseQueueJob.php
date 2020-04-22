@@ -90,8 +90,12 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
 
         foreach ($reflectionMethod->getParameters() as $i => $parameter) {
             $param = null;
-
-            $type = (string) $parameter->getType();
+            $paramType = $parameter->getType();
+            if ($paramType instanceof \ReflectionNamedType) {
+                $type = $paramType->getName();
+            } else {
+                $type = (string) $paramType;
+            }
 
             if (\in_array(MayPromised::class, class_implements($type), true)) {
                 if (!empty($results[$type])) {
