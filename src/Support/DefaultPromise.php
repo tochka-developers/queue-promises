@@ -39,9 +39,13 @@ trait DefaultPromise
             }
         }
 
+        // чтобы в PromiseHandler не сохранялись сериализованные задачи
+        $jobs = $this->jobs;
+        $this->jobs = [];
+
         PromiseRegistry::save($basePromise);
 
-        foreach ($this->jobs as $job) {
+        foreach ($jobs as $job) {
             $baseJob = new BaseJob($basePromise->getPromiseId(), $job);
             PromiseJobRegistry::save($baseJob);
 
@@ -55,6 +59,12 @@ trait DefaultPromise
             }
 
             PromiseJobRegistry::save($baseJob);
+        }
+
+        foreach ($traits as $trait) {
+            if (method_exists($this, $method = 'afterRun' . class_basename($trait))) {
+                $this->$method();
+            }
         }
 
         $basePromise->dispatch();

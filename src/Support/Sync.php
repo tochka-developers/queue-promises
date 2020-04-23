@@ -16,6 +16,10 @@ trait Sync
 {
     private $previousJob;
 
+    /**
+     * Hook promiseConditions
+     * @param \Tochka\Promises\Core\BasePromise $promise
+     */
     public function promiseConditionsSync(BasePromise $promise): void
     {
         $promise->addCondition(
@@ -26,6 +30,11 @@ trait Sync
         );
     }
 
+    /**
+     * Hook jobConditions
+     * @param \Tochka\Promises\Core\BasePromise $promise
+     * @param \Tochka\Promises\Core\BaseJob     $job
+     */
     public function jobConditionsSync(BasePromise $promise, BaseJob $job): void
     {
         if ($this->previousJob === null) {
@@ -48,5 +57,13 @@ trait Sync
         );
 
         $this->previousJob = $job;
+    }
+
+    /**
+     * Hook afterRun
+     */
+    public function afterRunSync(): void
+    {
+        $this->previousJob = null;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Registry;
 
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
@@ -81,9 +82,9 @@ class PromiseJobRegistry
         $jobModel->promise_id = $job->getPromiseId();
         $jobModel->state = $job->getState();
         $jobModel->conditions = Serializer::getSerializedConditions($job->getConditions());
-        $jobModel->initial_job = Serializer::jsonSerialize(clone $job->getInitialJob());
-        $jobModel->result_job = Serializer::jsonSerialize(clone $job->getResultJob());
-        $jobModel->exception = $job->getException() ? Serializer::jsonSerialize($job->getException()): null;
+        $jobModel->initial_job = Serializer::jsonSerialize($this->clearJobs(clone $job->getInitialJob()));
+        $jobModel->result_job = Serializer::jsonSerialize($this->clearJobs(clone $job->getResultJob()));
+        $jobModel->exception = $job->getException() ? Serializer::jsonSerialize($job->getException()) : null;
 
         $jobModel->save();
 
@@ -121,6 +122,23 @@ class PromiseJobRegistry
         $job->restoreState($jobModel->state);
         $job->setJobId($jobModel->id);
         $job->setException($exception);
+
+        return $job;
+    }
+
+    private function clearJobs(MayPromised $job): MayPromised
+    {
+        try {
+            $property = (new \ReflectionClass($job))->getProperty('job');
+        } catch (\Exception $e) {
+            return $job;
+        }
+
+        $property->setAccessible(true);
+        $internalJob = $property->getValue($job);
+        if ($internalJob instanceof Job) {
+            $property->setValue(null);
+        }
 
         return $job;
     }
