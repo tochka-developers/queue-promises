@@ -137,7 +137,7 @@ class PromiseJobRegistry
         $property->setAccessible(true);
         $internalJob = $property->getValue($job);
         if ($internalJob instanceof Job) {
-            $property->setValue(null);
+            $property->setValue($job, null);
         }
 
         return $job;
