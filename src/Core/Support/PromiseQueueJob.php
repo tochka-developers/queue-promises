@@ -4,6 +4,7 @@ namespace Tochka\Promises\Core\Support;
 
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Tochka\Promises\Contracts\JobFacadeContract;
 use Tochka\Promises\Contracts\JobStateContract;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
@@ -14,7 +15,7 @@ use Tochka\Promises\Support\PromisedJob;
 /**
  * Задача, выполняющая обработку результата промиса
  */
-class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
+class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, JobFacadeContract
 {
     use PromisedJob;
 
@@ -24,6 +25,8 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
     private $promise_handler;
     /** @var StateEnum */
     private $state;
+    /** @var MayPromised[][] */
+    private $job_results = [];
 
     public function __construct(int $promise_id, PromiseHandler $promise_handler, StateEnum $state)
     {
@@ -42,6 +45,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
     public function handle(): void
     {
         $this->promise_handler->setPromiseId($this->promise_id);
+        $this->job_results = $this->getResults();
 
         $result = $this->dispatchMethodWithParams('before');
 
@@ -77,26 +81,16 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
             return true;
         }
 
+        $results = $this->job_results;
+
         $params = [];
         // подготавливаем аргументы для вызова метода
         $reflectionMethod = new \ReflectionMethod($this->promise_handler, $method);
 
-        $jobs = PromiseJobRegistry::loadByPromiseId($this->promise_id);
-
-        foreach ($jobs as $job) {
-            $resultJob = $job->getResultJob();
-            $results[\get_class($resultJob)][] = $resultJob;
-        }
-
         foreach ($reflectionMethod->getParameters() as $i => $parameter) {
             $param = null;
-            $paramType = $parameter->getType();
-            if ($paramType instanceof \ReflectionNamedType) {
-                $type = $paramType->getName();
-            } else {
-                $type = (string) $paramType;
-            }
 
+            $type = $this->getParamType($parameter);
             if (\in_array(MayPromised::class, class_implements($type), true)) {
                 if (!empty($results[$type])) {
                     $param = array_shift($results[$type]);
@@ -113,6 +107,30 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
         return $this->promise_handler->$method(...$params);
     }
 
+    private function getResults(): array
+    {
+        $results = [];
+
+        $jobs = PromiseJobRegistry::loadByPromiseId($this->promise_id);
+
+        foreach ($jobs as $job) {
+            $resultJob = $job->getResultJob();
+            $results[\get_class($resultJob)][] = $resultJob;
+        }
+
+        return $results;
+    }
+
+    private function getParamType(\ReflectionParameter $parameter): string
+    {
+        $paramType = $parameter->getType();
+        if (!$paramType instanceof \ReflectionNamedType) {
+            return (string) $paramType;
+        }
+
+        return $paramType->getName();
+    }
+
     public function getState(): StateEnum
     {
         return $this->state;
@@ -123,11 +141,21 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract
         return $this->promise_id;
     }
 
+    public function getJobHandler(): MayPromised
+    {
+        return $this->promise_handler;
+    }
+
     public function getPromiseHandler(): PromiseHandler
     {
         return $this->promise_handler;
     }
 
+    /**
+     * Tags for Horizon UI
+     *
+     * @return array|string[]
+     */
     public function tags(): array
     {
         return [

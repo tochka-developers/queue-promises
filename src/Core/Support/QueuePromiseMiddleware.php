@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Core\Support;
 
+use Tochka\Promises\Contracts\JobFacadeContract;
 use Tochka\Promises\Contracts\JobStateContract;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Enums\StateEnum;
@@ -35,7 +36,12 @@ class QueuePromiseMiddleware
 
             return $result;
         } finally {
-            $baseJob->setResult($job);
+            if ($job instanceof JobFacadeContract) {
+                $baseJob->setResult($job->getJobHandler());
+            } else {
+                $baseJob->setResult($job);
+            }
+
             PromiseJobRegistry::save($baseJob);
         }
     }

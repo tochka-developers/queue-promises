@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Contracts;
 
-interface PromiseHandler
+interface PromiseHandler extends MayPromised
 {
     /**
      *
