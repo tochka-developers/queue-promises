@@ -20,7 +20,7 @@ class Create{{tableClassName}}Table extends Migration
             $table->text('conditions');
             $table->text('initial_job');
             $table->text('result_job');
-            $table->text('exception');
+            $table->text('exception')->nullable();
             $table->timestamps();
 
             $table->index('promise_id');
