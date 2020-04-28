@@ -1,6 +1,6 @@
 <?php
 
-namespace Tochka\JsonRpc\Tests\TestHelpers;
+namespace Tochka\Promises\Tests\TestHelpers;
 
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Support\DefaultPromise;

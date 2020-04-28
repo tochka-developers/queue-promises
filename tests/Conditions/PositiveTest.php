@@ -1,9 +1,9 @@
 <?php
 
-namespace Tochka\JsonRpc\Tests\Support;
+namespace Tochka\Promises\Tests\Conditions;
 
 use PHPUnit\Framework\TestCase;
-use Tochka\JsonRpc\Tests\TestHelpers\TestPromise;
+use Tochka\Promises\Tests\TestHelpers\TestPromise;
 use Tochka\Promises\Conditions\Positive;
 use Tochka\Promises\Core\BasePromise;
 
