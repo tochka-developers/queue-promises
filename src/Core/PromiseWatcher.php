@@ -19,20 +19,25 @@ class PromiseWatcher
             $time = microtime(true);
 
             foreach (PromiseRegistry::loadInStatesCursor([StateEnum::WAITING(), StateEnum::RUNNING()]) as $promise) {
-                $conditions = $this->getConditionsForState($promise, $promise);
-                $transition = $this->getTransitionForConditions($conditions, $promise);
-                if ($transition) {
-                    $promise->setState($transition->getToState());
-                    PromiseRegistry::save($promise);
-                }
-
-                foreach (PromiseJobRegistry::loadByPromiseIdCursor($promise->getPromiseId()) as $job) {
-                    $conditions = $this->getConditionsForState($job, $job);
+                try {
+                    $conditions = $this->getConditionsForState($promise, $promise);
                     $transition = $this->getTransitionForConditions($conditions, $promise);
                     if ($transition) {
-                        $job->setState($transition->getToState());
-                        PromiseJobRegistry::save($job);
+                        $promise->setState($transition->getToState());
+                        PromiseRegistry::save($promise);
                     }
+
+                    foreach (PromiseJobRegistry::loadByPromiseIdCursor($promise->getPromiseId()) as $job) {
+                        $conditions = $this->getConditionsForState($job, $job);
+                        $transition = $this->getTransitionForConditions($conditions, $promise);
+                        if ($transition) {
+                            $job->setState($transition->getToState());
+                            PromiseJobRegistry::save($job);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    report($e);
+                    continue;
                 }
             }
 
