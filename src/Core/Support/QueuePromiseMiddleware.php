@@ -24,22 +24,16 @@ class QueuePromiseMiddleware
         }
 
         try {
-            $state = StateEnum::SUCCESS();
-
             return $next($job);
-        } catch (\Exception $e) {
-            $state = StateEnum::FAILED();
-            throw $e;
         } finally {
             $baseJob = PromiseJobRegistry::load($job->getBaseJobId());
 
             // меняем состояние только если задача находится в состоянии ожидание или запущена
-            if ($baseJob->getState()->in([StateEnum::WAITING(), StateEnum::RUNNING()])) {
-                if ($job instanceof JobStateContract) {
-                    $baseJob->setState($job->getState());
-                } else {
-                    $baseJob->setState($state);
-                }
+            if ($job instanceof JobStateContract && $baseJob->getState()->in([
+                    StateEnum::WAITING(),
+                    StateEnum::RUNNING(),
+                ])) {
+                $baseJob->setState($job->getState());
             }
 
             if ($job instanceof JobFacadeContract) {

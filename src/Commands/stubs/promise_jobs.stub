@@ -17,10 +17,10 @@ class Create{{tableClassName}}Table extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('promise_id');
             $table->string('state');
-            $table->text('conditions');
-            $table->text('initial_job');
-            $table->text('result_job');
-            $table->text('exception')->nullable();
+            $table->longText('conditions');
+            $table->longText('initial_job');
+            $table->longText('result_job');
+            $table->longText('exception')->nullable();
             $table->timestamps();
 
             $table->index('promise_id');

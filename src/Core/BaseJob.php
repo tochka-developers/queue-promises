@@ -21,7 +21,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     private $initial_job;
     /** @var \Tochka\Promises\Contracts\MayPromised */
     private $result_job;
-    /** @var \Exception */
+    /** @var \Throwable */
     private $exception;
 
     public function __construct(int $promise_id, MayPromised $initial_job, MayPromised $result_job = null)
@@ -42,7 +42,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         $this->result_job = $job;
     }
 
-    public function setException(?\Exception $exception): void
+    public function setException(?\Throwable $exception): void
     {
         $this->exception = $exception;
     }
@@ -72,7 +72,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         return $this->result_job;
     }
 
-    public function getException(): ?\Exception
+    public function getException(): ?\Throwable
     {
         return $this->exception;
     }
