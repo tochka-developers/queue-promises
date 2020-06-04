@@ -65,8 +65,6 @@ class PromiseJobRegistry
 
     /**
      * @param \Tochka\Promises\Core\BaseJob $job
-     *
-     * @throws \JsonException
      */
     public function save(BaseJob $job): void
     {
@@ -122,6 +120,8 @@ class PromiseJobRegistry
         $job->restoreState($jobModel->state);
         $job->setJobId($jobModel->id);
         $job->setException($exception);
+        $job->setCreatedAt($jobModel->created_at);
+        $job->setUpdatedAt($jobModel->updated_at);
 
         return $job;
     }

@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 
 /**
- * @property int    $id
- * @property int    $job_id
- * @property string $event_name
- * @property string $event_unique_id
+ * @property int            $id
+ * @property int            $job_id
+ * @property string         $event_name
+ * @property string         $event_unique_id
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class PromiseEvent extends Model

@@ -2,16 +2,18 @@
 
 namespace Tochka\Promises\Models;
 
-use Tochka\Promises\Enums\StateEnum;
 use BenSampo\Enum\Traits\CastsEnums;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
+use Tochka\Promises\Enums\StateEnum;
 
 /**
- * @property int       $id
- * @property StateEnum $state
- * @property array     $conditions
- * @property string    $promise_handler
+ * @property int            $id
+ * @property StateEnum      $state
+ * @property array          $conditions
+ * @property string         $promise_handler
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class Promise extends Model

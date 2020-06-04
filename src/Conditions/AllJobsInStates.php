@@ -18,6 +18,11 @@ final class AllJobsInStates implements ConditionContract
         $this->states = $states;
     }
 
+    public function getStates()
+    {
+        return $this->states;
+    }
+
     public static function success(): self
     {
         return new self([StateEnum::SUCCESS()]);
@@ -39,6 +44,7 @@ final class AllJobsInStates implements ConditionContract
             function (bool $carry, BaseJob $job) {
                 return $carry && $job->getState()->in($this->states);
             },
-            true);
+            true
+        );
     }
 }

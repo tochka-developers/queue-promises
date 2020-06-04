@@ -113,6 +113,8 @@ class PromiseRegistry
         $promise->setConditions($conditions);
         $promise->restoreState($promiseModel->state);
         $promise->setPromiseId($promiseModel->id);
+        $promise->setCreatedAt($promiseModel->created_at);
+        $promise->setUpdatedAt($promiseModel->updated_at);
 
         return $promise;
     }

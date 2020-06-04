@@ -7,6 +7,7 @@ use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\Support\ConditionTransitions;
 use Tochka\Promises\Core\Support\States;
+use Tochka\Promises\Core\Support\Time;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseRegistry;
 
@@ -17,7 +18,7 @@ use Tochka\Promises\Facades\PromiseRegistry;
  */
 class BasePromise implements StatesContract, ConditionTransitionsContract
 {
-    use States, ConditionTransitions;
+    use States, ConditionTransitions, Time;
 
     /** @var \Tochka\Promises\Contracts\PromiseHandler */
     private $promiseHandler;
