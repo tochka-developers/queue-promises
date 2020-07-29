@@ -2,7 +2,6 @@
 
 namespace Tochka\Promises\Models;
 
-use BenSampo\Enum\Traits\CastsEnums;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use Tochka\Promises\Enums\StateEnum;
@@ -18,16 +17,10 @@ use Tochka\Promises\Enums\StateEnum;
  */
 class Promise extends Model
 {
-    use CastsEnums;
-
     protected $casts = [
-        'state'           => 'string',
+        'state'           => StateEnum::class,
         'conditions'      => 'array',
         'promise_handler' => 'string',
-    ];
-
-    protected $enumCasts = [
-        'state' => StateEnum::class,
     ];
 
     public function getConnectionName()

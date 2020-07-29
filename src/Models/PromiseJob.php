@@ -21,19 +21,13 @@ use Tochka\Promises\Enums\StateEnum;
  */
 class PromiseJob extends Model
 {
-    use CastsEnums;
-
     protected $casts = [
         'promise_id'  => 'int',
-        'state'       => 'string',
+        'state'       => StateEnum::class,
         'conditions'  => 'array',
         'initial_job' => 'string',
         'result_job'  => 'string',
         'exception'   => 'string',
-    ];
-
-    protected $enumCasts = [
-        'state' => StateEnum::class,
     ];
 
     public function getConnectionName()

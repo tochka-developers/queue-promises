@@ -11,9 +11,9 @@
     "require": {
         "php": "^7.3",
         "ext-json": "*",
-        "laravel/framework": "^6.0|^7.0",
+        "laravel/framework": "^7.0",
         "nesbot/carbon": ">=2.0",
-        "bensampo/laravel-enum": "^1.28"
+        "bensampo/laravel-enum": "^2.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
