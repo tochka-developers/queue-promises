@@ -18,7 +18,7 @@ class PromiseWatcher
         while (true) {
             $time = microtime(true);
 
-            foreach (PromiseRegistry::loadInStatesCursor([StateEnum::WAITING(), StateEnum::RUNNING()]) as $promise) {
+            PromiseRegistry::loadInStatesChunk([StateEnum::WAITING(), StateEnum::RUNNING()], function(BasePromise $promise) {
                 try {
                     $conditions = $this->getConditionsForState($promise, $promise);
                     $transition = $this->getTransitionForConditions($conditions, $promise);
@@ -27,19 +27,18 @@ class PromiseWatcher
                         PromiseRegistry::save($promise);
                     }
 
-                    foreach (PromiseJobRegistry::loadByPromiseIdCursor($promise->getPromiseId()) as $job) {
+                    PromiseJobRegistry::loadByPromiseIdChunk($promise->getPromiseId(), function(BaseJob $job) use ($promise) {
                         $conditions = $this->getConditionsForState($job, $job);
                         $transition = $this->getTransitionForConditions($conditions, $promise);
                         if ($transition) {
                             $job->setState($transition->getToState());
                             PromiseJobRegistry::save($job);
                         }
-                    }
+                    });
                 } catch (\Exception $e) {
                     report($e);
-                    continue;
                 }
-            }
+            }, 1000);
 
             $sleep_time = floor($this->iteration_time - (microtime(true) - $time));
 
