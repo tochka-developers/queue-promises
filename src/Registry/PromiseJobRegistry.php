@@ -65,7 +65,7 @@ class PromiseJobRegistry
     public function loadByPromiseIdChunk(int $promise_id, callable $callback, int $chunk_size = 1000): void
     {
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        PromiseJob::whereIn('promise_id', $promise_id)->chunk($chunk_size, function($jobs) use ($callback) {
+        PromiseJob::where('promise_id', $promise_id)->chunk($chunk_size, function($jobs) use ($callback) {
             foreach ($jobs as $job) {
                 $callback($this->mapJobModel($job));
             }
