@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Tochka\Promises\Contracts\JobFacadeContract;
 use Tochka\Promises\Contracts\JobStateContract;
 use Tochka\Promises\Contracts\MayPromised;
+use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
@@ -91,14 +92,17 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
             $param = null;
 
             $type = $this->getParamType($parameter);
-            if (\in_array(MayPromised::class, class_implements($type), true)) {
+            if (
+                \in_array(MayPromised::class, class_implements($type), true) ||
+                \in_array(PromisedEvent::class, class_implements($type), true)
+            ) {
                 if (!empty($results[$type])) {
                     $param = array_shift($results[$type]);
                 } else {
                     $param = null;
                 }
             } else {
-                $param = Container::getInstance()->make($param);
+                $param = Container::getInstance()->make($type);
             }
 
             $params[$i] = $param;
