@@ -68,7 +68,10 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         return $this->initial_job;
     }
 
-    public function getResultJob(): MayPromised
+    /**
+     * @return \Tochka\Promises\Contracts\MayPromised|\Tochka\Promises\Contracts\PromisedEvent
+     */
+    public function getResultJob()
     {
         return $this->result_job;
     }
