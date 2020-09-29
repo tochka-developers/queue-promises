@@ -19,9 +19,10 @@ class EventDispatcher
         }
 
         foreach ($waitEvents as $waitEvent) {
-            DB::transaction(static function () use ($waitEvent) {
+            DB::transaction(function () use ($event, $waitEvent) {
                 $baseJob = PromiseJobRegistry::load($waitEvent->getBaseJobId());
                 $baseJob->setState(StateEnum::SUCCESS());
+                $baseJob->setResult($event);
                 PromiseJobRegistry::save($baseJob);
                 PromiseEventRegistry::delete($waitEvent->getId());
             });

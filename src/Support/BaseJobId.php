@@ -2,6 +2,9 @@
 
 namespace Tochka\Promises\Support;
 
+use Tochka\Promises\Core\BaseJob;
+use Tochka\Promises\Facades\PromiseJobRegistry;
+
 trait BaseJobId
 {
     /** @var int|null */
