@@ -20,7 +20,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     private $promise_id;
     /** @var \Tochka\Promises\Contracts\MayPromised */
     private $initial_job;
-    /** @var \Tochka\Promises\Contracts\MayPromised */
+    /** @var \Tochka\Promises\Contracts\MayPromised|\Tochka\Promises\Contracts\PromisedEvent */
     private $result_job;
     /** @var \Throwable */
     private $exception;
@@ -38,7 +38,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         $this->initial_job = $job;
     }
 
-    public function setResult(MayPromised $job): void
+    public function setResult($job): void
     {
         $this->result_job = $job;
     }
