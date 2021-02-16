@@ -12,7 +12,7 @@ trait Timeout
     private $trait_timeout;
 
     /**
-     * @param int $timeout Таймаут в минутах
+     * @param int $timeout Таймаут в секундах
      */
     public function setTimeout(int $timeout): void
     {
