@@ -9,17 +9,21 @@ use Tochka\Promises\Enums\StateEnum;
 
 trait Timeout
 {
+    /** @var int|\DateInterval */
     private $trait_timeout;
 
     /**
-     * @param int $timeout Таймаут в минутах
+     * @param int|\DateInterval $timeout Таймаут в минутах, или DateInterval
      */
-    public function setTimeout(int $timeout): void
+    public function setTimeout($timeout): void
     {
         $this->trait_timeout = $timeout;
     }
 
-    public function getTimeout(): ?int
+    /**
+     * @return int|\DateInterval
+     */
+    public function getTimeout()
     {
         return $this->timeout ?? $this->trait_timeout;
     }
