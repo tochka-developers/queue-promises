@@ -14,11 +14,17 @@ final class Timeout implements ConditionContract
     /**
      * Timeout constructor.
      *
-     * @param int $timeout Таймаут в минутах
+     * @param int|Carbon $timeout Таймаут в минутах или время истечения
      */
-    public function __construct(int $timeout)
+    public function __construct($timeout)
     {
-        $this->expired_at = Carbon::now()->addMinutes($timeout);
+        if ($timeout instanceof Carbon) {
+            $this->expired_at = $timeout;
+        } elseif (is_int($timeout)) {
+            $this->expired_at = Carbon::now()->addMinutes($timeout);
+        } else {
+            $this->expired_at = Carbon::parse($timeout);
+        }
     }
 
     public function condition(BasePromise $basePromise): bool
