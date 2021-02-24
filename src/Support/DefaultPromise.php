@@ -10,7 +10,7 @@ use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\PromiseJobRegistry;
-use Tochka\Promises\Facades\PromiseRegistry;
+use Tochka\Promises\Facades\Promises;
 
 trait DefaultPromise
 {
@@ -29,45 +29,8 @@ trait DefaultPromise
     public function run(): void
     {
         /** @var \Tochka\Promises\Contracts\PromiseHandler $this */
-        $basePromise = new BasePromise($this);
-
-        $traits = class_uses_recursive($this);
-
-        foreach ($traits as $trait) {
-            if (method_exists($this, $method = 'promiseConditions' . class_basename($trait))) {
-                $this->$method($basePromise);
-            }
-        }
-
-        // чтобы в PromiseHandler не сохранялись сериализованные задачи
-        $jobs = $this->jobs;
+        Promises::run($this, $this->jobs);
         $this->jobs = [];
-
-        PromiseRegistry::save($basePromise);
-
-        foreach ($jobs as $job) {
-            $baseJob = new BaseJob($basePromise->getPromiseId(), $job);
-            PromiseJobRegistry::save($baseJob);
-
-            $job->setBaseJobId($baseJob->getJobId());
-            $baseJob->setInitial($job);
-
-            foreach ($traits as $trait) {
-                if (method_exists($this, $method = 'jobConditions' . class_basename($trait))) {
-                    $this->$method($basePromise, $baseJob);
-                }
-            }
-
-            PromiseJobRegistry::save($baseJob);
-        }
-
-        foreach ($traits as $trait) {
-            if (method_exists($this, $method = 'afterRun' . class_basename($trait))) {
-                $this->$method();
-            }
-        }
-
-        $basePromise->dispatch();
     }
 
     public function promiseConditionsDefaultPromise(BasePromise $promise): void

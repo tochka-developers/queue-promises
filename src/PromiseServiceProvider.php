@@ -15,6 +15,7 @@ use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Core\Dispatchers\PromiseDispatcher;
 use Tochka\Promises\Core\Dispatchers\QueueJobDispatcher;
 use Tochka\Promises\Core\Dispatchers\WaitEventDispatcher;
+use Tochka\Promises\Core\PromiseRunner;
 use Tochka\Promises\Core\PromiseWatcher;
 use Tochka\Promises\Core\Support\BaseJobDispatcher;
 use Tochka\Promises\Core\Support\EventDispatcher;
@@ -122,6 +123,10 @@ class PromiseServiceProvider extends ServiceProvider
 
         $this->app->singleton(Facades\EventDispatcher::class, static function () {
             return new EventDispatcher();
+        });
+
+        $this->app->singleton(Facades\Promises::class, static function () {
+            return new PromiseRunner();
         });
 
         $this->app->singleton(Facades\PromiseWatcher::class, static function () {
