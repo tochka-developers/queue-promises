@@ -3,13 +3,20 @@
 namespace Tochka\Promises\Core;
 
 use PHPUnit\Framework\Assert as PHPUnit;
+use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 
 class FakePromiseRunner
 {
-    private $promises = [];
-    private $jobs = [];
+    /** @var array<string, PromiseHandler> */
+    private array $promises = [];
+    /** @var array<string, array<MayPromised>> */
+    private array $jobs = [];
 
+    /**
+     * @param PromiseHandler     $handler
+     * @param array<MayPromised> $jobs
+     */
     public function run(PromiseHandler $handler, array $jobs): void
     {
         $className = get_class($handler);

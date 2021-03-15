@@ -1,18 +1,26 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Models;
 
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Events\PromiseJobStateChanged;
+use Tochka\Promises\Events\PromiseJobStateChanging;
+use Tochka\Promises\Events\StateChanged;
+use Tochka\Promises\Events\StateChanging;
 use Tochka\Promises\Models\Casts\ConditionsCast;
 use Tochka\Promises\Models\Casts\SerializableClassCast;
+use Tochka\Promises\Models\Factories\PromiseJobFactory;
 
 /**
  * @property int                       $id
@@ -31,6 +39,9 @@ use Tochka\Promises\Models\Casts\SerializableClassCast;
  */
 class PromiseJob extends Model
 {
+    use HasFactory;
+
+    /** @var array<string,string> */
     protected $casts = [
         'promise_id'  => 'int',
         'state'       => StateEnum::class,
@@ -40,19 +51,51 @@ class PromiseJob extends Model
         'exception'   => SerializableClassCast::class,
     ];
 
-    /** @var BaseJob|null */
-    private $baseJob = null;
+    private ?BaseJob $baseJob = null;
+    private ?StateEnum $changedState = null;
 
-    public function getConnectionName()
+    protected static function booted(): void
+    {
+        static::updating(
+            function (PromiseJob $promiseJob) {
+                if ($promiseJob->isDirty('state')) {
+                    $oldState = $promiseJob->getOriginal('state');
+                    $currentState = $promiseJob->state;
+                    $promiseJob->setChangedState($oldState);
+
+                    Event::dispatch(new StateChanging($promiseJob->getBaseJob(), $oldState, $currentState));
+                    Event::dispatch(new PromiseJobStateChanging($promiseJob->getBaseJob(), $oldState, $currentState));
+                }
+            }
+        );
+
+        static::updated(
+            function (PromiseJob $promiseJob) {
+                if ($promiseJob->wasChanged('state')) {
+                    $oldState = $promiseJob->getChangedState();
+                    $currentState = $promiseJob->state;
+
+                    Event::dispatch(new StateChanged($promiseJob->getBaseJob(), $oldState, $currentState));
+                    Event::dispatch(new PromiseJobStateChanged($promiseJob->getBaseJob(), $oldState, $currentState));
+                }
+            }
+        );
+    }
+
+    public function getConnectionName(): ?string
     {
         return Config::get('promises.database.connection', null);
     }
 
-    public function getTable()
+    public function getTable(): string
     {
         return Config::get('promises.database.table_jobs', 'promise_jobs');
     }
 
+    /**
+     * @codeCoverageIgnore
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function promise(): BelongsTo
     {
         return $this->belongsTo(Promise::class, 'promise_id', 'id');
@@ -74,6 +117,7 @@ class PromiseJob extends Model
             $this->baseJob->setException($this->exception);
             $this->baseJob->setCreatedAt($this->created_at);
             $this->baseJob->setUpdatedAt($this->updated_at);
+            $this->baseJob->setAttachedModel($this);
         }
 
         return $this->baseJob;
@@ -82,10 +126,6 @@ class PromiseJob extends Model
     public static function saveBaseJob(BaseJob $baseJob): void
     {
         $model = $baseJob->getAttachedModel();
-
-        if ($model === null) {
-            $model = new self();
-        }
 
         $model->promise_id = $baseJob->getPromiseId();
         $model->state = $baseJob->getState();
@@ -115,5 +155,20 @@ class PromiseJob extends Model
         }
 
         return $job;
+    }
+
+    protected static function newFactory(): PromiseJobFactory
+    {
+        return new PromiseJobFactory();
+    }
+
+    public function getChangedState(): ?StateEnum
+    {
+        return $this->changedState;
+    }
+
+    public function setChangedState(?StateEnum $state): void
+    {
+        $this->changedState = $state;
     }
 }

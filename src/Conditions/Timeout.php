@@ -8,12 +8,9 @@ use Tochka\Promises\Core\BasePromise;
 
 final class Timeout implements ConditionContract
 {
-    /** @var \Carbon\Carbon */
-    private $expired_at;
+    private Carbon $expired_at;
 
     /**
-     * Timeout constructor.
-     *
      * @param int|Carbon|\DateInterval $timeout Таймаут в минутах или время истечения
      */
     public function __construct($timeout)

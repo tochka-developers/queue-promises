@@ -20,14 +20,11 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
 {
     use PromisedJob;
 
-    /** @var int */
-    private $promise_id;
-    /** @var \Tochka\Promises\Contracts\PromiseHandler */
-    private $promise_handler;
-    /** @var StateEnum */
-    private $state;
-    /** @var MayPromised[][] */
-    private $job_results = [];
+    private int $promise_id;
+    private PromiseHandler $promise_handler;
+    private StateEnum $state;
+    /** @var array<string, array<MayPromised> */
+    private array $job_results = [];
 
     public function __construct(int $promise_id, PromiseHandler $promise_handler, StateEnum $state)
     {
@@ -111,6 +108,9 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
         return $this->promise_handler->$method(...$params);
     }
 
+    /**
+     * @return array<string, array<MayPromised>>
+     */
     private function getResults(): array
     {
         $results = [];
@@ -158,7 +158,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     /**
      * Tags for Horizon UI
      *
-     * @return array|string[]
+     * @return array<string>
      */
     public function tags(): array
     {

@@ -10,7 +10,7 @@ use Tochka\Promises\Enums\StateEnum;
 
 trait ExpiredAt
 {
-    private $trait_expired_at;
+    private Carbon $trait_expired_at;
 
     /**
      * @param Carbon $expired_at Время истечения
@@ -25,6 +25,11 @@ trait ExpiredAt
         return $this->expired_at ?? $this->trait_expired_at;
     }
 
+    /**
+     * Hook promiseConditions
+     *
+     * @param \Tochka\Promises\Core\BasePromise $promise
+     */
     public function promiseConditionsExpiredAt(BasePromise $promise): void
     {
         if ($this->getExpiredAt() === null) {

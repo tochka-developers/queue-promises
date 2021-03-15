@@ -30,9 +30,6 @@ use Tochka\Promises\Listeners\CheckPromiseJobConditions;
 use Tochka\Promises\Listeners\DispatchPromise;
 use Tochka\Promises\Listeners\DispatchPromiseJob;
 use Tochka\Promises\Listeners\LogStateChanged;
-use Tochka\Promises\Models\Observers\PromiseJobObserver;
-use Tochka\Promises\Models\Observers\PromiseObserver;
-use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Registry\PromiseEventRegistry;
 use Tochka\Promises\Registry\PromiseJobRegistry;
@@ -136,9 +133,6 @@ class PromiseServiceProvider extends ServiceProvider
             Event::listen(PromiseJobStateChanged::class, CheckPromiseJobConditions::class);
             Event::listen(PromiseJobStateChanged::class, CheckPromiseConditions::class);
         }
-
-        Promise::observe(PromiseObserver::class);
-        PromiseJob::observe(PromiseJobObserver::class);
     }
 
     public function register(): void

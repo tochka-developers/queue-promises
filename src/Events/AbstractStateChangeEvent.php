@@ -7,18 +7,15 @@ use Tochka\Promises\Enums\StateEnum;
 
 abstract class AbstractStateChangeEvent
 {
-    /** @var \Tochka\Promises\Contracts\StatesContract */
-    private $instance;
-    /** @var \Tochka\Promises\Enums\StateEnum */
-    private $from_state;
-    /** @var \Tochka\Promises\Enums\StateEnum */
-    private $to_state;
+    private StatesContract $instance;
+    private StateEnum $fromState;
+    private StateEnum $toState;
 
-    public function __construct(StatesContract $instance, StateEnum $from_state, StateEnum $to_state)
+    public function __construct(StatesContract $instance, StateEnum $fromState, StateEnum $toState)
     {
         $this->instance = $instance;
-        $this->from_state = $from_state;
-        $this->to_state = $to_state;
+        $this->fromState = $fromState;
+        $this->toState = $toState;
     }
 
     public function getInstance(): StatesContract
@@ -26,19 +23,13 @@ abstract class AbstractStateChangeEvent
         return $this->instance;
     }
 
-    /**
-     * @return \Tochka\Promises\Enums\StateEnum
-     */
     public function getFromState(): StateEnum
     {
-        return $this->from_state;
+        return $this->fromState;
     }
 
-    /**
-     * @return \Tochka\Promises\Enums\StateEnum
-     */
     public function getToState(): StateEnum
     {
-        return $this->to_state;
+        return $this->toState;
     }
 }

@@ -28,6 +28,11 @@ trait Timeout
         return $this->timeout ?? $this->trait_timeout;
     }
 
+    /**
+     * Hook promiseConditions
+     *
+     * @param \Tochka\Promises\Core\BasePromise $promise
+     */
     public function promiseConditionsTimeout(BasePromise $promise): void
     {
         if ($this->getTimeout() === null) {

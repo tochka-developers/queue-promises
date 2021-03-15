@@ -2,18 +2,16 @@
 
 namespace Tochka\Promises\Core\Support;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 
-class ConditionTransition
+class ConditionTransition implements Arrayable
 {
-    /** @var \Tochka\Promises\Contracts\ConditionContract */
-    private $condition;
-    /** @var \Tochka\Promises\Enums\StateEnum */
-    private $from_state;
-    /** @var \Tochka\Promises\Enums\StateEnum */
-    private $to_state;
+    private ConditionContract $condition;
+    private StateEnum $from_state;
+    private StateEnum $to_state;
 
     public function __construct(ConditionContract $condition, StateEnum $from_state, StateEnum $to_state)
     {

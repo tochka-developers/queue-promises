@@ -9,6 +9,7 @@ use Tochka\Promises\Models\Promise;
 
 /**
  * Связь BasePromise с сущностью в БД
+ * @codeCoverageIgnore
  */
 class PromiseRegistry
 {
@@ -20,7 +21,6 @@ class PromiseRegistry
     public function load(int $id): BasePromise
     {
         /** @var Promise $promiseModel */
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         $promiseModel = Promise::find($id);
         if (!$promiseModel) {
             throw (new ModelNotFoundException())->setModel(Promise::class, $id);

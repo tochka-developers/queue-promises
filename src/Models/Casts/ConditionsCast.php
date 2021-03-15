@@ -14,14 +14,15 @@ class ConditionsCast implements CastsAttributes
      * @param array                               $attributes
      *
      * @return array
+     * @throws \JsonException
      */
-    public function get($model, string $key, $value, array $attributes)
+    public function get($model, string $key, $value, array $attributes): array
     {
         return array_map(
             static function ($conditionTransition) {
                 return ConditionTransition::fromArray($conditionTransition);
             },
-            $value
+            json_decode($value, true, 512, JSON_THROW_ON_ERROR)
         );
     }
 
@@ -32,15 +33,19 @@ class ConditionsCast implements CastsAttributes
      * @param array                               $attributes
      *
      * @return array
+     * @throws \JsonException
      */
-    public function set($model, string $key, $value, array $attributes)
+    public function set($model, string $key, $value, array $attributes): array
     {
         return [
-            $key => array_map(
-                static function (ConditionTransition $conditionTransition) {
-                    return $conditionTransition->toArray();
-                },
-                $value
+            $key => json_encode(
+                array_map(
+                    static function (ConditionTransition $conditionTransition) {
+                        return $conditionTransition->toArray();
+                    },
+                    $value
+                ),
+                JSON_THROW_ON_ERROR
             ),
         ];
     }

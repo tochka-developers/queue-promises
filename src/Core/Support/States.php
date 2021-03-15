@@ -6,8 +6,7 @@ use Tochka\Promises\Enums\StateEnum;
 
 trait States
 {
-    /** @var StateEnum */
-    private $state;
+    private StateEnum $state;
 
     public function getState(): StateEnum
     {

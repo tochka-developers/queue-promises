@@ -2,11 +2,14 @@
 
 namespace Tochka\Promises\Tests\Conditions;
 
-use PHPUnit\Framework\TestCase;
-use Tochka\Promises\Tests\TestHelpers\TestPromise;
 use Tochka\Promises\Conditions\Positive;
 use Tochka\Promises\Core\BasePromise;
+use Tochka\Promises\Tests\TestCase;
+use Tochka\Promises\Tests\TestHelpers\TestPromise;
 
+/**
+ * @covers \Tochka\Promises\Conditions\Positive
+ */
 class PositiveTest extends TestCase
 {
     /**
@@ -14,10 +17,11 @@ class PositiveTest extends TestCase
      */
     public function testCondition(): void
     {
-        $condition = new Positive();
         $basePromise = new BasePromise(new TestPromise());
+
+        $condition = new Positive();
         $actualCondition = $condition->condition($basePromise);
 
-        $this->assertEquals(true, $actualCondition);
+        self::assertEquals(true, $actualCondition);
     }
 }

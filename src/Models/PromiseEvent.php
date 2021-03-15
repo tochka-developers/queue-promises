@@ -1,11 +1,14 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Config;
+use Tochka\Promises\Models\Factories\PromiseEventFactory;
 use Tochka\Promises\Support\WaitEvent;
 
 /**
@@ -15,7 +18,7 @@ use Tochka\Promises\Support\WaitEvent;
  * @property string         $event_unique_id
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * @property Promise        $promise
+ * @property PromiseJob     $job
  * @method static Builder byJob(int $jobId)
  * @method static Builder byEvent(string $eventName, string $eventUniqueId)
  * @method static self|null find(int $id)
@@ -23,28 +26,34 @@ use Tochka\Promises\Support\WaitEvent;
  */
 class PromiseEvent extends Model
 {
+    use HasFactory;
+
+    /** @var array<string, string> */
     protected $casts = [
         'job_id'          => 'int',
         'event_name'      => 'string',
         'event_unique_id' => 'string',
     ];
 
-    /** @var WaitEvent|null */
-    private $baseEvent = null;
+    private ?WaitEvent $baseEvent = null;
 
-    public function getConnectionName()
+    public function getConnectionName(): ?string
     {
         return Config::get('promises.database.connection', null);
     }
 
-    public function getTable()
+    public function getTable(): string
     {
         return Config::get('promises.database.table_events', 'promise_events');
     }
 
-    public function promise(): BelongsTo
+    /**
+     * @codeCoverageIgnore
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function job(): BelongsTo
     {
-        return $this->belongsTo(Promise::class, 'promise_id', 'id');
+        return $this->belongsTo(PromiseJob::class, 'promise_id', 'id');
     }
 
     public function scopeByJob(Builder $query, int $jobId): Builder
@@ -63,6 +72,7 @@ class PromiseEvent extends Model
             $this->baseEvent = new WaitEvent($this->event_name, $this->event_unique_id);
             $this->baseEvent->setId($this->id);
             $this->baseEvent->setBaseJobId($this->job_id);
+            $this->baseEvent->setAttachedModel($this);
         }
 
         return $this->baseEvent;
@@ -72,10 +82,6 @@ class PromiseEvent extends Model
     {
         $model = $waitEvent->getAttachedModel();
 
-        if ($model === null) {
-            $model = new self();
-        }
-
         $model->job_id = $waitEvent->getBaseJobId();
         $model->event_name = $waitEvent->getEventName();
         $model->event_unique_id = $waitEvent->getEventUniqueId();
@@ -84,5 +90,10 @@ class PromiseEvent extends Model
 
         $waitEvent->setId($model->id);
         $waitEvent->setAttachedModel($model);
+    }
+
+    protected static function newFactory(): PromiseEventFactory
+    {
+        return new PromiseEventFactory();
     }
 }

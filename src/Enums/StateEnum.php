@@ -20,4 +20,28 @@ final class StateEnum extends Enum
     public const FAILED = 'failed';
     public const TIMEOUT = 'timeout';
     public const CANCELED = 'canceled';
+
+    public static function successStates(): array
+    {
+        return [
+            self::SUCCESS(),
+        ];
+    }
+
+    public static function failedStates(): array
+    {
+        return [
+            self::FAILED(),
+            self::TIMEOUT(),
+        ];
+    }
+
+    public static function finishedStates(): array
+    {
+        return [
+            self::SUCCESS(),
+            self::FAILED(),
+            self::TIMEOUT(),
+        ];
+    }
 }

@@ -15,17 +15,15 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
 {
     use States, ConditionTransitions, Time;
 
-    /** @var PromiseHandler */
-    private $promiseHandler;
-    /** @var int|null */
-    private $id;
-    /** @var Promise */
-    private $model = null;
+    private ?int $id = null;
+    private PromiseHandler $promiseHandler;
+    private Promise $model;
 
     public function __construct(PromiseHandler $promiseHandler)
     {
         $this->promiseHandler = $promiseHandler;
         $this->state = StateEnum::WAITING();
+        $this->model = new Promise();
     }
 
     public function getPromiseHandler(): PromiseHandler
@@ -43,7 +41,7 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
         $this->id = $id;
     }
 
-    public function getAttachedModel(): ?Promise
+    public function getAttachedModel(): Promise
     {
         return $this->model;
     }

@@ -7,41 +7,29 @@ use Tochka\Promises\Enums\StateEnum;
 
 abstract class AbstractPromiseJobStateChangeEvent
 {
-    /** @var \Tochka\Promises\Core\BaseJob */
-    private $promise_job;
-    /** @var \Tochka\Promises\Enums\StateEnum */
-    private $from_state;
-    /** @var \Tochka\Promises\Enums\StateEnum */
-    private $to_state;
+    private BaseJob $promise_job;
+    private StateEnum $fromState;
+    private StateEnum $toState;
 
-    public function __construct(BaseJob $promise, StateEnum $from_state, StateEnum $to_state)
+    public function __construct(BaseJob $promise, StateEnum $fromState, StateEnum $toState)
     {
         $this->promise_job = $promise;
-        $this->from_state = $from_state;
-        $this->to_state = $to_state;
+        $this->fromState = $fromState;
+        $this->toState = $toState;
     }
 
-    /**
-     * @return \Tochka\Promises\Core\BaseJob
-     */
     public function getPromiseJob(): BaseJob
     {
         return $this->promise_job;
     }
 
-    /**
-     * @return \Tochka\Promises\Enums\StateEnum
-     */
     public function getFromState(): StateEnum
     {
-        return $this->from_state;
+        return $this->fromState;
     }
 
-    /**
-     * @return \Tochka\Promises\Enums\StateEnum
-     */
     public function getToState(): StateEnum
     {
-        return $this->to_state;
+        return $this->toState;
     }
 }

@@ -11,7 +11,7 @@ class DispatchPromise
 {
     use FilterTransitions;
 
-    public $transitions = [
+    public array $transitions = [
         'dispatchPromise' => [
             'from' => [
                 StateEnum::WAITING,

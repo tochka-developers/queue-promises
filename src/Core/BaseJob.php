@@ -15,18 +15,13 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
 {
     use States, ConditionTransitions, Time;
 
-    /** @var int|null */
-    private $id;
-    /** @var int */
-    private $promise_id;
-    /** @var \Tochka\Promises\Contracts\MayPromised */
-    private $initial_job;
-    /** @var \Tochka\Promises\Contracts\MayPromised|\Tochka\Promises\Contracts\PromisedEvent */
+    private ?int $id = null;
+    private ?int $promise_id;
+    private MayPromised $initial_job;
+    /** @var MayPromised|\Tochka\Promises\Contracts\PromisedEvent */
     private $result_job;
-    /** @var \Throwable */
-    private $exception;
-    /** @var PromiseJob */
-    private $model = null;
+    private ?\Throwable $exception = null;
+    private PromiseJob $model;
 
     public function __construct(int $promise_id, MayPromised $initial_job, MayPromised $result_job = null)
     {
@@ -34,6 +29,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         $this->initial_job = $initial_job;
         $this->result_job = $result_job ?: $initial_job;
         $this->state = StateEnum::WAITING();
+        $this->model = new PromiseJob();
     }
 
     public function setInitial(MayPromised $job): void
@@ -84,7 +80,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         return $this->exception;
     }
 
-    public function getAttachedModel(): ?PromiseJob
+    public function getAttachedModel(): PromiseJob
     {
         return $this->model;
     }

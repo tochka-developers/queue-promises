@@ -16,10 +16,9 @@ trait DefaultPromise
 {
     use BaseJobId;
 
-    /** @var MayPromised[] */
-    private $jobs = [];
-    /** @var int */
-    private $promise_id;
+    /** @var array<MayPromised> */
+    private array $jobs = [];
+    private int $promise_id;
 
     public function add(MayPromised $entity): void
     {

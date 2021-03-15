@@ -8,27 +8,17 @@ use Tochka\Promises\Enums\StateEnum;
 
 final class OneJobInState implements ConditionContract
 {
-    /** @var StateEnum[] */
-    private $states;
+    /** @var array<StateEnum> */
+    private array $states;
 
     public function __construct(array $states)
     {
         $this->states = $states;
     }
 
-    public static function success(): self
+    public function getStates(): array
     {
-        return new self([StateEnum::SUCCESS()]);
-    }
-
-    public static function failed(): self
-    {
-        return new self([StateEnum::FAILED(), StateEnum::TIMEOUT()]);
-    }
-
-    public static function finished(): self
-    {
-        return new self([StateEnum::SUCCESS(), StateEnum::FAILED(), StateEnum::TIMEOUT()]);
+        return $this->states;
     }
 
     public function condition(BasePromise $basePromise): bool

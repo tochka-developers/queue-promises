@@ -10,10 +10,9 @@ use Tochka\Promises\Models\PromiseJob;
 
 final class JobInState implements ConditionContract
 {
-    /** @var int */
-    private $job_id;
-    /** @var StateEnum[] */
-    private $states;
+    private ?int $job_id;
+    /** @var array<StateEnum> */
+    private array $states;
 
     public function __construct(BaseJob $job, array $states)
     {
@@ -21,33 +20,20 @@ final class JobInState implements ConditionContract
         $this->states = $states;
     }
 
-    public static function success(BaseJob $job): self
+    public function getStates(): array
     {
-        return new self($job, [StateEnum::SUCCESS()]);
-    }
-
-    public static function failed(BaseJob $job): self
-    {
-        return new self($job, [StateEnum::FAILED(), StateEnum::TIMEOUT()]);
-    }
-
-    public static function finished(BaseJob $job): self
-    {
-        return new self($job, [StateEnum::SUCCESS(), StateEnum::FAILED(), StateEnum::TIMEOUT()]);
+        return $this->states;
     }
 
     public function condition(BasePromise $basePromise): bool
     {
-        $jobModel = PromiseJob::find($this->job_id);
+        /** @var PromiseJob|null $jobModel */
+        $jobModel = $basePromise->getAttachedModel()->jobs->where('id', $this->job_id)->first();
         if ($jobModel === null) {
             return true;
         }
 
         $job = $jobModel->getBaseJob();
-
-        if (!$job) {
-            return true;
-        }
 
         return $job->getState()->in($this->states);
     }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         backupGlobals="false"
          backupStaticAttributes="false"
          bootstrap="vendor/autoload.php"
          colors="true"
@@ -7,23 +8,34 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="false">
+         stopOnFailure="false"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">./src/Commands</directory>
+            <directory suffix=".php">./src/Contracts</directory>
+            <directory suffix=".php">./src/Exceptions</directory>
+            <directory suffix=".php">./src/Facades</directory>
+            <directory suffix=".php">./src/Models/Factories</directory>
+            <file>./src/PromiseServiceProvider.php</file>
+        </exclude>
+    </coverage>
     <testsuites>
         <testsuite name="Unit">
             <directory suffix="Test.php">./tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./src</directory>
-            <exclude>
-                <directory suffix=".php">./src/Commands</directory>
-                <directory suffix=".php">./src/Contracts</directory>
-                <directory suffix=".php">./src/Enums</directory>
-                <directory suffix=".php">./src/Exceptions</directory>
-                <directory suffix=".php">./src/Facades</directory>
-                <file>./src/PromiseServiceProvider.php</file>
-            </exclude>
-        </whitelist>
-    </filter>
+    <php>
+        <server name="APP_ENV" value="testing"/>
+        <server name="CACHE_DRIVER" value="array"/>
+        <server name="MAIL_DRIVER" value="array"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="DB_CONNECTION" value="testing"/>
+        <server name="LOG_CHANNEL" value="test"/>
+        <server name="KIBANA_ENABLED" value="0"/>
+    </php>
 </phpunit>

@@ -8,6 +8,9 @@ use Illuminate\Support\LazyCollection;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Models\PromiseJob;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PromiseJobRegistry
 {
     public function load(int $id): BaseJob

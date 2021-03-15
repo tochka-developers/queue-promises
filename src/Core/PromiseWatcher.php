@@ -11,7 +11,7 @@ use Tochka\Promises\Models\PromiseJob;
 
 class PromiseWatcher
 {
-    private $iteration_time = 5;
+    private int $iteration_time = 5;
 
     public function watch(): void
     {

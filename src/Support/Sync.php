@@ -14,7 +14,7 @@ use Tochka\Promises\Enums\StateEnum;
 
 trait Sync
 {
-    private $previousJob;
+    private ?BaseJob $previousJob = null;
 
     /**
      * Hook promiseConditions
@@ -24,10 +24,18 @@ trait Sync
     public function promiseConditionsSync(BasePromise $promise): void
     {
         $promise->addCondition(
-            new ConditionTransition(AllJobsInStates::success(), StateEnum::RUNNING(), StateEnum::SUCCESS())
+            new ConditionTransition(
+                new AllJobsInStates(StateEnum::successStates()),
+                StateEnum::RUNNING(),
+                StateEnum::SUCCESS()
+            )
         );
         $promise->addCondition(
-            new ConditionTransition(OneJobInState::failed(), StateEnum::RUNNING(), StateEnum::FAILED())
+            new ConditionTransition(
+                new OneJobInState(StateEnum::failedStates()),
+                StateEnum::RUNNING(),
+                StateEnum::FAILED()
+            )
         );
     }
 
@@ -45,7 +53,7 @@ trait Sync
         } else {
             // каждая следующая задача стартует после успешного завершения предыдущей
             $conditionTransition = new ConditionTransition(
-                JobInState::success($this->previousJob),
+                new JobInState($this->previousJob, StateEnum::successStates()),
                 StateEnum::WAITING(),
                 StateEnum::RUNNING()
             );
@@ -55,7 +63,11 @@ trait Sync
 
         // если основной промис завершился - то все ждущие задачи переходят в состояние отмененных
         $job->addCondition(
-            new ConditionTransition(PromiseInState::finished(), StateEnum::WAITING(), StateEnum::CANCELED())
+            new ConditionTransition(
+                new PromiseInState(StateEnum::finishedStates()),
+                StateEnum::WAITING(),
+                StateEnum::CANCELED()
+            )
         );
 
         $this->previousJob = $job;

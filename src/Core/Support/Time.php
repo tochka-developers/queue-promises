@@ -6,10 +6,8 @@ use Carbon\Carbon;
 
 trait Time
 {
-    /** @var Carbon */
-    private $created_at;
-    /** @var Carbon */
-    private $updated_at;
+    private Carbon $created_at;
+    private Carbon $updated_at;
 
     public function getCreatedAt(): Carbon
     {

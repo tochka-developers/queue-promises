@@ -13,24 +13,35 @@ use Tochka\Promises\Enums\StateEnum;
 
 trait ASync
 {
+    /**
+     * Hook promiseConditions
+     *
+     * @param \Tochka\Promises\Core\BasePromise $promise
+     */
     public function promiseConditionsASync(BasePromise $promise): void
     {
         $promise->addCondition(
             new ConditionTransition(
-                AllJobsInStates::success(), StateEnum::RUNNING(),
+                new AllJobsInStates(StateEnum::successStates()), StateEnum::RUNNING(),
                 StateEnum::SUCCESS()
             )
         );
 
         $andCondition = new AndConditions();
-        $andCondition->addCondition(AllJobsInStates::finished());
-        $andCondition->addCondition(OneJobInState::failed());
+        $andCondition->addCondition(new AllJobsInStates(StateEnum::finishedStates()));
+        $andCondition->addCondition(new OneJobInState(StateEnum::failedStates()));
 
         $promise->addCondition(
             new ConditionTransition($andCondition, StateEnum::RUNNING(), StateEnum::FAILED())
         );
     }
 
+    /**
+     * Hook jobConditions
+     *
+     * @param \Tochka\Promises\Core\BasePromise $promise
+     * @param \Tochka\Promises\Core\BaseJob     $job
+     */
     public function jobConditionsASync(BasePromise $promise, BaseJob $job): void
     {
         $job->addCondition(new ConditionTransition(new Positive(), StateEnum::WAITING(), StateEnum::RUNNING()));
