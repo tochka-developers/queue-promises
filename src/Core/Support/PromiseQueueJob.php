@@ -10,7 +10,7 @@ use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\PromiseJobRegistry;
+use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Support\PromisedJob;
 
 /**
@@ -115,10 +115,10 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     {
         $results = [];
 
-        $jobs = PromiseJobRegistry::loadByPromiseId($this->promise_id);
-
+        $jobs = PromiseJob::byPromise($this->getPromiseId())->get();
+        /** @var PromiseJob $job */
         foreach ($jobs as $job) {
-            $resultJob = $job->getResultJob();
+            $resultJob = $job->getBaseJob()->getResultJob();
             $results[\get_class($resultJob)][] = $resultJob;
         }
 
@@ -129,7 +129,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     {
         $paramType = $parameter->getType();
         if (!$paramType instanceof \ReflectionNamedType) {
-            return (string) $paramType;
+            return (string)$paramType;
         }
 
         return $paramType->getName();

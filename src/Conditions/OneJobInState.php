@@ -5,7 +5,6 @@ namespace Tochka\Promises\Conditions;
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\PromiseJobRegistry;
 
 final class OneJobInState implements ConditionContract
 {
@@ -34,8 +33,8 @@ final class OneJobInState implements ConditionContract
 
     public function condition(BasePromise $basePromise): bool
     {
-        foreach (PromiseJobRegistry::loadByPromiseIdCursor($basePromise->getPromiseId()) as $job) {
-            if ($job->getState()->in($this->states)) {
+        foreach ($basePromise->getAttachedModel()->jobs as $job) {
+            if ($job->getBaseJob()->getState()->in($this->states)) {
                 return true;
             }
         }

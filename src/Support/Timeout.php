@@ -34,10 +34,12 @@ trait Timeout
             return;
         }
 
-        $promise->addCondition(new ConditionTransition(
-            new TimeoutCondition($this->getTimeout()),
-            StateEnum::RUNNING(),
-            StateEnum::TIMEOUT()
-        ));
+        $promise->addCondition(
+            new ConditionTransition(
+                new TimeoutCondition($this->getTimeout()),
+                StateEnum::RUNNING(),
+                StateEnum::TIMEOUT()
+            )
+        );
     }
 }

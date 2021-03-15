@@ -3,10 +3,12 @@
 namespace Tochka\Promises\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Tochka\Promises\Contracts\MayPromised;
+use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Core\FakePromiseRunner;
 
 /**
- * @method static run(\Tochka\Promises\Contracts\PromiseHandler $handler, \Tochka\Promises\Contracts\MayPromised[] $jobs)
+ * @method static run(PromiseHandler $handler, MayPromised[] $jobs)
  * @method static assertRun(string $promiseHandler)
  * @method static assertNotRun(string $promiseHandler)
  * @method static assertAddedJobsCount(string $promiseHandler, int $expected)
@@ -41,9 +43,12 @@ class Promises extends Facade
 
         static::fake();
 
-        return tap($callable(), function () use ($originalDispatcher) {
-            static::swap($originalDispatcher);
-        });
+        return tap(
+            $callable(),
+            function () use ($originalDispatcher) {
+                static::swap($originalDispatcher);
+            }
+        );
     }
 
     /**

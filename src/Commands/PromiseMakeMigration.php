@@ -10,18 +10,14 @@ use Illuminate\Support\Str;
 
 class PromiseMakeMigration extends Command
 {
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'promise:make-migration';
+    private const TABLES = [
+        'table_promises' => 'promises',
+        'table_jobs'     => 'promise_jobs',
+        'table_events'   => 'promise_events',
+    ];
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    protected $signature = 'promise:make-migration {table?}';
+
     protected $description = 'Create a migration for promises';
 
     /**
@@ -60,30 +56,29 @@ class PromiseMakeMigration extends Command
      */
     public function handle(): void
     {
-        $promises_table = Config::get('promises.database.table_promises', 'promises');
-        $promise_jobs_table = Config::get('promises.database.table_jobs', 'promise_jobs');
-        $promise_events_table = Config::get('promises.database.table_events', 'promise_events');
+        $table = $this->argument('table');
 
-        $this->replaceMigration(
-            $this->createTableMigration($promises_table),
-            'promises',
-            $promises_table,
-            Str::studly($promises_table)
-        );
+        if ($table === null) {
+            $tables = self::TABLES;
+        } else {
+            if (!array_key_exists($table, self::TABLES)) {
+                throw new \InvalidArgumentException(sprintf('Migration for table [%s] does not exists', $table));
+            }
 
-        $this->replaceMigration(
-            $this->createTableMigration($promise_jobs_table),
-            'promise_jobs',
-            $promise_jobs_table,
-            Str::studly($promise_jobs_table)
-        );
+            $tables = [$table => self::TABLES[$table]];
+        }
 
-        $this->replaceMigration(
-            $this->createTableMigration($promise_events_table),
-            'promise_events',
-            $promise_events_table,
-            Str::studly($promise_events_table)
-        );
+        foreach ($tables as $config => $name) {
+            $table_name = Config::get('promises.database.' . $config, $name);
+
+            $this->replaceMigration(
+                $this->createTableMigration($table_name),
+                $name,
+                $table_name,
+                Str::studly($table_name)
+            );
+            $this->info(sprintf('Migration for table [%s] created!', $config));
+        }
 
         $this->info('Migration created successfully!');
 

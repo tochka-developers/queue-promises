@@ -3,8 +3,8 @@
 namespace Tochka\Promises\Core;
 
 use Tochka\Promises\Contracts\PromiseHandler;
-use Tochka\Promises\Facades\PromiseJobRegistry;
-use Tochka\Promises\Facades\PromiseRegistry;
+use Tochka\Promises\Models\Promise;
+use Tochka\Promises\Models\PromiseJob;
 
 class PromiseRunner
 {
@@ -24,11 +24,11 @@ class PromiseRunner
             }
         }
 
-        PromiseRegistry::save($basePromise);
+        Promise::saveBasePromise($basePromise);
 
         foreach ($jobs as $job) {
             $baseJob = new BaseJob($basePromise->getPromiseId(), $job);
-            PromiseJobRegistry::save($baseJob);
+            PromiseJob::saveBaseJob($baseJob);
 
             $job->setBaseJobId($baseJob->getJobId());
             $baseJob->setInitial($job);
@@ -39,7 +39,7 @@ class PromiseRunner
                 }
             }
 
-            PromiseJobRegistry::save($baseJob);
+            PromiseJob::saveBaseJob($baseJob);
         }
 
         foreach ($traits as $trait) {

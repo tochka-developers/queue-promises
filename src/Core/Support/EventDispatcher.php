@@ -5,27 +5,42 @@ namespace Tochka\Promises\Core\Support;
 use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\PromiseEventRegistry;
-use Tochka\Promises\Facades\PromiseJobRegistry;
+use Tochka\Promises\Models\PromiseEvent;
+use Tochka\Promises\Models\PromiseJob;
 
 class EventDispatcher
 {
     public function dispatch(PromisedEvent $event): void
     {
-        $waitEvents = PromiseEventRegistry::loadByEvent(get_class($event), $event->getUniqueId());
+        $promiseEvents = PromiseEvent::byEvent(get_class($event), $event->getUniqueId())->get();
 
-        if (!$waitEvents->count()) {
+        if (!$promiseEvents->count()) {
             return;
         }
 
-        foreach ($waitEvents as $waitEvent) {
-            DB::transaction(function () use ($event, $waitEvent) {
-                $baseJob = PromiseJobRegistry::load($waitEvent->getBaseJobId());
-                $baseJob->setState(StateEnum::SUCCESS());
-                $baseJob->setResult($event);
-                PromiseJobRegistry::save($baseJob);
-                PromiseEventRegistry::delete($waitEvent->getId());
-            });
+        /** @var PromiseEvent $promiseEvent */
+        foreach ($promiseEvents as $promiseEvent) {
+            DB::transaction(
+                function () use ($event, $promiseEvent) {
+                    $waitEvent = $promiseEvent->getWaitEvent();
+
+                    $job = PromiseJob::find($waitEvent->getBaseJobId());
+                    if ($job === null) {
+                        return;
+                    }
+
+                    $baseJob = $job->getBaseJob();
+                    $baseJob->setState(StateEnum::SUCCESS());
+                    $baseJob->setResult($event);
+
+                    PromiseJob::saveBaseJob($baseJob);
+                    if ($waitEvent->getAttachedModel() !== null) {
+                        $waitEvent->getAttachedModel()->delete();
+                    } else {
+                        PromiseEvent::where('id', $waitEvent->getId())->delete();
+                    }
+                }
+            );
         }
     }
 }

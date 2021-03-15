@@ -27,10 +27,12 @@ class DispatchPromise
 
     public function dispatchPromise(PromiseStateChanged $event): void
     {
-        dispatch(new PromiseQueueJob(
-            $event->getPromise()->getPromiseId(),
-            $event->getPromise()->getPromiseHandler(),
-            $event->getPromise()->getState()
-        ));
+        dispatch(
+            new PromiseQueueJob(
+                $event->getPromise()->getPromiseId(),
+                $event->getPromise()->getPromiseHandler(),
+                $event->getPromise()->getState()
+            )
+        );
     }
 }

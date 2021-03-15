@@ -31,10 +31,12 @@ trait ExpiredAt
             return;
         }
 
-        $promise->addCondition(new ConditionTransition(
-            new TimeoutCondition($this->getExpiredAt()),
-            StateEnum::RUNNING(),
-            StateEnum::TIMEOUT()
-        ));
+        $promise->addCondition(
+            new ConditionTransition(
+                new TimeoutCondition($this->getExpiredAt()),
+                StateEnum::RUNNING(),
+                StateEnum::TIMEOUT()
+            )
+        );
     }
 }

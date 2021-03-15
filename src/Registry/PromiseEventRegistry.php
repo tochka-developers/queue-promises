@@ -19,13 +19,13 @@ class PromiseEventRegistry
      */
     public function loadByEvent(string $event_name, string $event_unique_id): Collection
     {
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        return PromiseEvent::where('event_name', $event_name)
-            ->where('event_unique_id', $event_unique_id)
+        return PromiseEvent::byEvent($event_name, $event_unique_id)
             ->get()
-            ->map(function ($promiseEventModel) {
-                return $this->mapPromiseEventModel($promiseEventModel);
-            });
+            ->map(
+                function (PromiseEvent $promiseEventModel) {
+                    return $promiseEventModel->getWaitEvent();
+                }
+            );
     }
 
     /**
@@ -33,40 +33,18 @@ class PromiseEventRegistry
      */
     public function save(WaitEvent $waitEvent): void
     {
-        $promiseEventModel = new PromiseEvent();
-
-        $eventId = $waitEvent->getId();
-        if ($eventId !== null) {
-            $promiseEventModel->id = $eventId;
-            $promiseEventModel->exists = true;
-        } else {
-            $promiseEventModel->exists = false;
-        }
-
-        $promiseEventModel->job_id = $waitEvent->getBaseJobId();
-        $promiseEventModel->event_name = $waitEvent->getEventName();
-        $promiseEventModel->event_unique_id = $waitEvent->getEventUniqueId();
-
-        $promiseEventModel->save();
-
-        if ($eventId === null) {
-            $waitEvent->setId($promiseEventModel->id);
-        }
+        PromiseEvent::saveWaitEvent($waitEvent);
     }
 
+    /**
+     * @param int $id
+     *
+     * @throws \Exception
+     */
     public function delete(int $id): void
     {
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         PromiseEvent::where('id', $id)
             ->delete();
-    }
-
-    private function mapPromiseEventModel(PromiseEvent $promiseEventModel): WaitEvent
-    {
-        $waitEvent = new WaitEvent($promiseEventModel->event_name, $promiseEventModel->event_unique_id);
-        $waitEvent->setBaseJobId($promiseEventModel->job_id);
-        $waitEvent->setId($promiseEventModel->id);
-
-        return $waitEvent;
     }
 }

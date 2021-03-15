@@ -3,6 +3,7 @@
 namespace Tochka\Promises\Support;
 
 use Tochka\Promises\Contracts\MayPromised;
+use Tochka\Promises\Models\PromiseEvent;
 
 class WaitEvent implements MayPromised
 {
@@ -14,6 +15,8 @@ class WaitEvent implements MayPromised
     private $event_name;
     /** @var string */
     private $event_unique_id;
+    /** @var \Tochka\Promises\Models\PromiseEvent */
+    private $model = null;
 
     public function __construct(string $event_name, string $event_unique_id)
     {
@@ -39,5 +42,15 @@ class WaitEvent implements MayPromised
     public function getEventUniqueId(): string
     {
         return $this->event_unique_id;
+    }
+
+    public function getAttachedModel(): ?PromiseEvent
+    {
+        return $this->model;
+    }
+
+    public function setAttachedModel(PromiseEvent $model): void
+    {
+        $this->model = $model;
     }
 }

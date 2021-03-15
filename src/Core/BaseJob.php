@@ -9,6 +9,7 @@ use Tochka\Promises\Core\Support\ConditionTransitions;
 use Tochka\Promises\Core\Support\States;
 use Tochka\Promises\Core\Support\Time;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Models\PromiseJob;
 
 class BaseJob implements StatesContract, ConditionTransitionsContract
 {
@@ -24,6 +25,8 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     private $result_job;
     /** @var \Throwable */
     private $exception;
+    /** @var PromiseJob */
+    private $model = null;
 
     public function __construct(int $promise_id, MayPromised $initial_job, MayPromised $result_job = null)
     {
@@ -79,5 +82,15 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     public function getException(): ?\Throwable
     {
         return $this->exception;
+    }
+
+    public function getAttachedModel(): ?PromiseJob
+    {
+        return $this->model;
+    }
+
+    public function setAttachedModel(PromiseJob $model): void
+    {
+        $this->model = $model;
     }
 }

@@ -9,8 +9,8 @@ use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\PromiseJobRegistry;
 use Tochka\Promises\Facades\Promises;
+use Tochka\Promises\Models\PromiseJob;
 
 trait DefaultPromise
 {
@@ -28,7 +28,7 @@ trait DefaultPromise
 
     public function run(): void
     {
-        /** @var \Tochka\Promises\Contracts\PromiseHandler $this */
+        /** @var \Tochka\Promises\Contracts\PromiseHandler|self $this */
         Promises::run($this, $this->jobs);
         $this->jobs = [];
     }
@@ -55,6 +55,10 @@ trait DefaultPromise
      */
     public function getResults(): Collection
     {
-        return PromiseJobRegistry::loadByPromiseId($this->promise_id);
+        return PromiseJob::byPromise($this->getPromiseId())->get()->map(
+            function (PromiseJob $job) {
+                return $job->getBaseJob();
+            }
+        );
     }
 }

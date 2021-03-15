@@ -4,7 +4,7 @@ namespace Tochka\Promises\Core\Dispatchers;
 
 use Tochka\Promises\Contracts\DispatcherContract;
 use Tochka\Promises\Contracts\MayPromised;
-use Tochka\Promises\Facades\PromiseEventRegistry;
+use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Support\WaitEvent;
 
 class WaitEventDispatcher implements DispatcherContract
@@ -23,6 +23,6 @@ class WaitEventDispatcher implements DispatcherContract
     public function dispatch(MayPromised $promised): void
     {
         /** @var WaitEvent $promised */
-        PromiseEventRegistry::save($promised);
+        PromiseEvent::saveWaitEvent($promised);
     }
 }

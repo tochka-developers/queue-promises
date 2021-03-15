@@ -5,6 +5,7 @@ namespace Tochka\Promises\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @deprecated Use \Tochka\Promises\Models\PromiseJob
  * @method static save(\Tochka\Promises\Core\BaseJob $job)
  * @method static \Tochka\Promises\Core\BaseJob load(int $id)
  * @method static \Tochka\Promises\Core\BaseJob[]|\Illuminate\Support\LazyCollection loadByPromiseIdCursor(int $promise_id)

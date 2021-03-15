@@ -19,9 +19,12 @@ final class AndConditions implements ConditionContract
 
     public function condition(BasePromise $basePromise): bool
     {
-        return array_reduce($this->conditions,
+        return array_reduce(
+            $this->conditions,
             static function (bool $carry, ConditionContract $item) use ($basePromise) {
                 return $carry && $item->condition($basePromise);
-            }, true);
+            },
+            true
+        );
     }
 }

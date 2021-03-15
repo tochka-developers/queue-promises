@@ -2,8 +2,8 @@
 
 namespace Tochka\Promises\Conditions;
 
-use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Contracts\ConditionContract;
+use Tochka\Promises\Core\BasePromise;
 
 final class OrConditions implements ConditionContract
 {
@@ -19,9 +19,12 @@ final class OrConditions implements ConditionContract
 
     public function condition(BasePromise $basePromise): bool
     {
-        return array_reduce($this->conditions,
+        return array_reduce(
+            $this->conditions,
             static function (bool $carry, ConditionContract $item) use ($basePromise) {
                 return $carry || $item->condition($basePromise);
-            }, false);
+            },
+            false
+        );
     }
 }

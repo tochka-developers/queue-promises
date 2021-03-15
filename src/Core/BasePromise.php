@@ -9,21 +9,18 @@ use Tochka\Promises\Core\Support\ConditionTransitions;
 use Tochka\Promises\Core\Support\States;
 use Tochka\Promises\Core\Support\Time;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\PromiseRegistry;
+use Tochka\Promises\Models\Promise;
 
-/**
- * Class BasePromise
- *
- * @package App\Promises\Package
- */
 class BasePromise implements StatesContract, ConditionTransitionsContract
 {
     use States, ConditionTransitions, Time;
 
-    /** @var \Tochka\Promises\Contracts\PromiseHandler */
+    /** @var PromiseHandler */
     private $promiseHandler;
     /** @var int|null */
     private $id;
+    /** @var Promise */
+    private $model = null;
 
     public function __construct(PromiseHandler $promiseHandler)
     {
@@ -46,10 +43,20 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
         $this->id = $id;
     }
 
+    public function getAttachedModel(): ?Promise
+    {
+        return $this->model;
+    }
+
+    public function setAttachedModel(Promise $model): void
+    {
+        $this->model = $model;
+    }
+
     public function dispatch(): void
     {
         $this->setState(StateEnum::RUNNING());
 
-        PromiseRegistry::save($this);
+        Promise::saveBasePromise($this);
     }
 }

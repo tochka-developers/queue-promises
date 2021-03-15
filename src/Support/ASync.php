@@ -16,8 +16,10 @@ trait ASync
     public function promiseConditionsASync(BasePromise $promise): void
     {
         $promise->addCondition(
-            new ConditionTransition(AllJobsInStates::success(), StateEnum::RUNNING(),
-                StateEnum::SUCCESS())
+            new ConditionTransition(
+                AllJobsInStates::success(), StateEnum::RUNNING(),
+                StateEnum::SUCCESS()
+            )
         );
 
         $andCondition = new AndConditions();

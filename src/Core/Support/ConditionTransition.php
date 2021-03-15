@@ -2,8 +2,8 @@
 
 namespace Tochka\Promises\Core\Support;
 
-use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Contracts\ConditionContract;
+use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 
 class ConditionTransition

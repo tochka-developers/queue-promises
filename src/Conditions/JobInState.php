@@ -6,7 +6,7 @@ use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\PromiseJobRegistry;
+use Tochka\Promises\Models\PromiseJob;
 
 final class JobInState implements ConditionContract
 {
@@ -38,7 +38,12 @@ final class JobInState implements ConditionContract
 
     public function condition(BasePromise $basePromise): bool
     {
-        $job = PromiseJobRegistry::load($this->job_id);
+        $jobModel = PromiseJob::find($this->job_id);
+        if ($jobModel === null) {
+            return true;
+        }
+
+        $job = $jobModel->getBaseJob();
 
         if (!$job) {
             return true;

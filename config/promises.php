@@ -3,17 +3,15 @@
 return [
 
     // Таблица для сохранения промисов
-    'database'      => [
+    'database'     => [
         'connection'     => null,  //null = подключение по умолчанию
         'table_promises' => 'promises',
         'table_jobs'     => 'promise_jobs',
         'table_events'   => 'promise_events',
+        'table_updates'  => 'promise_updates',
     ],
 
-    // Очередь для задач проверки таймаута
-    'timeout_queue' => 'default',
-
-    // Канал для логов
-    'log_channel'   => 'default',
+    // Синхронное обновление состояний
+    'fire_updates' => false,
 
 ];

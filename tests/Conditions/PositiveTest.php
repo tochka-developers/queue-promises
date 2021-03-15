@@ -12,7 +12,7 @@ class PositiveTest extends TestCase
     /**
      * @covers \Tochka\Promises\Conditions\Positive::condition
      */
-    public function testSetControllerSuffix(): void
+    public function testCondition(): void
     {
         $condition = new Positive();
         $basePromise = new BasePromise(new TestPromise());

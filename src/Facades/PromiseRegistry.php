@@ -5,6 +5,7 @@ namespace Tochka\Promises\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @deprecated Use \Tochka\Promises\Models\Promise
  * @method static save(\Tochka\Promises\Core\BasePromise $promise)
  * @method static \Tochka\Promises\Core\BasePromise load(int $id)
  * @method static \Tochka\Promises\Core\BasePromise[]|\Illuminate\Support\LazyCollection loadAllCursor()

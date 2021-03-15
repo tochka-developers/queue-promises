@@ -18,6 +18,7 @@ trait Sync
 
     /**
      * Hook promiseConditions
+     *
      * @param \Tochka\Promises\Core\BasePromise $promise
      */
     public function promiseConditionsSync(BasePromise $promise): void
@@ -32,6 +33,7 @@ trait Sync
 
     /**
      * Hook jobConditions
+     *
      * @param \Tochka\Promises\Core\BasePromise $promise
      * @param \Tochka\Promises\Core\BaseJob     $job
      */
