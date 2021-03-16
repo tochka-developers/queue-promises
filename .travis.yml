@@ -2,12 +2,13 @@ language: php
 git:
   depth: false
 install:
+  - pecl install pcov
   - composer require ${FRAMEWORK}
-addons:
-  artifacts:
-    s3_region: "eu-central-1"
+workspaces:
+  create:
+    name: coverage-report
     paths:
-      - "coverage-report.clover"
+      - coverage-report.clover
 
 env:
   - FRAMEWORK="laravel/framework:7.*"
@@ -16,7 +17,7 @@ php:
   - '7.4'
 
 script:
-  - php -d pcov.enabled=1 vendor/bin/phpunit --no-coverage --configuration phpunit.xml --coverage-clover=coverage-report.clover
+  - php -d pcov.enabled=1 vendor/bin/phpunit --coverage-clover=coverage-report.clover
 
 jobs:
   include:
@@ -24,6 +25,8 @@ jobs:
       dist: xenial
       php: 7.4
       env: FRAMEWORK="laravel/framework:8.*"
+      workspaces:
+        use: coverage-report
       addons:
         sonarcloud:
           organization: "tochka-developers"

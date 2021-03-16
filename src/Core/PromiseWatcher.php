@@ -21,21 +21,22 @@ class PromiseWatcher
             Promise::inStates([StateEnum::WAITING(), StateEnum::RUNNING()])
                 ->chunk(
                     100,
-                    function (BasePromise $promise) {
+                    function (Promise $promise) {
                         try {
-                            $conditions = $this->getConditionsForState($promise, $promise);
-                            $transition = $this->getTransitionForConditions($conditions, $promise);
+                            $basePromise = $promise->getBasePromise();
+                            $conditions = $this->getConditionsForState($basePromise, $basePromise);
+                            $transition = $this->getTransitionForConditions($conditions, $basePromise);
                             if ($transition) {
-                                $promise->setState($transition->getToState());
-                                Promise::saveBasePromise($promise);
+                                $basePromise->setState($transition->getToState());
+                                Promise::saveBasePromise($basePromise);
                             }
 
-                            PromiseJob::byPromise($promise->getPromiseId())
+                            PromiseJob::byPromise($basePromise->getPromiseId())
                                 ->chunk(
                                     100,
-                                    function (BaseJob $job) use ($promise) {
+                                    function (BaseJob $job) use ($basePromise) {
                                         $conditions = $this->getConditionsForState($job, $job);
-                                        $transition = $this->getTransitionForConditions($conditions, $promise);
+                                        $transition = $this->getTransitionForConditions($conditions, $basePromise);
                                         if ($transition) {
                                             $job->setState($transition->getToState());
                                             PromiseJob::saveBaseJob($job);
