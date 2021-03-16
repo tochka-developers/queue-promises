@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Core;
 
+use Illuminate\Support\Collection;
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\Support\ConditionTransition;
@@ -19,32 +20,34 @@ class PromiseWatcher
             $time = microtime(true);
 
             Promise::inStates([StateEnum::WAITING(), StateEnum::RUNNING()])
+                ->with('jobs')
                 ->chunk(
                     100,
-                    function (Promise $promise) {
-                        try {
-                            $basePromise = $promise->getBasePromise();
-                            $conditions = $this->getConditionsForState($basePromise, $basePromise);
-                            $transition = $this->getTransitionForConditions($conditions, $basePromise);
-                            if ($transition) {
-                                $basePromise->setState($transition->getToState());
-                                Promise::saveBasePromise($basePromise);
-                            }
+                    function (Collection $promises) {
+                        /** @var Promise $promise */
+                        foreach ($promises as $promise) {
+                            try {
+                                $basePromise = $promise->getBasePromise();
+                                $conditions = $this->getConditionsForState($basePromise, $basePromise);
+                                $transition = $this->getTransitionForConditions($conditions, $basePromise);
+                                if ($transition) {
+                                    $basePromise->setState($transition->getToState());
+                                    Promise::saveBasePromise($basePromise);
+                                }
 
-                            PromiseJob::byPromise($basePromise->getPromiseId())
-                                ->chunk(
-                                    100,
-                                    function (BaseJob $job) use ($basePromise) {
-                                        $conditions = $this->getConditionsForState($job, $job);
-                                        $transition = $this->getTransitionForConditions($conditions, $basePromise);
-                                        if ($transition) {
-                                            $job->setState($transition->getToState());
-                                            PromiseJob::saveBaseJob($job);
-                                        }
+                                foreach ($promise->jobs as $job) {
+                                    $baseJob = $job->getBaseJob();
+
+                                    $conditions = $this->getConditionsForState($baseJob, $baseJob);
+                                    $transition = $this->getTransitionForConditions($conditions, $basePromise);
+                                    if ($transition) {
+                                        $baseJob->setState($transition->getToState());
+                                        PromiseJob::saveBaseJob($baseJob);
                                     }
-                                );
-                        } catch (\Exception $e) {
-                            report($e);
+                                }
+                            } catch (\Exception $e) {
+                                report($e);
+                            }
                         }
                     }
                 );
