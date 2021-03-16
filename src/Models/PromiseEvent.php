@@ -70,10 +70,11 @@ class PromiseEvent extends Model
     {
         if ($this->baseEvent === null) {
             $this->baseEvent = new WaitEvent($this->event_name, $this->event_unique_id);
-            $this->baseEvent->setId($this->id);
-            $this->baseEvent->setBaseJobId($this->job_id);
-            $this->baseEvent->setAttachedModel($this);
         }
+
+        $this->baseEvent->setId($this->id);
+        $this->baseEvent->setBaseJobId($this->job_id);
+        $this->baseEvent->setAttachedModel($this);
 
         return $this->baseEvent;
     }

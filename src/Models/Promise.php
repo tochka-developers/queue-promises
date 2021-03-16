@@ -114,14 +114,15 @@ class Promise extends Model
     {
         if ($this->basePromise === null) {
             $this->basePromise = new BasePromise($this->promise_handler);
-
-            $this->basePromise->setPromiseId($this->id);
-            $this->basePromise->setState($this->state);
-            $this->basePromise->setConditions($this->conditions);
-            $this->basePromise->setCreatedAt($this->created_at);
-            $this->basePromise->setUpdatedAt($this->updated_at);
-            $this->basePromise->setAttachedModel($this);
         }
+
+        $this->basePromise->setPromiseId($this->id);
+        $this->basePromise->setState($this->state);
+        $this->basePromise->setConditions($this->conditions);
+        $this->basePromise->setPromiseHandler($this->promise_handler);
+        $this->basePromise->setCreatedAt($this->created_at);
+        $this->basePromise->setUpdatedAt($this->updated_at);
+        $this->basePromise->setAttachedModel($this);
 
         return $this->basePromise;
     }

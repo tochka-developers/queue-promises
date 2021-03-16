@@ -5,11 +5,11 @@ namespace Tochka\Promises\Listeners;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Facades\BaseJobDispatcher;
-use Tochka\Promises\Listeners\Support\FilterTransitions;
+use Tochka\Promises\Listeners\Support\FilterTransitionsTrait;
 
 class DispatchPromiseJob
 {
-    use FilterTransitions;
+    use FilterTransitionsTrait;
 
     public array $transitions = [
         'dispatchJob' => [

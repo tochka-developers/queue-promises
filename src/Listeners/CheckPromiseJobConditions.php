@@ -2,26 +2,24 @@
 
 namespace Tochka\Promises\Listeners;
 
-use Tochka\Promises\Contracts\ConditionTransitionsContract;
-use Tochka\Promises\Contracts\StatesContract;
-use Tochka\Promises\Core\BaseJob;
-use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Core\Support\ConditionTransition;
+use Illuminate\Support\Facades\DB;
+use Tochka\Promises\Contracts\StateChangedContract;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
-use Tochka\Promises\Models\Promise;
+use Tochka\Promises\Listeners\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Models\PromiseJob;
 
 class CheckPromiseJobConditions
 {
-    public function handle($event): void
+    use ConditionTransitionsTrait;
+
+    public function handle(StateChangedContract $event): void
     {
         if ($event instanceof PromiseStateChanged) {
             $promise = $event->getPromise();
             $promisedJob = null;
         } elseif ($event instanceof PromiseJobStateChanged) {
-            $promiseId = $event->getPromiseJob()->getPromiseId();
-            $promiseModel = Promise::find($promiseId);
+            $promiseModel = $event->getPromiseJob()->getAttachedModel()->promise;
             if ($promiseModel === null) {
                 return;
             }
@@ -31,53 +29,26 @@ class CheckPromiseJobConditions
             return;
         }
 
-        PromiseJob::byPromise($promise->getPromiseId())
-            ->chunk(
-                100,
-                function (BaseJob $job) use ($promise, $promisedJob) {
-                    if ($promisedJob !== null && $job->getJobId() === $promisedJob->getJobId()) {
-                        return;
+        DB::transaction(
+            function () use ($promise, $promisedJob) {
+                /** @var array<PromiseJob> $jobs */
+                $jobs = PromiseJob::byPromise($promise->getPromiseId())->lock()->get();
+                foreach ($jobs as $job) {
+                    $baseJob = $job->getBaseJob();
+                    if ($promisedJob !== null && $baseJob->getJobId() === $promisedJob->getJobId()) {
+                        continue;
                     }
 
-                    $conditions = $this->getConditionsForState($job, $job);
+                    $conditions = $this->getConditionsForState($baseJob, $baseJob);
                     $transition = $this->getTransitionForConditions($conditions, $promise);
+
                     if ($transition) {
-                        $job->setState($transition->getToState());
-                        PromiseJob::saveBaseJob($job);
+                        $baseJob->setState($transition->getToState());
+                        PromiseJob::saveBaseJob($baseJob);
                     }
                 }
-            );
-    }
-
-    private function getConditionsForState(
-        StatesContract $state,
-        ConditionTransitionsContract $conditionTransitions
-    ): array {
-        $conditions = $conditionTransitions->getConditions();
-
-        return array_filter(
-            $conditions,
-            static function (ConditionTransition $conditionTransition) use ($state) {
-                return $conditionTransition->getFromState()->is($state->getState());
-            }
+            },
+            5
         );
-    }
-
-    /**
-     * @param ConditionTransition[]             $conditionTransitions
-     * @param \Tochka\Promises\Core\BasePromise $promise
-     *
-     * @return \Tochka\Promises\Core\Support\ConditionTransition
-     */
-    private function getTransitionForConditions(array $conditionTransitions, BasePromise $promise): ?ConditionTransition
-    {
-        foreach ($conditionTransitions as $conditionTransition) {
-            $condition = $conditionTransition->getCondition();
-            if ($condition->condition($promise)) {
-                return $conditionTransition;
-            }
-        }
-
-        return null;
     }
 }

@@ -2,12 +2,11 @@
 
 namespace Tochka\Promises\Core\Support;
 
-use Illuminate\Contracts\Support\Arrayable;
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 
-class ConditionTransition implements Arrayable
+class ConditionTransition
 {
     private ConditionContract $condition;
     private StateEnum $from_state;

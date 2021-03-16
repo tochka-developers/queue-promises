@@ -2,10 +2,11 @@
 
 namespace Tochka\Promises\Events;
 
+use Tochka\Promises\Contracts\StateChangedContract;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
 
-abstract class AbstractPromiseStateChangeEvent
+abstract class AbstractPromiseStateChangeEvent implements StateChangedContract
 {
     private BasePromise $promise;
     private StateEnum $fromState;

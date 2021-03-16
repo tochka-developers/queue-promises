@@ -4,7 +4,7 @@ namespace Tochka\Promises\Support;
 
 trait BaseJobId
 {
-    protected ?int $base_job_id;
+    protected ?int $base_job_id = null;
 
     public function setBaseJobId(int $base_job_id): void
     {

@@ -14,6 +14,7 @@ use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Events\PromiseJobRetrieved;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseJobStateChanging;
 use Tochka\Promises\Events\StateChanged;
@@ -110,15 +111,17 @@ class PromiseJob extends Model
     {
         if ($this->baseJob === null) {
             $this->baseJob = new BaseJob($this->promise_id, $this->initial_job, $this->result_job);
-
-            $this->baseJob->setJobId($this->id);
-            $this->baseJob->setConditions($this->conditions);
-            $this->baseJob->setState($this->state);
-            $this->baseJob->setException($this->exception);
-            $this->baseJob->setCreatedAt($this->created_at);
-            $this->baseJob->setUpdatedAt($this->updated_at);
-            $this->baseJob->setAttachedModel($this);
         }
+
+        $this->baseJob->setJobId($this->id);
+        $this->baseJob->setConditions($this->conditions);
+        $this->baseJob->setState($this->state);
+        $this->baseJob->setException($this->exception);
+        $this->baseJob->setCreatedAt($this->created_at);
+        $this->baseJob->setUpdatedAt($this->updated_at);
+        $this->baseJob->setInitial($this->initial_job);
+        $this->baseJob->setResult($this->result_job);
+        $this->baseJob->setAttachedModel($this);
 
         return $this->baseJob;
     }

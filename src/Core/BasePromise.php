@@ -31,6 +31,10 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
         return $this->promiseHandler;
     }
 
+    public function setPromiseHandler(PromiseHandler $promiseHandler): void{
+        $this->promiseHandler = $promiseHandler;
+    }
+
     public function getPromiseId(): ?int
     {
         return $this->id;
