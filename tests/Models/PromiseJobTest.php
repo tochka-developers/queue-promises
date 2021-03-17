@@ -43,7 +43,8 @@ class PromiseJobTest extends TestCase
                 $conditions,
                 new TestJob('initial'),
                 new TestJob('result'),
-                new \RuntimeException('Test'),
+                //new \RuntimeException('Test'),
+                null
             ],
             'Empty' => [
                 122,
