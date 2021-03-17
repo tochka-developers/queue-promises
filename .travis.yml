@@ -22,6 +22,11 @@ script:
 
 jobs:
   include:
+    - stage: test
+      env:
+        - FRAMEWORK="laravel/framework:8.*"
+      php:
+        - '7.4'
     - stage: analize
       name: "Sonar Analyze"
       php:
