@@ -8,18 +8,18 @@ use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
-use Tochka\Promises\Listeners\CheckPromiseJobConditions;
+use Tochka\Promises\Listeners\CheckStateConditions;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Tests\TestCase;
 
 /**
- * @covers \Tochka\Promises\Listeners\CheckPromiseJobConditions
+ * @covers \Tochka\Promises\Listeners\CheckStateConditions
  */
-class CheckPromiseJobConditionsTest extends TestCase
+class CheckStateConditionsTest extends TestCase
 {
     /**
-     * @covers \Tochka\Promises\Listeners\CheckPromiseJobConditions::handle
+     * @covers \Tochka\Promises\Listeners\CheckStateConditions::handle
      */
     public function testHandlePromiseJobStateChanged(): void
     {
@@ -48,15 +48,15 @@ class CheckPromiseJobConditionsTest extends TestCase
 
         $event = new PromiseJobStateChanged($baseJob, StateEnum::RUNNING(), StateEnum::SUCCESS());
 
-        /** @var CheckPromiseJobConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckPromiseJobConditions::class);
+        /** @var CheckStateConditions|\Mockery\Mock $listener */
+        $listener = \Mockery::mock(CheckStateConditions::class);
         $listener->makePartial();
         $listener->shouldReceive('getConditionsForState')
-            ->once()
+            ->twice()
             ->andReturn([$conditionTransition]);
 
         $listener->shouldReceive('getTransitionForConditions')
-            ->once()
+            ->twice()
             ->with([$conditionTransition], $basePromise)
             ->andReturn($conditionTransition);
 
@@ -69,7 +69,7 @@ class CheckPromiseJobConditionsTest extends TestCase
     }
 
     /**
-     * @covers \Tochka\Promises\Listeners\CheckPromiseJobConditions::handle
+     * @covers \Tochka\Promises\Listeners\CheckStateConditions::handle
      */
     public function testHandlePromiseJobStateChangedEmptyPromise(): void
     {
@@ -79,8 +79,8 @@ class CheckPromiseJobConditionsTest extends TestCase
 
         $event = new PromiseJobStateChanged($baseJob, StateEnum::RUNNING(), StateEnum::SUCCESS());
 
-        /** @var CheckPromiseJobConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckPromiseJobConditions::class);
+        /** @var CheckStateConditions|\Mockery\Mock $listener */
+        $listener = \Mockery::mock(CheckStateConditions::class);
         $listener->makePartial();
         $listener->shouldReceive('getConditionsForState')
             ->never();
@@ -92,7 +92,7 @@ class CheckPromiseJobConditionsTest extends TestCase
     }
 
     /**
-     * @covers \Tochka\Promises\Listeners\CheckPromiseJobConditions::handle
+     * @covers \Tochka\Promises\Listeners\CheckStateConditions::handle
      */
     public function testHandlePromiseStateChanged(): void
     {
@@ -112,15 +112,15 @@ class CheckPromiseJobConditionsTest extends TestCase
 
         $conditionTransition = new ConditionTransition($trueMock, StateEnum::RUNNING(), StateEnum::SUCCESS());
 
-        /** @var CheckPromiseJobConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckPromiseJobConditions::class);
+        /** @var CheckStateConditions|\Mockery\Mock $listener */
+        $listener = \Mockery::mock(CheckStateConditions::class);
         $listener->makePartial();
         $listener->shouldReceive('getConditionsForState')
-            ->once()
+            ->twice()
             ->andReturn([$conditionTransition]);
 
         $listener->shouldReceive('getTransitionForConditions')
-            ->once()
+            ->twice()
             ->with([$conditionTransition], $basePromise)
             ->andReturn($conditionTransition);
 
@@ -133,14 +133,14 @@ class CheckPromiseJobConditionsTest extends TestCase
     }
 
     /**
-     * @covers \Tochka\Promises\Listeners\CheckPromiseJobConditions::handle
+     * @covers \Tochka\Promises\Listeners\CheckStateConditions::handle
      */
     public function testHandleUnknownEvent(): void
     {
         $event = \Mockery::mock(StateChangedContract::class);
 
-        /** @var CheckPromiseJobConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckPromiseJobConditions::class);
+        /** @var CheckStateConditions|\Mockery\Mock $listener */
+        $listener = \Mockery::mock(CheckStateConditions::class);
         $listener->makePartial();
         $listener->shouldReceive('getConditionsForState')
             ->never();

@@ -2,11 +2,12 @@
 
 namespace Tochka\Promises\Events;
 
+use Neves\Events\Contracts\TransactionalEvent;
 use Tochka\Promises\Contracts\StateChangedContract;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Enums\StateEnum;
 
-abstract class AbstractPromiseJobStateChangeEvent implements StateChangedContract
+abstract class AbstractPromiseJobStateChangeEvent implements StateChangedContract, TransactionalEvent
 {
     private BaseJob $promiseJob;
     private StateEnum $fromState;

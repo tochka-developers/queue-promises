@@ -27,8 +27,7 @@ use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
 use Tochka\Promises\Events\StateChanged;
-use Tochka\Promises\Listeners\CheckPromiseConditions;
-use Tochka\Promises\Listeners\CheckPromiseJobConditions;
+use Tochka\Promises\Listeners\CheckStateConditions;
 use Tochka\Promises\Listeners\DispatchPromise;
 use Tochka\Promises\Listeners\DispatchPromiseJob;
 use Tochka\Promises\Listeners\LogStateChanged;
@@ -127,15 +126,15 @@ class PromiseServiceProvider extends ServiceProvider
         );
 
         Event::listen(StateChanged::class, LogStateChanged::class);
-        Event::listen(PromiseStateChanged::class, DispatchPromise::class);
-        Event::listen(PromiseJobStateChanged::class, DispatchPromiseJob::class);
 
         $watchUpdates = Config::get('promises.fire_updates', false);
         if ($watchUpdates) {
-            Event::listen(PromiseStateChanged::class, CheckPromiseJobConditions::class);
-            Event::listen(PromiseJobStateChanged::class, CheckPromiseJobConditions::class);
-            Event::listen(PromiseJobStateChanged::class, CheckPromiseConditions::class);
+            Event::listen(PromiseStateChanged::class, CheckStateConditions::class);
+            Event::listen(PromiseJobStateChanged::class, CheckStateConditions::class);
         }
+
+        Event::listen(PromiseStateChanged::class, DispatchPromise::class);
+        Event::listen(PromiseJobStateChanged::class, DispatchPromiseJob::class);
     }
 
     public function register(): void
