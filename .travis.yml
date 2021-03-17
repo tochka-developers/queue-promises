@@ -18,14 +18,17 @@ workspaces:
     name: coverage-report
     paths:
       - coverage-report.clover
-  script:
-    - php -d pcov.enabled=1 vendor/bin/phpunit --coverage-clover=coverage-report.clover
+script:
+  - php -d pcov.enabled=1 vendor/bin/phpunit --coverage-clover=coverage-report.clover
 
 jobs:
   include:
     - stage: analize
       name: "Sonar Analyze"
-      dist: focal
+      php:
+        - '7.4'
+      env:
+        - FRAMEWORK="none"
       workspaces:
         use: coverage-report
       addons:
