@@ -1,3 +1,4 @@
+dist: focal
 language: php
 git:
   depth: false
