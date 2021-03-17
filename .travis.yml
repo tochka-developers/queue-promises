@@ -4,16 +4,15 @@ language: php
 git:
   depth: false
 
-env:
-  - FRAMEWORK="laravel/framework:7.*"
-  - FRAMEWORK="laravel/framework:8.*"
-php:
-  - '7.4'
-
 jobs:
   include:
     - stage: test
       name: "Tests"
+      env:
+        - FRAMEWORK="laravel/framework:7.*"
+        - FRAMEWORK="laravel/framework:8.*"
+      php:
+        - '7.4'
       install:
         - pecl install pcov
         - composer require ${FRAMEWORK}
