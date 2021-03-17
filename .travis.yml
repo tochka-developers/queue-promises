@@ -22,6 +22,7 @@ script:
 
 jobs:
   include:
+    - stage: "Tests"
     - stage: "Sonar Analyze"
       dist: focal
       workspaces:
