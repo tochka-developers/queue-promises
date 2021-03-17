@@ -6,7 +6,7 @@ class UpdateV1 implements MigrationContract
 {
     public function getName(): string
     {
-        return 'promises';
+        return 'v1';
     }
 
     public function getTable(): string

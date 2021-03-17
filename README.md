@@ -1,4 +1,9 @@
 # Queue Promises
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=alert_status)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=bugs)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=code_smells)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=coverage)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
+
 The module allows chaining of Laravel jobs. The promise will be executed after all chained jobs are finished 
 (either completed successfully or failed). The promise has access to job results. 
 ## Installation
