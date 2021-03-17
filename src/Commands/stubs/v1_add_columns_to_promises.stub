@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class Create{{tableClassName}}Table extends Migration
+class AddColumnsTo{{tableClassName}}Table extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,9 @@ class Create{{tableClassName}}Table extends Migration
      */
     public function up()
     {
-        Schema::create('{{table}}', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('state');
-            $table->longText('conditions');
-            $table->longText('promise_handler');
+        Schema::table('{{table}}', function (Blueprint $table) {
             $table->timestamp('watch_at')->nullable();
             $table->timestamp('timeout_at')->nullable();
-            $table->timestamps();
-
-            $table->index('state');
         });
     }
 
@@ -33,6 +26,9 @@ class Create{{tableClassName}}Table extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('{{table}}');
+        Schema::table('{{table}}', function (Blueprint $table) {
+            $table->dropColumn('watch_at');
+            $table->dropColumn('timeout_at');
+        });
     }
 }

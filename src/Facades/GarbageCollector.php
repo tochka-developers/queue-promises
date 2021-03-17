@@ -3,13 +3,12 @@
 namespace Tochka\Promises\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Tochka\Promises\Contracts\PromisedEvent;
 
 /**
- * @method static dispatch(PromisedEvent $event)
- * @see \Tochka\Promises\Core\Support\EventDispatcher
+ * @method static handle()
+ * @see \Tochka\Promises\Core\GarbageCollector
  */
-class EventDispatcher extends Facade
+class GarbageCollector extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

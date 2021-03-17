@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Commands;
 
@@ -7,25 +8,10 @@ use Tochka\Promises\Facades\PromiseWatcher;
 
 class PromiseWatch extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'promise:watch';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Смотритель промисов';
 
-    /**
-     * Выполнить отправку
-     *
-     * @throws \Exception
-     */
     public function handle(): void
     {
         PromiseWatcher::watch();

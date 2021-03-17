@@ -39,9 +39,12 @@ trait Timeout
             return;
         }
 
+        $condition = new TimeoutCondition($this->getTimeout());
+        $promise->setTimeoutAt($condition->getExpiredAt());
+
         $promise->addCondition(
             new ConditionTransition(
-                new TimeoutCondition($this->getTimeout()),
+                $condition,
                 StateEnum::RUNNING(),
                 StateEnum::TIMEOUT()
             )

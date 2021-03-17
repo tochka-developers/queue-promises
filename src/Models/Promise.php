@@ -3,6 +3,7 @@
 
 namespace Tochka\Promises\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,9 +30,12 @@ use Tochka\Promises\Models\Factories\PromiseFactory;
  * @property PromiseHandler                 $promise_handler
  * @property \Carbon\Carbon                 $created_at
  * @property \Carbon\Carbon                 $updated_at
+ * @property \Carbon\Carbon                 $watch_at
+ * @property \Carbon\Carbon                 $timeout_at
  * @property array<PromiseJob>|Collection   $jobs
  * @property array<PromiseEvent>|Collection $events
- * @method static Builder inStates(array $states)
+ * @method static Builder|self inStates(array $states)
+ * @method static Builder|self forWatch()
  * @method static self|null find(int $id)
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
@@ -44,6 +48,8 @@ class Promise extends Model
         'state'           => StateEnum::class,
         'conditions'      => ConditionsCast::class,
         'promise_handler' => SerializableClassCast::class,
+        'watch_at'        => 'datetime',
+        'timeout_at'      => 'datetime',
     ];
 
     private ?BasePromise $basePromise = null;
@@ -110,6 +116,16 @@ class Promise extends Model
         return $query->whereIn('state', $states);
     }
 
+    public function scopeForWatch(Builder $query): Builder
+    {
+        return $query->where(
+            function (Builder $query) {
+                $query->where('watch_at', '<=', Carbon::now())
+                    ->orWhere('timeout_at', '<=', Carbon::now());
+            }
+        );
+    }
+
     public function getBasePromise(): BasePromise
     {
         if ($this->basePromise === null) {
@@ -122,6 +138,8 @@ class Promise extends Model
         $this->basePromise->setPromiseHandler($this->promise_handler);
         $this->basePromise->setCreatedAt($this->created_at);
         $this->basePromise->setUpdatedAt($this->updated_at);
+        $this->basePromise->setWatchAt($this->watch_at);
+        $this->basePromise->setTimeoutAt($this->timeout_at);
         $this->basePromise->setAttachedModel($this);
 
         return $this->basePromise;
@@ -134,6 +152,8 @@ class Promise extends Model
         $model->state = $basePromise->getState();
         $model->conditions = $basePromise->getConditions();
         $model->promise_handler = clone $basePromise->getPromiseHandler();
+        $model->watch_at = $basePromise->getWatchAt();
+        $model->timeout_at = $basePromise->getTimeoutAt();
 
         $model->save();
 

@@ -1,17 +1,17 @@
 <?php
 
-namespace Tochka\Promises\Tests\Listeners\Support;
+namespace Tochka\Promises\Tests\Core\Support;
 
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
+use Tochka\Promises\Core\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Listeners\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Tests\TestCase;
 use Tochka\Promises\Tests\TestHelpers\TestPromise;
 
 /**
- * @covers \Tochka\Promises\Listeners\Support\ConditionTransitionsTrait
+ * @covers \Tochka\Promises\Core\Support\ConditionTransitionsTrait
  */
 class ConditionTransitionsTraitTest extends TestCase
 {
@@ -44,7 +44,7 @@ class ConditionTransitionsTraitTest extends TestCase
 
     /**
      * @dataProvider getTransitionForConditionsProvider
-     * @covers       \Tochka\Promises\Listeners\Support\ConditionTransitionsTrait::getTransitionForConditions
+     * @covers       \Tochka\Promises\Core\Support\ConditionTransitionsTrait::getTransitionForConditions
      *
      * @param array<ConditionTransition> $conditions
      * @param ConditionTransition|null   $expected
@@ -114,7 +114,7 @@ class ConditionTransitionsTraitTest extends TestCase
 
     /**
      * @dataProvider getConditionsForStateProvider
-     * @covers       \Tochka\Promises\Listeners\Support\ConditionTransitionsTrait::getConditionsForState
+     * @covers       \Tochka\Promises\Core\Support\ConditionTransitionsTrait::getConditionsForState
      *
      * @param StateEnum                  $state
      * @param array<ConditionTransition> $conditions

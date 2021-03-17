@@ -10,16 +10,14 @@ use Tochka\Promises\Contracts\MayPromised;
 
 class QueueJobDispatcher implements DispatcherContract
 {
-    /**
-     * @inheritDoc
-     */
     public function mayDispatch(MayPromised $promised): bool
     {
         return $promised instanceof ShouldQueue;
     }
 
     /**
-     * @inheritDoc
+     * @param \Tochka\Promises\Contracts\MayPromised $promised
+     *
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function dispatch(MayPromised $promised): void

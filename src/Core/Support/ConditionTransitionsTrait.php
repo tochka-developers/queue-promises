@@ -1,11 +1,10 @@
 <?php
 
-namespace Tochka\Promises\Listeners\Support;
+namespace Tochka\Promises\Core\Support;
 
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\BasePromise;
-use Tochka\Promises\Core\Support\ConditionTransition;
 
 trait ConditionTransitionsTrait
 {

@@ -8,6 +8,9 @@ use Tochka\Promises\Models\PromiseJob;
 
 class PromiseRunner
 {
+    /** @var array<string, array> */
+    private array $traits = [];
+
     /**
      * @param PromiseHandler                                $handler
      * @param array<\Tochka\Promises\Contracts\MayPromised> $jobs
@@ -16,13 +19,7 @@ class PromiseRunner
     {
         $basePromise = new BasePromise($handler);
 
-        $traits = class_uses_recursive($handler);
-
-        foreach ($traits as $trait) {
-            if (method_exists($handler, $method = 'promiseConditions' . class_basename($trait))) {
-                $handler->$method($basePromise);
-            }
-        }
+        $this->hookTraitsMethod($handler, 'promiseConditions', $basePromise);
 
         Promise::saveBasePromise($basePromise);
 
@@ -33,21 +30,35 @@ class PromiseRunner
             $job->setBaseJobId($baseJob->getJobId());
             $baseJob->setInitial($job);
 
-            foreach ($traits as $trait) {
-                if (method_exists($handler, $method = 'jobConditions' . class_basename($trait))) {
-                    $handler->$method($basePromise, $baseJob);
-                }
-            }
+            $this->hookTraitsMethod($handler, 'jobConditions', $basePromise, $baseJob);
 
             PromiseJob::saveBaseJob($baseJob);
         }
 
-        foreach ($traits as $trait) {
-            if (method_exists($handler, $method = 'afterRun' . class_basename($trait))) {
-                $handler->$method();
-            }
-        }
+        $this->hookTraitsMethod($handler, 'afterRun');
 
         $basePromise->dispatch();
+    }
+
+    public function hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args): void
+    {
+        $traits = $this->getHandlerTraits($handler);
+
+        foreach ($traits as $trait) {
+            if (method_exists($handler, $method = $methodName . class_basename($trait))) {
+                $handler->$method(...$args);
+            }
+        }
+    }
+
+    public function getHandlerTraits(PromiseHandler $handler): array
+    {
+        $key = get_class($handler);
+
+        if (!array_key_exists($key, $this->traits)) {
+            $this->traits[$key] = class_uses_recursive($handler);
+        }
+
+        return $this->traits[$key];
     }
 }

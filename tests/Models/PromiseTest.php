@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Tests\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Conditions\Positive;
@@ -27,6 +28,7 @@ class PromiseTest extends TestCase
     /**
      * @covers \Tochka\Promises\Models\Promise::saveBasePromise
      * @covers \Tochka\Promises\Models\Promise::getBasePromise
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function testBasePromise(): void
     {

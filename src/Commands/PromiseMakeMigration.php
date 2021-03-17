@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Commands;
 
@@ -7,45 +8,35 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use Tochka\Promises\Commands\Migrations\MigrationContract;
+use Tochka\Promises\Commands\Migrations\PromiseEvents;
+use Tochka\Promises\Commands\Migrations\PromiseJobs;
+use Tochka\Promises\Commands\Migrations\Promises;
+use Tochka\Promises\Commands\Migrations\UpdateV1;
 
 class PromiseMakeMigration extends Command
 {
-    private const TABLES = [
-        'table_promises' => 'promises',
-        'table_jobs'     => 'promise_jobs',
-        'table_events'   => 'promise_events',
-    ];
-
-    protected $signature = 'promise:make-migration {table?}';
+    protected $signature = 'promise:make-migration {name?}';
 
     protected $description = 'Create a migration for promises';
 
-    /**
-     * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    protected $files;
+    private Filesystem $files;
+    private Composer $composer;
+    /** @var array<MigrationContract> */
+    private array $migrations;
 
-    /**
-     * @var \Illuminate\Support\Composer
-     */
-    protected $composer;
-
-    /**
-     * Create a new failed queue jobs table command instance.
-     *
-     * @param \Illuminate\Filesystem\Filesystem $files
-     * @param \Illuminate\Support\Composer      $composer
-     *
-     * @return void
-     */
     public function __construct(Filesystem $files, Composer $composer)
     {
         parent::__construct();
 
         $this->files = $files;
         $this->composer = $composer;
+        $this->migrations = [
+            new Promises(),
+            new PromiseJobs(),
+            new PromiseEvents(),
+            new UpdateV1(),
+        ];
     }
 
     /**
@@ -56,28 +47,36 @@ class PromiseMakeMigration extends Command
      */
     public function handle(): void
     {
-        $table = $this->argument('table');
+        $migrationName = $this->argument('name');
 
-        if ($table === null) {
-            $tables = self::TABLES;
+        if ($migrationName === null) {
+            $migrations = array_filter(
+                $this->migrations,
+                fn(MigrationContract $migration) => $migration->mainMigration()
+            );
         } else {
-            if (!array_key_exists($table, self::TABLES)) {
-                throw new \InvalidArgumentException(sprintf('Migration for table [%s] does not exists', $table));
+            $migrations = array_filter(
+                $this->migrations,
+                fn(MigrationContract $migration) => $migration->getName() === $migrationName
+            );
+            if (count($migrations) === 0) {
+                throw new \InvalidArgumentException(
+                    sprintf('Migrations with name [%s] does not exists', $migrationName)
+                );
             }
-
-            $tables = [$table => self::TABLES[$table]];
         }
 
-        foreach ($tables as $config => $name) {
-            $table_name = Config::get('promises.database.' . $config, $name);
+        foreach ($migrations as $migration) {
+            $tableName = Config::get('promises.database.' . $migration->getTable(), $migration->getDefaultTableName());
+            $migrationName = sprintf($migration->getMigrationName(), $tableName);
 
             $this->replaceMigration(
-                $this->createTableMigration($table_name),
-                $name,
-                $table_name,
-                Str::studly($table_name)
+                $this->createTableMigration($migrationName),
+                $migration->getStub(),
+                $tableName,
+                Str::studly($tableName)
             );
-            $this->info(sprintf('Migration for table [%s] created!', $config));
+            $this->info(sprintf('Migration for table [%s] created!', $tableName));
         }
 
         $this->info('Migration created successfully!');
@@ -88,18 +87,18 @@ class PromiseMakeMigration extends Command
     /**
      * Create a base migration file for the table.
      *
-     * @param string $table
+     * @param string $migrationName
      *
      * @return string
      * @throws \Exception
      */
-    protected function createTableMigration(string $table): string
+    protected function createTableMigration(string $migrationName): string
     {
         /** @var \Illuminate\Database\Migrations\MigrationCreator $migrationCreator */
         $migrationCreator = $this->laravel['migration.creator'];
 
         return $migrationCreator->create(
-            'create_' . $table . '_table',
+            $migrationName,
             $this->laravel->databasePath() . '/migrations'
         );
     }
@@ -120,7 +119,7 @@ class PromiseMakeMigration extends Command
         $stub = str_replace(
             ['{{table}}', '{{tableClassName}}'],
             [$table, $tableClassName],
-            $this->files->get(__DIR__ . '/stubs/' . $stub . '.stub')
+            $this->files->get(__DIR__ . '/stubs/' . $stub)
         );
 
         $this->files->put($path, $stub);

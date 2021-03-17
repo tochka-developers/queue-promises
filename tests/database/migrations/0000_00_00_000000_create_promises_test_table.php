@@ -20,6 +20,8 @@ class CreatePromisesTestTable extends Migration
                 $table->string('state');
                 $table->longText('conditions');
                 $table->longText('promise_handler');
+                $table->timestamp('watch_at');
+                $table->timestamp('timeout_at');
                 $table->timestamps();
 
                 $table->index('state');

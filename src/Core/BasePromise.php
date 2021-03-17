@@ -2,6 +2,8 @@
 
 namespace Tochka\Promises\Core;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Contracts\StatesContract;
@@ -18,12 +20,16 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
     private ?int $id = null;
     private PromiseHandler $promiseHandler;
     private Promise $model;
+    private Carbon $watchAt;
+    private Carbon $timeoutAt;
 
     public function __construct(PromiseHandler $promiseHandler)
     {
         $this->promiseHandler = $promiseHandler;
         $this->state = StateEnum::WAITING();
         $this->model = new Promise();
+        $this->watchAt = Carbon::now()->addSeconds(watcher_watch_timeout());
+        $this->timeoutAt = Carbon::now()->addSeconds(Config::get('promises.global_promise_timeout', 432000));
     }
 
     public function getPromiseHandler(): PromiseHandler
@@ -31,7 +37,8 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
         return $this->promiseHandler;
     }
 
-    public function setPromiseHandler(PromiseHandler $promiseHandler): void{
+    public function setPromiseHandler(PromiseHandler $promiseHandler): void
+    {
         $this->promiseHandler = $promiseHandler;
     }
 
@@ -53,6 +60,26 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
     public function setAttachedModel(Promise $model): void
     {
         $this->model = $model;
+    }
+
+    public function getWatchAt(): Carbon
+    {
+        return $this->watchAt;
+    }
+
+    public function setWatchAt(Carbon $watchAt): void
+    {
+        $this->watchAt = $watchAt;
+    }
+
+    public function getTimeoutAt(): Carbon
+    {
+        return $this->timeoutAt;
+    }
+
+    public function setTimeoutAt(Carbon $timeoutAt): void
+    {
+        $this->timeoutAt = $timeoutAt;
     }
 
     public function dispatch(): void

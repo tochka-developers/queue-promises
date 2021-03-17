@@ -69,7 +69,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     /**
      * @param string $method
      *
-     * @return mixed
+     * @return mixed|bool
      * @throws \ReflectionException
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */

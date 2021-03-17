@@ -2,95 +2,94 @@
 
 namespace Tochka\Promises\Core;
 
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Tochka\Promises\Contracts\ConditionTransitionsContract;
-use Tochka\Promises\Contracts\StatesContract;
-use Tochka\Promises\Core\Support\ConditionTransition;
+use Tochka\Promises\Core\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
 class PromiseWatcher
 {
-    private int $iteration_time = 5;
+    use ConditionTransitionsTrait;
 
+    private int $iteration_time = 0;
+    private int $sleep_time = 2000000;
+
+    /**
+     * @codeCoverageIgnore
+     */
     public function watch(): void
     {
         while (true) {
-            $time = microtime(true);
+            $this->startTime();
+            $this->watchIteration();
+            $this->sleep();
+        }
+    }
 
-            Promise::inStates([StateEnum::WAITING(), StateEnum::RUNNING()])
-                ->with('jobs')
-                ->chunk(
-                    100,
-                    function (Collection $promises) {
-                        /** @var Promise $promise */
-                        foreach ($promises as $promise) {
-                            try {
-                                $basePromise = $promise->getBasePromise();
-                                $conditions = $this->getConditionsForState($basePromise, $basePromise);
-                                $transition = $this->getTransitionForConditions($conditions, $basePromise);
-                                if ($transition) {
-                                    $basePromise->setState($transition->getToState());
-                                    Promise::saveBasePromise($basePromise);
-                                }
-
-                                foreach ($promise->jobs as $job) {
-                                    $baseJob = $job->getBaseJob();
-
-                                    $conditions = $this->getConditionsForState($baseJob, $baseJob);
-                                    $transition = $this->getTransitionForConditions($conditions, $basePromise);
-                                    if ($transition) {
-                                        $baseJob->setState($transition->getToState());
-                                        PromiseJob::saveBaseJob($baseJob);
-                                    }
-                                }
-                            } catch (\Exception $e) {
-                                report($e);
-                            }
+    public function watchIteration(): void
+    {
+        Promise::inStates([StateEnum::WAITING(), StateEnum::RUNNING()])
+            ->forWatch()
+            ->with('jobs')
+            ->chunk(
+                100,
+                function (Collection $promises) {
+                    /** @var Promise $promise */
+                    foreach ($promises as $promise) {
+                        try {
+                            $this->checkPromiseConditions($promise);
+                        } catch (\Exception $e) {
+                            report($e);
                         }
                     }
-                );
-
-            $sleep_time = floor($this->iteration_time - (microtime(true) - $time));
-
-            if ($sleep_time < 1) {
-                $sleep_time = 1;
-            }
-
-            sleep($sleep_time);
-        }
+                }
+            );
     }
 
-    private function getConditionsForState(
-        StatesContract $state,
-        ConditionTransitionsContract $conditionTransitions
-    ): array {
-        $conditions = $conditionTransitions->getConditions();
-
-        return array_filter(
-            $conditions,
-            static function (ConditionTransition $conditionTransition) use ($state) {
-                return $conditionTransition->getFromState()->is($state->getState());
-            }
-        );
-    }
-
-    /**
-     * @param ConditionTransition[]             $conditionTransitions
-     * @param \Tochka\Promises\Core\BasePromise $promise
-     *
-     * @return \Tochka\Promises\Core\Support\ConditionTransition
-     */
-    private function getTransitionForConditions(array $conditionTransitions, BasePromise $promise): ?ConditionTransition
+    public function startTime(): void
     {
-        foreach ($conditionTransitions as $conditionTransition) {
-            $condition = $conditionTransition->getCondition();
-            if ($condition->condition($promise)) {
-                return $conditionTransition;
-            }
+        $this->iteration_time = floor(microtime(true) * 1000000);
+    }
+
+    public function sleep(): void
+    {
+        $sleep_time = floor($this->sleep_time - (microtime(true) * 1000000 - $this->iteration_time));
+
+        if ($sleep_time < 100000) {
+            $sleep_time = 100000;
         }
 
-        return null;
+        usleep($sleep_time);
+    }
+
+    public function checkPromiseConditions(Promise $promise): void
+    {
+        $basePromise = $promise->getBasePromise();
+        $conditions = $this->getConditionsForState($basePromise, $basePromise);
+        $transition = $this->getTransitionForConditions($conditions, $basePromise);
+        if ($transition) {
+            $basePromise->setState($transition->getToState());
+        }
+
+        $basePromise->setWatchAt(Carbon::now()->addSeconds(watcher_watch_timeout()));
+        Promise::saveBasePromise($basePromise);
+
+        foreach ($promise->jobs as $job) {
+            $this->checkJobConditions($job, $basePromise);
+        }
+    }
+
+    public function checkJobConditions(PromiseJob $promiseJob, BasePromise $basePromise): void
+    {
+        $baseJob = $promiseJob->getBaseJob();
+
+        $conditions = $this->getConditionsForState($baseJob, $baseJob);
+        $transition = $this->getTransitionForConditions($conditions, $basePromise);
+        if ($transition) {
+            $baseJob->setState($transition->getToState());
+            PromiseJob::saveBaseJob($baseJob);
+        }
     }
 }

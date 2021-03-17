@@ -23,6 +23,7 @@ trait Sync
      */
     public function promiseConditionsSync(BasePromise $promise): void
     {
+        // Если все задачи перешли в состояние success - меняем состояние промиса на success
         $promise->addCondition(
             new ConditionTransition(
                 new AllJobsInStates(StateEnum::successStates()),
@@ -30,6 +31,7 @@ trait Sync
                 StateEnum::SUCCESS()
             )
         );
+        // Если хотя бы одна задача в состоянии failed или timout - меняем состояние промиса на failed
         $promise->addCondition(
             new ConditionTransition(
                 new OneJobInState(StateEnum::failedStates()),

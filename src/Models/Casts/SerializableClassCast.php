@@ -14,6 +14,7 @@ class SerializableClassCast implements CastsAttributes
      *
      * @return mixed
      * @throws \JsonException
+     * @noinspection PhpMissingParamTypeInspection
      */
     public function get($model, string $key, $value, array $attributes)
     {
@@ -31,8 +32,9 @@ class SerializableClassCast implements CastsAttributes
      *
      * @return array
      * @throws \JsonException
+     * @noinspection PhpMissingParamTypeInspection
      */
-    public function set($model, string $key, $value, array $attributes)
+    public function set($model, string $key, $value, array $attributes): array
     {
         return [
             $key => $value === null ? null : json_encode(serialize($value), JSON_THROW_ON_ERROR, 512),

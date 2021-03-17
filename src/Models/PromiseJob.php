@@ -11,10 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Contracts\MayPromised;
-use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Core\BaseJob;
+use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Events\PromiseJobRetrieved;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseJobStateChanging;
 use Tochka\Promises\Events\StateChanged;
@@ -24,16 +23,16 @@ use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseJobFactory;
 
 /**
- * @property int                       $id
- * @property int                       $promise_id
- * @property StateEnum                 $state
- * @property array                     $conditions
- * @property MayPromised|PromisedEvent $initial_job
- * @property MayPromised|PromisedEvent $result_job
- * @property \Exception                $exception
- * @property \Carbon\Carbon            $created_at
- * @property \Carbon\Carbon            $updated_at
- * @property Promise                   $promise
+ * @property int                        $id
+ * @property int                        $promise_id
+ * @property StateEnum                  $state
+ * @property array<ConditionTransition> $conditions
+ * @property MayPromised                $initial_job
+ * @property MayPromised                $result_job
+ * @property \Exception|null            $exception
+ * @property \Carbon\Carbon             $created_at
+ * @property \Carbon\Carbon             $updated_at
+ * @property Promise|null               $promise
  * @method static Builder byPromise(int $promiseId)
  * @method static self|null find(int $id)
  * @mixin Builder

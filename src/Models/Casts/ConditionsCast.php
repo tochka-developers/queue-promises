@@ -15,6 +15,7 @@ class ConditionsCast implements CastsAttributes
      *
      * @return array
      * @throws \JsonException
+     * @noinspection PhpMissingParamTypeInspection
      */
     public function get($model, string $key, $value, array $attributes): array
     {
@@ -34,6 +35,7 @@ class ConditionsCast implements CastsAttributes
      *
      * @return array
      * @throws \JsonException
+     * @noinspection PhpMissingParamTypeInspection
      */
     public function set($model, string $key, $value, array $attributes): array
     {

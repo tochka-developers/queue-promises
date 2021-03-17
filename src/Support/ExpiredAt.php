@@ -36,6 +36,8 @@ trait ExpiredAt
             return;
         }
 
+        $promise->setTimeoutAt($this->getExpiredAt());
+
         $promise->addCondition(
             new ConditionTransition(
                 new TimeoutCondition($this->getExpiredAt()),

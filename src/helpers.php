@@ -1,4 +1,5 @@
 <?php
+
 if (!function_exists('class_uses_recursive')) {
     /**
      * Returns all traits used by a class, its parent classes and trait of their traits.
@@ -40,5 +41,16 @@ if (!function_exists('trait_uses_recursive')) {
         }
 
         return $traits;
+    }
+}
+
+if (!function_exists('watcher_watch_timeout')) {
+    function watcher_watch_timeout(): int
+    {
+        try {
+            return app()->make(app()->make('watcher_watch_timeout'));
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 }

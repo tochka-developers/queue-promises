@@ -26,6 +26,11 @@ final class Timeout implements ConditionContract
         }
     }
 
+    public function getExpiredAt(): Carbon
+    {
+        return $this->expired_at;
+    }
+
     public function condition(BasePromise $basePromise): bool
     {
         return Carbon::now() >= $this->expired_at;

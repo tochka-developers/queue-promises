@@ -8,17 +8,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Config;
+use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseEventFactory;
 use Tochka\Promises\Support\WaitEvent;
 
 /**
- * @property int            $id
- * @property int            $job_id
- * @property string         $event_name
- * @property string         $event_unique_id
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property PromiseJob     $job
+ * @property int                $id
+ * @property int                $job_id
+ * @property string             $event_name
+ * @property string             $event_unique_id
+ * @property \Carbon\Carbon     $created_at
+ * @property \Carbon\Carbon     $updated_at
+ * @property PromiseJob|null    $job
  * @method static Builder byJob(int $jobId)
  * @method static Builder byEvent(string $eventName, string $eventUniqueId)
  * @method static self|null find(int $id)
@@ -33,6 +34,7 @@ class PromiseEvent extends Model
         'job_id'          => 'int',
         'event_name'      => 'string',
         'event_unique_id' => 'string',
+        'event'           => SerializableClassCast::class,
     ];
 
     private ?WaitEvent $baseEvent = null;
@@ -82,6 +84,9 @@ class PromiseEvent extends Model
     public static function saveWaitEvent(WaitEvent $waitEvent): void
     {
         $model = $waitEvent->getAttachedModel();
+        if ($model === null) {
+            $model = new self();
+        }
 
         $model->job_id = $waitEvent->getBaseJobId();
         $model->event_name = $waitEvent->getEventName();

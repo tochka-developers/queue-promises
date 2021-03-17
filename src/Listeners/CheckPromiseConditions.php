@@ -2,8 +2,8 @@
 
 namespace Tochka\Promises\Listeners;
 
+use Tochka\Promises\Core\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Events\PromiseJobStateChanged;
-use Tochka\Promises\Listeners\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Models\Promise;
 
 class CheckPromiseConditions

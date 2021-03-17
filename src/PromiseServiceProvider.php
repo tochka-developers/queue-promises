@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use Tochka\Promises\Commands\PromiseGcc;
 use Tochka\Promises\Commands\PromiseMakeMigration;
 use Tochka\Promises\Commands\PromiseWatch;
 use Tochka\Promises\Contracts\MayPromised;
@@ -16,6 +17,7 @@ use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Core\Dispatchers\PromiseDispatcher;
 use Tochka\Promises\Core\Dispatchers\QueueJobDispatcher;
 use Tochka\Promises\Core\Dispatchers\WaitEventDispatcher;
+use Tochka\Promises\Core\GarbageCollector;
 use Tochka\Promises\Core\PromiseRunner;
 use Tochka\Promises\Core\PromiseWatcher;
 use Tochka\Promises\Core\Support\BaseJobDispatcher;
@@ -43,6 +45,7 @@ class PromiseServiceProvider extends ServiceProvider
             $this->commands(
                 [
                     PromiseWatch::class,
+                    PromiseGcc::class,
                     PromiseMakeMigration::class,
                 ]
             );
@@ -137,6 +140,15 @@ class PromiseServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        if (Config::get('promises.fire_updates', false)) {
+            $this->app->instance(
+                'watcher_watch_timeout',
+                Config::get('promises.watcher_watch_timeout', false)
+            );
+        } else {
+            $this->app->instance('watcher_watch_timeout', 0);
+        }
+
         $this->app->singleton(
             Facades\BaseJobDispatcher::class,
             static function () {
@@ -167,6 +179,13 @@ class PromiseServiceProvider extends ServiceProvider
             Facades\PromiseWatcher::class,
             static function () {
                 return new PromiseWatcher();
+            }
+        );
+
+        $this->app->singleton(
+            Facades\GarbageCollector::class,
+            static function () {
+                return new GarbageCollector();
             }
         );
 

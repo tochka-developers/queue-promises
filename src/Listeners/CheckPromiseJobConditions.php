@@ -4,9 +4,9 @@ namespace Tochka\Promises\Listeners;
 
 use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Contracts\StateChangedContract;
+use Tochka\Promises\Core\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
-use Tochka\Promises\Listeners\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Models\PromiseJob;
 
 class CheckPromiseJobConditions

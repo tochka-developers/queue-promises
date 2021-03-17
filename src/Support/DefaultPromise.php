@@ -50,7 +50,7 @@ trait DefaultPromise
     }
 
     /**
-     * @return \Illuminate\Support\Collection|BaseJob[]
+     * @return \Illuminate\Support\Collection|array<BaseJob>
      */
     public function getResults(): Collection
     {
