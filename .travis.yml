@@ -1,5 +1,6 @@
 dist: focal
 language: php
+stage: "Tests"
 git:
   depth: false
 install:
