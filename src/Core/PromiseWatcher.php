@@ -13,8 +13,8 @@ class PromiseWatcher
 {
     use ConditionTransitionsTrait;
 
-    private int $iteration_time = 0;
-    private int $sleep_time = 2000000;
+    private int $iterationTime = 0;
+    private int $maxSleepTime = 2000000;
 
     /**
      * @codeCoverageIgnore
@@ -50,12 +50,12 @@ class PromiseWatcher
 
     public function startTime(): void
     {
-        $this->iteration_time = floor(microtime(true) * 1000000);
+        $this->iterationTime = floor(microtime(true) * 1000000);
     }
 
     public function sleep(): void
     {
-        $sleep_time = floor($this->sleep_time - (microtime(true) * 1000000 - $this->iteration_time));
+        $sleep_time = floor($this->maxSleepTime - (microtime(true) * 1000000 - $this->iterationTime));
 
         if ($sleep_time < 100000) {
             $sleep_time = 100000;

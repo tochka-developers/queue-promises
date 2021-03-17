@@ -58,6 +58,8 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
                 case StateEnum::TIMEOUT:
                     $this->dispatchMethodWithParams('timeout');
                     break;
+                default:
+                    break;
             }
 
             $this->dispatchMethodWithParams('handle');

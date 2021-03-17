@@ -50,23 +50,23 @@ class PromiseMakeMigration extends Command
         $migrationName = $this->argument('name');
 
         if ($migrationName === null) {
-            $migrations = array_filter(
+            $migrationsToRun = array_filter(
                 $this->migrations,
-                fn(MigrationContract $migration) => $migration->mainMigration()
+                fn(MigrationContract $migration) => $migration->isMainMigration()
             );
         } else {
-            $migrations = array_filter(
+            $migrationsToRun = array_filter(
                 $this->migrations,
                 fn(MigrationContract $migration) => $migration->getName() === $migrationName
             );
-            if (count($migrations) === 0) {
+            if (count($migrationsToRun) === 0) {
                 throw new \InvalidArgumentException(
                     sprintf('Migrations with name [%s] does not exists', $migrationName)
                 );
             }
         }
 
-        foreach ($migrations as $migration) {
+        foreach ($migrationsToRun as $migration) {
             $tableName = Config::get('promises.database.' . $migration->getTable(), $migration->getDefaultTableName());
             $migrationName = sprintf($migration->getMigrationName(), $tableName);
 

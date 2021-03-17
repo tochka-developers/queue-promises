@@ -42,9 +42,9 @@ class PromiseRunner
 
     public function hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args): void
     {
-        $traits = $this->getHandlerTraits($handler);
+        $loadedTraits = $this->getHandlerTraits($handler);
 
-        foreach ($traits as $trait) {
+        foreach ($loadedTraits as $trait) {
             if (method_exists($handler, $method = $methodName . class_basename($trait))) {
                 $handler->$method(...$args);
             }
