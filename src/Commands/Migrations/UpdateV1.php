@@ -21,7 +21,7 @@ class UpdateV1 implements MigrationContract
 
     public function getStub(): string
     {
-        return 'promises.stub';
+        return 'v1_add_columns_to_promises.stub';
     }
 
     public function getMigrationName(): string
