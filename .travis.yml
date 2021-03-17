@@ -5,26 +5,24 @@ git:
   depth: false
 
 stage: test
+install:
+  - pecl install pcov
+  - composer require ${FRAMEWORK}
 env:
   - FRAMEWORK="laravel/framework:7.*"
   - FRAMEWORK="laravel/framework:8.*"
 php:
   - '7.4'
+workspaces:
+  create:
+    name: coverage-report
+    paths:
+      - coverage-report.clover
+  script:
+    - php -d pcov.enabled=1 vendor/bin/phpunit --coverage-clover=coverage-report.clover
 
 jobs:
   include:
-    - stage: test
-      name: "Tests"
-      install:
-        - pecl install pcov
-        - composer require ${FRAMEWORK}
-      workspaces:
-        create:
-          name: coverage-report
-          paths:
-            - coverage-report.clover
-      script:
-        - php -d pcov.enabled=1 vendor/bin/phpunit --coverage-clover=coverage-report.clover
     - stage: analize
       name: "Sonar Analyze"
       dist: focal
