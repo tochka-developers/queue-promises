@@ -35,8 +35,6 @@ class EventDispatcher
 
                         PromiseJob::saveBaseJob($baseJob);
                     }
-
-                    $promiseEvent->delete();
                 }
             },
             3

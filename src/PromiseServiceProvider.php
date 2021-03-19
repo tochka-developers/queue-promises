@@ -28,6 +28,7 @@ use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
 use Tochka\Promises\Events\StateChanged;
 use Tochka\Promises\Listeners\CheckStateConditions;
+use Tochka\Promises\Listeners\DeletePromisedEvent;
 use Tochka\Promises\Listeners\DispatchPromise;
 use Tochka\Promises\Listeners\DispatchPromiseJob;
 use Tochka\Promises\Listeners\LogStateChanged;
@@ -135,6 +136,7 @@ class PromiseServiceProvider extends ServiceProvider
 
         Event::listen(PromiseStateChanged::class, DispatchPromise::class);
         Event::listen(PromiseJobStateChanged::class, DispatchPromiseJob::class);
+        Event::listen(PromiseJobStateChanged::class, DeletePromisedEvent::class);
     }
 
     public function register(): void
@@ -142,7 +144,7 @@ class PromiseServiceProvider extends ServiceProvider
         if (Config::get('promises.fire_updates', false)) {
             $this->app->instance(
                 'watcher_watch_timeout',
-                Config::get('promises.watcher_watch_timeout', false)
+                Config::get('promises.watcher_watch_timeout', 60 * 10)
             );
         } else {
             $this->app->instance('watcher_watch_timeout', 0);

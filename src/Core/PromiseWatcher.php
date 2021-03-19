@@ -40,7 +40,7 @@ class PromiseWatcher
                     foreach ($promises as $promise) {
                         try {
                             $this->checkPromiseConditions($promise);
-                        } catch (\Exception $e) {
+                        } catch (\Throwable $e) {
                             report($e);
                         }
                     }
@@ -67,13 +67,21 @@ class PromiseWatcher
     public function checkPromiseConditions(Promise $promise): void
     {
         $basePromise = $promise->getBasePromise();
-        $conditions = $this->getConditionsForState($basePromise, $basePromise);
-        $transition = $this->getTransitionForConditions($conditions, $basePromise);
-        if ($transition) {
-            $basePromise->setState($transition->getToState());
+        if ($basePromise->getTimeoutAt() <= Carbon::now()) {
+            $basePromise->setState(StateEnum::TIMEOUT());
+        } else {
+            $conditions = $this->getConditionsForState($basePromise, $basePromise);
+            $transition = $this->getTransitionForConditions($conditions, $basePromise);
+            if ($transition) {
+                $basePromise->setState($transition->getToState());
+            }
         }
 
-        $basePromise->setWatchAt(Carbon::now()->addSeconds(watcher_watch_timeout()));
+        $nextWatch = Carbon::now()->addSeconds(watcher_watch_timeout());
+        if ($nextWatch > Carbon::now()) {
+            $basePromise->setWatchAt($nextWatch);
+        }
+
         Promise::saveBasePromise($basePromise);
 
         foreach ($promise->jobs as $job) {

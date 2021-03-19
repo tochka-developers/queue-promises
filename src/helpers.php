@@ -48,7 +48,7 @@ if (!function_exists('watcher_watch_timeout')) {
     function watcher_watch_timeout(): int
     {
         try {
-            return app()->make(app()->make('watcher_watch_timeout'));
+            return app()->make('watcher_watch_timeout');
         } catch (\Throwable $e) {
             return 0;
         }
