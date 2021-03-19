@@ -16,7 +16,6 @@ class DeletePromisedEvent
     public array $transitions = [
         'dispatchJob' => [
             'from' => [
-                StateEnum::WAITING,
                 StateEnum::RUNNING,
             ],
             'to'   => [
