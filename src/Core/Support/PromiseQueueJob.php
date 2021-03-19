@@ -12,6 +12,7 @@ use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Support\PromisedJob;
+use Tochka\Promises\Support\WaitEvent;
 
 /**
  * Задача, выполняющая обработку результата промиса
@@ -88,23 +89,27 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
         $reflectionMethod = new \ReflectionMethod($this->promise_handler, $method);
 
         foreach ($reflectionMethod->getParameters() as $i => $parameter) {
-            $param = null;
-
             $type = $this->getParamType($parameter);
             if (
-                \in_array(MayPromised::class, class_implements($type), true) ||
-                \in_array(PromisedEvent::class, class_implements($type), true)
+                \in_array(MayPromised::class, class_implements($type), true)
+                || \in_array(PromisedEvent::class, class_implements($type), true)
             ) {
                 if (!empty($results[$type])) {
-                    $param = array_shift($results[$type]);
-                } else {
-                    $param = null;
+                    if ($parameter->isVariadic()) {
+                        array_push($params, ...$results[$type]);
+                        unset($results[$type]);
+                        continue;
+                    }
+
+                    $params[] = array_shift($results[$type]);
+                    continue;
                 }
-            } else {
-                $param = Container::getInstance()->make($type);
+
+                $params[] = null;
+                continue;
             }
 
-            $params[$i] = $param;
+            $params[] = Container::getInstance()->make($type);
         }
 
         return $this->promise_handler->$method(...$params);
@@ -117,11 +122,17 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     {
         $results = [];
 
-        $jobs = PromiseJob::byPromise($this->getPromiseId())->get();
+        $jobs = PromiseJob::byPromise($this->getPromiseId())->orderBy('id')->get();
         /** @var PromiseJob $job */
         foreach ($jobs as $job) {
             $resultJob = $job->getBaseJob()->getResultJob();
             $results[\get_class($resultJob)][] = $resultJob;
+            if ($resultJob instanceof WaitEvent) {
+                $resultEvent = $resultJob->getEvent();
+                if ($resultEvent !== null) {
+                    $results[\get_class($resultEvent)][] = $resultEvent;
+                }
+            }
         }
 
         return $results;

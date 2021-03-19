@@ -31,7 +31,7 @@ class EventDispatcher
 
                         $baseJob = $job->getBaseJob();
                         $baseJob->setState(StateEnum::SUCCESS());
-                        $baseJob->setResult($event);
+                        $baseJob->setResult($waitEvent);
 
                         PromiseJob::saveBaseJob($baseJob);
                     }
