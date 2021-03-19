@@ -59,5 +59,12 @@ trait ASync
                 StateEnum::CANCELED()
             )
         );
+        $job->addCondition(
+            new ConditionTransition(
+                new PromiseInState(StateEnum::finishedStates()),
+                StateEnum::RUNNING(),
+                StateEnum::TIMEOUT()
+            )
+        );
     }
 }

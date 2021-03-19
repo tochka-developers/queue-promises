@@ -71,6 +71,13 @@ trait Sync
                 StateEnum::CANCELED()
             )
         );
+        $job->addCondition(
+            new ConditionTransition(
+                new PromiseInState(StateEnum::finishedStates()),
+                StateEnum::RUNNING(),
+                StateEnum::TIMEOUT()
+            )
+        );
 
         $this->previousJob = $job;
     }
