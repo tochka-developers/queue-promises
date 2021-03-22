@@ -18,7 +18,7 @@ trait DefaultPromise
 
     /** @var array<MayPromised> */
     private array $jobs = [];
-    private int $promise_id;
+    private ?int $promise_id = null;
 
     public function add(MayPromised $entity): void
     {
@@ -44,7 +44,7 @@ trait DefaultPromise
         $this->promise_id = $promise_id;
     }
 
-    public function getPromiseId(): int
+    public function getPromiseId(): ?int
     {
         return $this->promise_id;
     }

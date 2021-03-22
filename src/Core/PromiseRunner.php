@@ -22,6 +22,7 @@ class PromiseRunner
         $this->hookTraitsMethod($handler, 'promiseConditions', $basePromise);
 
         Promise::saveBasePromise($basePromise);
+        $handler->setPromiseId($basePromise->getPromiseId());
 
         foreach ($jobs as $job) {
             $baseJob = new BaseJob($basePromise->getPromiseId(), $job);
