@@ -50,21 +50,5 @@ trait ASync
     {
         // Сразу при старте запускаем все доступные задачи в промисе
         $job->addCondition(new ConditionTransition(new Positive(), StateEnum::WAITING(), StateEnum::RUNNING()));
-
-        // Если промис завершился - все "ждущие" по какой-либо причине задачи переводим в отмененные
-        $job->addCondition(
-            new ConditionTransition(
-                new PromiseInState(StateEnum::finishedStates()),
-                StateEnum::WAITING(),
-                StateEnum::CANCELED()
-            )
-        );
-        $job->addCondition(
-            new ConditionTransition(
-                new PromiseInState(StateEnum::finishedStates()),
-                StateEnum::RUNNING(),
-                StateEnum::TIMEOUT()
-            )
-        );
     }
 }

@@ -63,22 +63,6 @@ trait Sync
 
         $job->addCondition($conditionTransition);
 
-        // если основной промис завершился - то все ждущие задачи переходят в состояние отмененных
-        $job->addCondition(
-            new ConditionTransition(
-                new PromiseInState(StateEnum::finishedStates()),
-                StateEnum::WAITING(),
-                StateEnum::CANCELED()
-            )
-        );
-        $job->addCondition(
-            new ConditionTransition(
-                new PromiseInState(StateEnum::finishedStates()),
-                StateEnum::RUNNING(),
-                StateEnum::TIMEOUT()
-            )
-        );
-
         $this->previousJob = $job;
     }
 
