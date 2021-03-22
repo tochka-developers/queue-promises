@@ -8,5 +8,5 @@ interface PromiseHandler extends MayPromised
 
     public function setPromiseId(int $promise_id): void;
 
-    public function getPromiseId(): int;
+    public function getPromiseId(): ?int;
 }
