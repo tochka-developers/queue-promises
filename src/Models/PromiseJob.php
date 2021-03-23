@@ -125,7 +125,7 @@ class PromiseJob extends Model
         return $this->baseJob;
     }
 
-    public static function saveBaseJob(BaseJob $baseJob): void
+    public static function saveBaseJob(BaseJob $baseJob): self
     {
         $model = $baseJob->getAttachedModel();
 
@@ -140,6 +140,8 @@ class PromiseJob extends Model
 
         $baseJob->setJobId($model->id);
         $baseJob->setAttachedModel($model);
+
+        return $model;
     }
 
     private function clearJobs(MayPromised $job): MayPromised

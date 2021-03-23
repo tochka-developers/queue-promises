@@ -145,7 +145,7 @@ class Promise extends Model
         return $this->basePromise;
     }
 
-    public static function saveBasePromise(BasePromise $basePromise): void
+    public static function saveBasePromise(BasePromise $basePromise): self
     {
         $model = $basePromise->getAttachedModel();
 
@@ -159,6 +159,8 @@ class Promise extends Model
 
         $basePromise->setPromiseId($model->id);
         $basePromise->setAttachedModel($model);
+
+        return $model;
     }
 
     protected static function newFactory(): PromiseFactory

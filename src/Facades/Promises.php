@@ -15,6 +15,7 @@ use Tochka\Promises\Core\FakePromiseRunner;
  * @method static assertAddedJobs(string $promiseHandler, array $expected)
  * @see \Tochka\Promises\Core\FakePromiseRunner
  * @see \Tochka\Promises\Core\PromiseRunner
+ * @codeCoverageIgnore
  */
 class Promises extends Facade
 {

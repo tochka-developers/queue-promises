@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static handle()
  * @see \Tochka\Promises\Core\GarbageCollector
+ * @codeCoverageIgnore
  */
 class GarbageCollector extends Facade
 {

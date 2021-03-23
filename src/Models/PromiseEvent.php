@@ -81,7 +81,7 @@ class PromiseEvent extends Model
         return $this->baseEvent;
     }
 
-    public static function saveWaitEvent(WaitEvent $waitEvent): void
+    public static function saveWaitEvent(WaitEvent $waitEvent): self
     {
         $model = $waitEvent->getAttachedModel();
         if ($model === null) {
@@ -96,6 +96,8 @@ class PromiseEvent extends Model
 
         $waitEvent->setId($model->id);
         $waitEvent->setAttachedModel($model);
+
+        return $model;
     }
 
     protected static function newFactory(): PromiseEventFactory

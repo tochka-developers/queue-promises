@@ -2,6 +2,9 @@
 
 namespace Tochka\Promises\Contracts;
 
+/**
+ * @codeCoverageIgnore
+ */
 interface PromiseHandler extends MayPromised
 {
     public function run(): void;

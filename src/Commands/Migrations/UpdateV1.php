@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Commands\Migrations;
 
-class UpdateV1 implements MigrationContract
+final class UpdateV1 implements MigrationContract
 {
     public function getName(): string
     {

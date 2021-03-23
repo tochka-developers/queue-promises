@@ -9,6 +9,9 @@ use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Tests\TestHelpers\TestPromise;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PromiseFactory extends Factory
 {
     /**

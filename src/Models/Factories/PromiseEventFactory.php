@@ -6,6 +6,9 @@ namespace Tochka\Promises\Models\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Tochka\Promises\Models\PromiseEvent;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PromiseEventFactory extends Factory
 {
     /**

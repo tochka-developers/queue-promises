@@ -19,7 +19,8 @@ class WaitEventDispatcher implements DispatcherContract
     {
         /** @var WaitEvent $promised */
         PromiseEvent::saveWaitEvent($promised);
-        // Чтобы сохранить ID события в джобу-обертку
+
+        // Чтобы сохранить ID события в задачу-обертку
         $promise_job = PromiseJob::find($promised->getBaseJobId());
         if ($promise_job !== null) {
             $promise_job->initial_job = $promised;

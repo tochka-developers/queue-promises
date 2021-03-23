@@ -8,6 +8,9 @@ use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Tests\TestHelpers\TestJob;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PromiseJobFactory extends Factory
 {
     /**

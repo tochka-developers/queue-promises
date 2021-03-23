@@ -31,34 +31,42 @@ class TimeoutTest extends TestCase
         return [
             'Carbon true'        => [
                 Carbon::now(),
+                Carbon::now(),
                 true,
             ],
             'Carbon false'       => [
+                Carbon::now()->addMinutes(3),
                 Carbon::now()->addMinutes(3),
                 false,
             ],
             'DateInterval true'  => [
                 CarbonInterval::minutes(1),
+                Carbon::now()->addMinutes(1),
                 true,
             ],
             'DateInterval false' => [
                 CarbonInterval::minutes(3),
+                Carbon::now()->addMinutes(3),
                 false,
             ],
             'Int true'           => [
                 1,
+                Carbon::now()->addMinutes(1),
                 true,
             ],
             'Int false'          => [
                 3,
+                Carbon::now()->addMinutes(3),
                 false,
             ],
             'Parse true'         => [
                 '+1 minute',
+                Carbon::now()->addMinutes(1),
                 true,
             ],
             'Parse false'        => [
                 '+3 minute',
+                Carbon::now()->addMinutes(3),
                 false,
             ],
         ];
@@ -67,15 +75,19 @@ class TimeoutTest extends TestCase
     /**
      * @dataProvider conditionProvider
      * @covers       \Tochka\Promises\Conditions\Timeout::condition
+     * @covers       \Tochka\Promises\Conditions\Timeout::getExpiredAt
      *
-     * @param mixed $timeout
-     * @param bool  $expected
+     * @param mixed          $timeout
+     * @param \Carbon\Carbon $expiredAt
+     * @param bool           $expected
      */
-    public function testCondition($timeout, bool $expected): void
+    public function testCondition($timeout, Carbon $expiredAt, bool $expected): void
     {
         Carbon::setTestNow($this->nowTime);
         $basePromise = new BasePromise(new TestPromise());
         $condition = new Timeout($timeout);
+        $expiredAtResult = $condition->getExpiredAt();
+        self::assertEquals($expiredAt, $expiredAtResult);
 
         Carbon::setTestNow($this->nowTime->addMinutes(2));
         $result = $condition->condition($basePromise);

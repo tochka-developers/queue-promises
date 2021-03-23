@@ -14,14 +14,6 @@
         <include>
             <directory suffix=".php">./src</directory>
         </include>
-        <exclude>
-            <directory suffix=".php">./src/Commands</directory>
-            <directory suffix=".php">./src/Contracts</directory>
-            <directory suffix=".php">./src/Exceptions</directory>
-            <directory suffix=".php">./src/Facades</directory>
-            <directory suffix=".php">./src/Models/Factories</directory>
-            <file>./src/PromiseServiceProvider.php</file>
-        </exclude>
     </coverage>
     <testsuites>
         <testsuite name="Unit">

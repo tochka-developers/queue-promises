@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Tochka\Promises\Support\WaitEvent[]|\Illuminate\Support\Collection loadByEvent(string $event_name, string $event_unique_id)
  * @method static delete(int $id)
  * @see \Tochka\Promises\Registry\PromiseEventRegistry
+ * @codeCoverageIgnore
  */
 class PromiseEventRegistry extends Facade
 {

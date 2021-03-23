@@ -8,6 +8,7 @@ use Tochka\Promises\Contracts\PromisedEvent;
 /**
  * @method static dispatch(PromisedEvent $event)
  * @see \Tochka\Promises\Core\Support\EventDispatcher
+ * @codeCoverageIgnore
  */
 class EventDispatcher extends Facade
 {

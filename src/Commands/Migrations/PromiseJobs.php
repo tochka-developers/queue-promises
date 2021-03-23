@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Commands\Migrations;
 
-class PromiseJobs implements MigrationContract
+final class PromiseJobs implements MigrationContract
 {
     public function getName(): string
     {

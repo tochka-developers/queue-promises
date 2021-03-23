@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
-use Tochka\Promises\Commands\PromiseGcc;
+use Tochka\Promises\Commands\PromiseGc;
 use Tochka\Promises\Commands\PromiseMakeMigration;
 use Tochka\Promises\Commands\PromiseWatch;
 use Tochka\Promises\Contracts\MayPromised;
@@ -37,6 +37,9 @@ use Tochka\Promises\Registry\PromiseEventRegistry;
 use Tochka\Promises\Registry\PromiseJobRegistry;
 use Tochka\Promises\Registry\PromiseRegistry;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PromiseServiceProvider extends ServiceProvider
 {
     public function boot(): void
@@ -45,7 +48,7 @@ class PromiseServiceProvider extends ServiceProvider
             $this->commands(
                 [
                     PromiseWatch::class,
-                    PromiseGcc::class,
+                    PromiseGc::class,
                     PromiseMakeMigration::class,
                 ]
             );
@@ -186,7 +189,11 @@ class PromiseServiceProvider extends ServiceProvider
         $this->app->singleton(
             Facades\GarbageCollector::class,
             static function () {
-                return new GarbageCollector();
+                $timeout = Config::get('promises.garbage_collector.timeout', 60 * 10);
+                $timeToDelete = Config::get('promises.garbage_collector.time', 60 * 60 * 24 * 7);
+                $states = Config::get('promises.garbage_collector.states', []);
+
+                return new GarbageCollector($timeout, $timeToDelete, $states);
             }
         );
 

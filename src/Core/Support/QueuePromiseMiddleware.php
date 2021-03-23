@@ -5,49 +5,53 @@ namespace Tochka\Promises\Core\Support;
 use Tochka\Promises\Contracts\JobFacadeContract;
 use Tochka\Promises\Contracts\JobStateContract;
 use Tochka\Promises\Contracts\MayPromised;
+use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\PromiseJob;
 
 class QueuePromiseMiddleware
 {
     /**
-     * @param $job
+     * @param $queueJob
      * @param $next
      *
      * @return mixed
      * @throws \Exception
      */
-    public function handle($job, $next)
+    public function handle($queueJob, $next)
     {
-        if (!$job instanceof MayPromised || $job->getBaseJobId() === null) {
-            return $next($job);
+        if (!$queueJob instanceof MayPromised || $queueJob->getBaseJobId() === null) {
+            return $next($queueJob);
         }
 
         try {
-            return $next($job);
+            return $next($queueJob);
         } finally {
-            $jobModel = PromiseJob::find($job->getBaseJobId());
+            $jobModel = PromiseJob::find($queueJob->getBaseJobId());
             if ($jobModel !== null) {
-                $baseJob = $jobModel->getBaseJob();
-
-                // меняем состояние только если задача находится в состоянии ожидание или запущена
-                if ($job instanceof JobStateContract && $baseJob->getState()->in(
-                        [
-                            StateEnum::WAITING(),
-                            StateEnum::RUNNING(),
-                        ]
-                    )) {
-                    $baseJob->setState($job->getState());
-                }
-
-                if ($job instanceof JobFacadeContract) {
-                    $baseJob->setResult($job->getJobHandler());
-                } else {
-                    $baseJob->setResult($job);
-                }
-
-                PromiseJob::saveBaseJob($baseJob);
+                $this->setJobStateAndResult($queueJob, $jobModel->getBaseJob());
             }
         }
+    }
+
+    public function setJobStateAndResult(MayPromised $queueJob, BaseJob $baseJob): void
+    {
+        // меняем состояние только если задача находится в состоянии ожидание или запущена
+        if ($queueJob instanceof JobStateContract && $baseJob->getState()->in(
+                [
+                    StateEnum::WAITING(),
+                    StateEnum::RUNNING(),
+                ]
+            )) {
+            $baseJob->setState($queueJob->getState());
+        }
+
+        if ($queueJob instanceof JobFacadeContract) {
+            $baseJob->setResult($queueJob->getJobHandler());
+        } else {
+            $baseJob->setResult($queueJob);
+        }
+
+        PromiseJob::saveBaseJob($baseJob);
     }
 }

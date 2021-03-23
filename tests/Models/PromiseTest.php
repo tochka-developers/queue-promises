@@ -2,7 +2,7 @@
 
 namespace Tochka\Promises\Tests\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Conditions\Positive;
@@ -84,6 +84,26 @@ class PromiseTest extends TestCase
 
         self::assertEquals(1, $promises->where('state', StateEnum::WAITING())->first()->id);
         self::assertEquals(4, $promises->where('state', StateEnum::SUCCESS())->first()->id);
+    }
+
+    /**
+     * @covers \Tochka\Promises\Models\Promise::scopeInStates
+     */
+    public function testForWatch(): void
+    {
+        Carbon::setTestNow(Carbon::now());
+
+        Promise::factory()->create(['id' => 1, 'watch_at' => Carbon::now()->addMinute(), 'timeout_at' => Carbon::now()->addMinute()]);
+        Promise::factory()->create(['id' => 2, 'watch_at' => Carbon::now()->subMinute(), 'timeout_at' => Carbon::now()->addMinute()]);
+        Promise::factory()->create(['id' => 3, 'watch_at' => Carbon::now()->addMinute(), 'timeout_at' => Carbon::now()->subMinute()]);
+        Promise::factory()->create(['id' => 4, 'watch_at' => Carbon::now()->subMinute(), 'timeout_at' => Carbon::now()->subMinute()]);
+
+        $promises = Promise::forWatch()->get();
+
+        self::assertNotNull($promises->where('id', 2)->first());
+        self::assertNotNull($promises->where('id', 3)->first());
+        self::assertNotNull($promises->where('id', 4)->first());
+        self::assertNull($promises->where('id', 1)->first());
     }
 
     /**

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static watch()
  * @see \Tochka\Promises\Core\PromiseWatcher
+ * @codeCoverageIgnore
  */
 class PromiseWatcher extends Facade
 {

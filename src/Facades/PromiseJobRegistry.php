@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static int countByPromiseId(int $promise_id)
  * @method static deleteByPromiseId(int $promise_id)
  * @see \Tochka\Promises\Registry\PromiseJobRegistry
+ * @codeCoverageIgnore
  */
 class PromiseJobRegistry extends Facade
 {

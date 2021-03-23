@@ -7,6 +7,7 @@ use Tochka\Promises\Contracts\PromisedEvent;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Models\PromiseJob;
+use Tochka\Promises\Support\WaitEvent;
 
 class EventDispatcher
 {
@@ -22,22 +23,27 @@ class EventDispatcher
 
                 /** @var PromiseEvent $promiseEvent */
                 foreach ($promiseEvents as $promiseEvent) {
-                    $waitEvent = clone $promiseEvent->getWaitEvent();
-
-                    $job = PromiseJob::find($waitEvent->getBaseJobId());
-                    if ($job !== null) {
-                        $waitEvent->setEvent($event);
-                        $waitEvent->setAttachedModel(null);
-
-                        $baseJob = $job->getBaseJob();
-                        $baseJob->setState(StateEnum::SUCCESS());
-                        $baseJob->setResult($waitEvent);
-
-                        PromiseJob::saveBaseJob($baseJob);
-                    }
+                    $this->updateEventState($event, $promiseEvent->getWaitEvent());
                 }
             },
             3
         );
+    }
+
+    public function updateEventState(PromisedEvent $event, WaitEvent $waitEvent): void
+    {
+        $cloneWaitEvent = clone $waitEvent;
+
+        $job = PromiseJob::find($cloneWaitEvent->getBaseJobId());
+        if ($job !== null) {
+            $cloneWaitEvent->setEvent($event);
+            $cloneWaitEvent->setAttachedModel(null);
+
+            $baseJob = $job->getBaseJob();
+            $baseJob->setState(StateEnum::SUCCESS());
+            $baseJob->setResult($cloneWaitEvent);
+
+            PromiseJob::saveBaseJob($baseJob);
+        }
     }
 }

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void loadInStatesChunk(array $states, callable $callback, int $chunk_size = 1000)
  * @method static delete(int $id)
  * @see \Tochka\Promises\Registry\PromiseRegistry
+ * @codeCoverageIgnore
  */
 class PromiseRegistry extends Facade
 {
