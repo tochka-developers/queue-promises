@@ -84,6 +84,7 @@ class PromiseJob extends Model
 
     public function getConnectionName(): ?string
     {
+        /** @noinspection PhpRedundantOptionalArgumentInspection */
         return Config::get('promises.database.connection', null);
     }
 
@@ -155,6 +156,7 @@ class PromiseJob extends Model
         $property->setAccessible(true);
         $internalJob = $property->getValue($job);
         if ($internalJob instanceof Job) {
+            /** @noinspection PhpRedundantOptionalArgumentInspection */
             $property->setValue($job, null);
         }
 

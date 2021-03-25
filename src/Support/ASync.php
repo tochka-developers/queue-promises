@@ -6,7 +6,6 @@ use Tochka\Promises\Conditions\AllJobsInStates;
 use Tochka\Promises\Conditions\AndConditions;
 use Tochka\Promises\Conditions\OneJobInState;
 use Tochka\Promises\Conditions\Positive;
-use Tochka\Promises\Conditions\PromiseInState;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
@@ -45,6 +44,8 @@ trait ASync
      *
      * @param \Tochka\Promises\Core\BasePromise $promise
      * @param \Tochka\Promises\Core\BaseJob     $job
+     *
+     * @noinspection PhpUnusedParameterInspection
      */
     public function jobConditionsASync(BasePromise $promise, BaseJob $job): void
     {

@@ -190,7 +190,7 @@ class PromiseServiceProvider extends ServiceProvider
             Facades\GarbageCollector::class,
             static function () {
                 $timeout = Config::get('promises.garbage_collector.timeout', 60 * 10);
-                $timeToDelete = Config::get('promises.garbage_collector.time', 60 * 60 * 24 * 7);
+                $timeToDelete = Config::get('promises.garbage_collector.older_then', 60 * 60 * 24 * 7);
                 $states = Config::get('promises.garbage_collector.states', []);
 
                 return new GarbageCollector($timeout, $timeToDelete, $states);

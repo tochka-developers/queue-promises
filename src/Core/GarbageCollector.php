@@ -4,8 +4,6 @@ namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Tochka\Promises\Contracts\PromiseHandler;
-use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Models\PromiseJob;
@@ -14,21 +12,21 @@ use Tochka\Promises\Support\WaitEvent;
 class GarbageCollector
 {
     private int $timeout;
-    private int $timeToDelete;
+    private int $deleteOlderThen;
     /** @var array<string> */
     private array $states;
 
-    public function __construct(int $timeout, int $timeToDelete, array $states)
+    public function __construct(int $timeout, int $deleteOlderThen, array $states)
     {
         $this->timeout = $timeout;
-        $this->timeToDelete = $timeToDelete;
+        $this->deleteOlderThen = $deleteOlderThen;
         $this->states = $states;
     }
 
     public function handle(): void
     {
         while (true) {
-            Promise::where('updated_at', '<=', Carbon::now()->subSeconds($this->timeToDelete))
+            Promise::where('updated_at', '<=', Carbon::now()->subSeconds($this->deleteOlderThen))
                 ->whereIn('state', $this->states)
                 ->chunk(
                     100,
@@ -105,9 +103,6 @@ class GarbageCollector
     public function checkJobsToDelete(BaseJob $baseJob): void
     {
         $handler = $baseJob->getInitialJob();
-        if ($handler instanceof PromiseHandler) {
-            $promise = $handler->getPromiseId();
-        }
 
         if ($handler instanceof WaitEvent) {
             if ($handler->getAttachedModel() !== null) {

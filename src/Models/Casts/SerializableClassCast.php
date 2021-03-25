@@ -37,7 +37,7 @@ class SerializableClassCast implements CastsAttributes
     public function set($model, string $key, $value, array $attributes): array
     {
         return [
-            $key => $value === null ? null : json_encode(serialize($value), JSON_THROW_ON_ERROR, 512),
+            $key => $value === null ? null : json_encode(serialize($value), JSON_THROW_ON_ERROR),
         ];
     }
 }

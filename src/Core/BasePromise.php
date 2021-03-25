@@ -15,7 +15,9 @@ use Tochka\Promises\Models\Promise;
 
 class BasePromise implements StatesContract, ConditionTransitionsContract
 {
-    use States, ConditionTransitions, Time;
+    use ConditionTransitions;
+    use States;
+    use Time;
 
     private ?int $id = null;
     private PromiseHandler $promiseHandler;

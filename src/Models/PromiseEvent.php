@@ -23,6 +23,7 @@ use Tochka\Promises\Support\WaitEvent;
  * @method static Builder byJob(int $jobId)
  * @method static Builder byEvent(string $eventName, string $eventUniqueId)
  * @method static self|null find(int $id)
+ * @method static Builder where($column, $operator = null, $value = null, $boolean = 'and')
  * @mixin Builder
  */
 class PromiseEvent extends Model
@@ -41,6 +42,7 @@ class PromiseEvent extends Model
 
     public function getConnectionName(): ?string
     {
+        /** @noinspection PhpRedundantOptionalArgumentInspection */
         return Config::get('promises.database.connection', null);
     }
 

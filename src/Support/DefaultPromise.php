@@ -40,6 +40,12 @@ trait DefaultPromise
         );
     }
 
+    /**
+     * @param \Tochka\Promises\Core\BasePromise $promise
+     * @param \Tochka\Promises\Core\BaseJob     $job
+     *
+     * @noinspection PhpUnusedParameterInspection
+     */
     public function jobConditionsDefaultPromise(BasePromise $promise, BaseJob $job): void
     {
         // Если промис завершился - все "ждущие" по какой-либо причине задачи переводим в отмененные

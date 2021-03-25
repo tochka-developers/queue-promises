@@ -44,7 +44,6 @@ class PromiseEventRegistry
      */
     public function delete(int $id): void
     {
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         PromiseEvent::where('id', $id)
             ->delete();
     }

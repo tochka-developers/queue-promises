@@ -88,7 +88,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
         // подготавливаем аргументы для вызова метода
         $reflectionMethod = new \ReflectionMethod($this->promise_handler, $method);
 
-        foreach ($reflectionMethod->getParameters() as $i => $parameter) {
+        foreach ($reflectionMethod->getParameters() as $parameter) {
             $type = $this->getParamType($parameter);
             if (
                 \in_array(MayPromised::class, class_implements($type), true)

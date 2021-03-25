@@ -3,14 +3,14 @@
 namespace Tochka\Promises\Support;
 
 use Carbon\Carbon;
-use Tochka\Promises\Conditions\Timeout as TimeoutCondition;
+use Tochka\Promises\Conditions\Timeout;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
 
 trait ExpiredAt
 {
-    private Carbon $trait_expired_at;
+    private ?Carbon $trait_expired_at = null;
 
     /**
      * @param Carbon $expired_at Время истечения
@@ -40,7 +40,7 @@ trait ExpiredAt
 
         $promise->addCondition(
             new ConditionTransition(
-                new TimeoutCondition($this->getExpiredAt()),
+                new Timeout($this->getExpiredAt()),
                 StateEnum::RUNNING(),
                 StateEnum::TIMEOUT()
             )

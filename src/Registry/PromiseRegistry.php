@@ -115,7 +115,6 @@ class PromiseRegistry
      */
     public function delete(int $id): void
     {
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
         Promise::where('id', $id)->delete();
     }
 }

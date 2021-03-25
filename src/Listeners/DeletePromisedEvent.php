@@ -4,7 +4,6 @@ namespace Tochka\Promises\Listeners;
 
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
-use Tochka\Promises\Facades\BaseJobDispatcher;
 use Tochka\Promises\Listeners\Support\FilterTransitionsTrait;
 use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Support\WaitEvent;

@@ -13,7 +13,9 @@ use Tochka\Promises\Models\PromiseJob;
 
 class BaseJob implements StatesContract, ConditionTransitionsContract
 {
-    use States, ConditionTransitions, Time;
+    use ConditionTransitions;
+    use States;
+    use Time;
 
     private ?int $id = null;
     private ?int $promise_id;

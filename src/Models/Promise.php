@@ -37,6 +37,7 @@ use Tochka\Promises\Models\Factories\PromiseFactory;
  * @method static Builder|self inStates(array $states)
  * @method static Builder|self forWatch()
  * @method static self|null find(int $id)
+ * @method static Builder where($column, $operator = null, $value = null, $boolean = 'and')
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class Promise extends Model
@@ -85,6 +86,7 @@ class Promise extends Model
 
     public function getConnectionName(): ?string
     {
+        /** @noinspection PhpRedundantOptionalArgumentInspection */
         return Config::get('promises.database.connection', null);
     }
 

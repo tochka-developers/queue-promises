@@ -19,12 +19,17 @@ use Tochka\Promises\Core\FakePromiseRunner;
  */
 class Promises extends Facade
 {
+    protected static function getFacadeAccessor(): string
+    {
+        return self::class;
+    }
+
     /**
      * Replace the bound instance with a fake.
      *
      * @return FakePromiseRunner
      */
-    public static function fake()
+    public static function fake(): FakePromiseRunner
     {
         static::swap($fake = new FakePromiseRunner());
 
@@ -50,15 +55,5 @@ class Promises extends Facade
                 static::swap($originalDispatcher);
             }
         );
-    }
-
-    /**
-     * Get the registered name of the component.
-     *
-     * @return string
-     */
-    protected static function getFacadeAccessor()
-    {
-        return self::class;
     }
 }
