@@ -6,6 +6,9 @@ use PHPUnit\Framework\Assert as PHPUnit;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 
+/**
+ * @codeCoverageIgnore
+ */
 class FakePromiseRunner
 {
     /** @var array<string, PromiseHandler> */

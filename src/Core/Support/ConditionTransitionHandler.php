@@ -6,7 +6,7 @@ use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\BasePromise;
 
-trait ConditionTransitionsTrait
+class ConditionTransitionHandler
 {
     /**
      * @param StatesContract               $state
@@ -44,5 +44,22 @@ trait ConditionTransitionsTrait
         }
 
         return null;
+    }
+
+    public function checkConditionAndApplyTransition(
+        StatesContract $statesInstance,
+        ConditionTransitionsContract $conditionTransitionsInstance,
+        BasePromise $basePromise
+    ): bool {
+        $conditions = $this->getConditionsForState($statesInstance, $conditionTransitionsInstance);
+        $transition = $this->getTransitionForConditions($conditions, $basePromise);
+
+        if ($transition !== null) {
+            $statesInstance->setState($transition->getToState());
+
+            return true;
+        }
+
+        return false;
     }
 }

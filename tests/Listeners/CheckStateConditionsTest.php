@@ -2,12 +2,16 @@
 
 namespace Tochka\Promises\Tests\Listeners;
 
-use Tochka\Promises\Contracts\ConditionContract;
+use Hamcrest\Core\IsInstanceOf;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\StateChangedContract;
-use Tochka\Promises\Core\Support\ConditionTransition;
+use Tochka\Promises\Contracts\StatesContract;
+use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
+use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Listeners\CheckStateConditions;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
@@ -18,20 +22,16 @@ use Tochka\Promises\Tests\TestCase;
  */
 class CheckStateConditionsTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * @covers \Tochka\Promises\Listeners\CheckStateConditions::handle
      */
     public function testHandlePromiseJobStateChanged(): void
     {
-        $trueMock = \Mockery::mock(ConditionContract::class);
-        $trueMock->shouldReceive('condition')
-            ->andReturn(true);
-
         /** @var Promise $promise */
         $promise = Promise::factory()->create();
         $basePromise = $promise->getBasePromise();
-
-        $conditionTransition = new ConditionTransition($trueMock, StateEnum::WAITING(), StateEnum::RUNNING());
 
         /** @var PromiseJob $promiseJob */
         $promiseJob = PromiseJob::factory()->create(['promise_id' => $promise->id]);
@@ -48,17 +48,26 @@ class CheckStateConditionsTest extends TestCase
 
         $event = new PromiseJobStateChanged($baseJob, StateEnum::RUNNING(), StateEnum::SUCCESS());
 
-        /** @var CheckStateConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckStateConditions::class);
-        $listener->makePartial();
-        $listener->shouldReceive('getConditionsForState')
-            ->twice()
-            ->andReturn([$conditionTransition]);
+        $listener = new CheckStateConditions();
 
-        $listener->shouldReceive('getTransitionForConditions')
+        ConditionTransitionHandler::shouldReceive('checkConditionAndApplyTransition')
             ->twice()
-            ->with([$conditionTransition], $basePromise)
-            ->andReturn($conditionTransition);
+            ->with(
+                IsInstanceOf::anInstanceOf(StatesContract::class),
+                IsInstanceOf::anInstanceOf(ConditionTransitionsContract::class),
+                IsInstanceOf::anInstanceOf(BasePromise::class),
+            )
+            ->andReturnUsing(
+                function (
+                    StatesContract $statesInstance,
+                    ConditionTransitionsContract $conditionTransitionsInstance,
+                    BasePromise $basePromise
+                ) {
+                    $statesInstance->setState(StateEnum::RUNNING());
+
+                    return true;
+                }
+            );
 
         $listener->handle($event);
 
@@ -79,15 +88,10 @@ class CheckStateConditionsTest extends TestCase
 
         $event = new PromiseJobStateChanged($baseJob, StateEnum::RUNNING(), StateEnum::SUCCESS());
 
-        /** @var CheckStateConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckStateConditions::class);
-        $listener->makePartial();
-        $listener->shouldReceive('getConditionsForState')
+        ConditionTransitionHandler::shouldReceive('checkConditionAndApplyTransition')
             ->never();
 
-        $listener->shouldReceive('getTransitionForConditions')
-            ->never();
-
+        $listener = new CheckStateConditions();
         $listener->handle($event);
     }
 
@@ -96,10 +100,6 @@ class CheckStateConditionsTest extends TestCase
      */
     public function testHandlePromiseStateChanged(): void
     {
-        $trueMock = \Mockery::mock(ConditionContract::class);
-        $trueMock->shouldReceive('condition')
-            ->andReturn(true);
-
         /** @var Promise $promise */
         $promise = Promise::factory()->create();
         $basePromise = $promise->getBasePromise();
@@ -110,19 +110,26 @@ class CheckStateConditionsTest extends TestCase
 
         $event = new PromiseStateChanged($basePromise, StateEnum::RUNNING(), StateEnum::SUCCESS());
 
-        $conditionTransition = new ConditionTransition($trueMock, StateEnum::RUNNING(), StateEnum::SUCCESS());
+        $listener = new CheckStateConditions();
 
-        /** @var CheckStateConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckStateConditions::class);
-        $listener->makePartial();
-        $listener->shouldReceive('getConditionsForState')
+        ConditionTransitionHandler::shouldReceive('checkConditionAndApplyTransition')
             ->twice()
-            ->andReturn([$conditionTransition]);
+            ->with(
+                IsInstanceOf::anInstanceOf(StatesContract::class),
+                IsInstanceOf::anInstanceOf(ConditionTransitionsContract::class),
+                IsInstanceOf::anInstanceOf(BasePromise::class),
+            )
+            ->andReturnUsing(
+                function (
+                    StatesContract $statesInstance,
+                    ConditionTransitionsContract $conditionTransitionsInstance,
+                    BasePromise $basePromise
+                ) {
+                    $statesInstance->setState(StateEnum::SUCCESS());
 
-        $listener->shouldReceive('getTransitionForConditions')
-            ->twice()
-            ->with([$conditionTransition], $basePromise)
-            ->andReturn($conditionTransition);
+                    return true;
+                }
+            );
 
         $listener->handle($event);
 
@@ -139,15 +146,10 @@ class CheckStateConditionsTest extends TestCase
     {
         $event = \Mockery::mock(StateChangedContract::class);
 
-        /** @var CheckStateConditions|\Mockery\Mock $listener */
-        $listener = \Mockery::mock(CheckStateConditions::class);
-        $listener->makePartial();
-        $listener->shouldReceive('getConditionsForState')
+        ConditionTransitionHandler::shouldReceive('checkConditionAndApplyTransition')
             ->never();
 
-        $listener->shouldReceive('getTransitionForConditions')
-            ->never();
-
+        $listener = new CheckStateConditions();
         $listener->handle($event);
     }
 }

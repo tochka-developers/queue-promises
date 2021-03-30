@@ -3,7 +3,6 @@
 namespace Tochka\Promises\Tests\Core;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Config;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\Promise;

@@ -21,6 +21,7 @@ use Tochka\Promises\Core\GarbageCollector;
 use Tochka\Promises\Core\PromiseRunner;
 use Tochka\Promises\Core\PromiseWatcher;
 use Tochka\Promises\Core\Support\BaseJobDispatcher;
+use Tochka\Promises\Core\Support\ConditionTransitionHandler;
 use Tochka\Promises\Core\Support\EventDispatcher;
 use Tochka\Promises\Core\Support\QueuePromiseMiddleware;
 use Tochka\Promises\Enums\StateEnum;
@@ -183,6 +184,13 @@ class PromiseServiceProvider extends ServiceProvider
             Facades\PromiseWatcher::class,
             static function () {
                 return new PromiseWatcher();
+            }
+        );
+
+        $this->app->singleton(
+            Facades\ConditionTransitionHandler::class,
+            static function () {
+                return new ConditionTransitionHandler();
             }
         );
 

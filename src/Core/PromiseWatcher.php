@@ -4,17 +4,15 @@ namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Tochka\Promises\Core\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
 class PromiseWatcher
 {
-    use ConditionTransitionsTrait;
-
-    private int $iterationTime = 0;
-    private int $maxSleepTime = 2000000;
+    private Carbon $iterationTime;
+    private int $minSleepTime = 100000;
 
     /**
      * @codeCoverageIgnore
@@ -24,7 +22,7 @@ class PromiseWatcher
         while (true) {
             $this->startTime();
             $this->watchIteration();
-            $this->sleep();
+            $this->calcDiffAndSleep();
         }
     }
 
@@ -35,33 +33,48 @@ class PromiseWatcher
             ->with('jobs')
             ->chunk(
                 100,
-                function (Collection $promises) {
-                    /** @var Promise $promise */
-                    foreach ($promises as $promise) {
-                        try {
-                            $this->checkPromiseConditions($promise);
-                        } catch (\Throwable $e) {
-                            report($e);
-                        }
-                    }
-                }
+                $this->getChunkHandleCallback()
             );
+    }
+
+    protected function getChunkHandleCallback(): callable
+    {
+        return function (Collection $promises) {
+            /** @var Promise $promise */
+            foreach ($promises as $promise) {
+                try {
+                    $this->checkPromiseConditions($promise);
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+        };
     }
 
     public function startTime(): void
     {
-        $this->iterationTime = floor(microtime(true) * 1000000);
+        $this->iterationTime = Carbon::now();
     }
 
-    public function sleep(): void
+    public function calcDiffAndSleep(): void
     {
-        $sleep_time = floor($this->maxSleepTime - (microtime(true) * 1000000 - $this->iterationTime));
+        $sleepTime = Carbon::now()->diffInMicroseconds($this->iterationTime);
 
-        if ($sleep_time < 100000) {
-            $sleep_time = 100000;
+        if ($sleepTime < $this->minSleepTime) {
+            $sleepTime = $this->minSleepTime;
         }
 
-        usleep($sleep_time);
+        $this->sleep($sleepTime);
+    }
+
+    /**
+     * @param int $sleepTime
+     *
+     * @codeCoverageIgnore
+     */
+    protected function sleep(int $sleepTime): void
+    {
+        usleep($sleepTime);
     }
 
     public function checkPromiseConditions(Promise $promise): void
@@ -70,11 +83,7 @@ class PromiseWatcher
         if ($basePromise->getTimeoutAt() <= Carbon::now()) {
             $basePromise->setState(StateEnum::TIMEOUT());
         } else {
-            $conditions = $this->getConditionsForState($basePromise, $basePromise);
-            $transition = $this->getTransitionForConditions($conditions, $basePromise);
-            if ($transition) {
-                $basePromise->setState($transition->getToState());
-            }
+            ConditionTransitionHandler::checkConditionAndApplyTransition($basePromise, $basePromise, $basePromise);
         }
 
         $nextWatch = Carbon::now()->addSeconds(watcher_watch_timeout());
@@ -93,10 +102,7 @@ class PromiseWatcher
     {
         $baseJob = $promiseJob->getBaseJob();
 
-        $conditions = $this->getConditionsForState($baseJob, $baseJob);
-        $transition = $this->getTransitionForConditions($conditions, $basePromise);
-        if ($transition) {
-            $baseJob->setState($transition->getToState());
+        if (ConditionTransitionHandler::checkConditionAndApplyTransition($baseJob, $baseJob, $basePromise)) {
             PromiseJob::saveBaseJob($baseJob);
         }
     }

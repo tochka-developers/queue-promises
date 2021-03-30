@@ -46,7 +46,8 @@ class PromiseRunner
         $loadedTraits = $this->getHandlerTraits($handler);
 
         foreach ($loadedTraits as $trait) {
-            if (method_exists($handler, $method = $methodName . class_basename($trait))) {
+            $method = $methodName . class_basename($trait);
+            if (method_exists($handler, $method)) {
                 $handler->$method(...$args);
             }
         }

@@ -3,6 +3,7 @@
 namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseEvent;
@@ -11,44 +12,66 @@ use Tochka\Promises\Support\WaitEvent;
 
 class GarbageCollector
 {
-    private int $timeout;
+    private int $sleepTime;
     private int $deleteOlderThen;
     /** @var array<string> */
     private array $states;
 
-    public function __construct(int $timeout, int $deleteOlderThen, array $states)
+    public function __construct(int $sleepTime, int $deleteOlderThen, array $states)
     {
-        $this->timeout = $timeout;
+        $this->sleepTime = $sleepTime;
         $this->deleteOlderThen = $deleteOlderThen;
         $this->states = $states;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function handle(): void
     {
         while (true) {
-            Promise::where('updated_at', '<=', Carbon::now()->subSeconds($this->deleteOlderThen))
-                ->whereIn('state', $this->states)
-                ->chunk(
-                    100,
-                    function (array $promises) {
-                        /** @var array<Promise> $promises */
-                        foreach ($promises as $promise) {
-                            try {
-                                DB::transaction(
-                                    function () use ($promise) {
-                                        $this->checkPromiseToDelete($promise->getBasePromise());
-                                    },
-                                    3
-                                );
-                            } catch (\Throwable $e) {
-                                report($e);
-                            }
-                        }
-                    }
-                );
-
-            sleep($this->timeout);
+            $this->iteration();
+            $this->sleep($this->sleepTime);
         }
+    }
+
+    public function iteration(): void
+    {
+        Promise::where('updated_at', '<=', Carbon::now()->subSeconds($this->deleteOlderThen))
+            ->whereIn('state', $this->states)
+            ->chunk(
+                100,
+                $this->getChunkHandleCallback()
+            );
+    }
+
+    protected function getChunkHandleCallback(): callable
+    {
+        return function (Collection $promises) {
+            /** @var array<Promise> $promises */
+            foreach ($promises as $promise) {
+                try {
+                    DB::transaction(
+                        function () use ($promise) {
+                            $this->checkPromiseToDelete($promise->getBasePromise());
+                        },
+                        3
+                    );
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+        };
+    }
+
+    /**
+     * @param int $sleepTime
+     *
+     * @codeCoverageIgnore
+     */
+    protected function sleep(int $sleepTime): void
+    {
+        sleep($sleepTime);
     }
 
     /**
@@ -86,9 +109,8 @@ class GarbageCollector
             $parentJob = PromiseJob::find($handler->getBaseJobId());
             if ($parentJob !== null) {
                 $parentPromise = Promise::find($parentJob->getBaseJob()->getPromiseId());
-                if ($parentPromise !== null) {
-                    return true;
-                }
+
+                return $parentPromise !== null;
             }
         }
 

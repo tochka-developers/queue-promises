@@ -4,16 +4,14 @@ namespace Tochka\Promises\Listeners;
 
 use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Contracts\StateChangedContract;
-use Tochka\Promises\Core\Support\ConditionTransitionsTrait;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
+use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
 class CheckStateConditions
 {
-    use ConditionTransitionsTrait;
-
     public function handle(StateChangedContract $event): void
     {
         if ($event instanceof PromiseStateChanged) {
@@ -40,19 +38,12 @@ class CheckStateConditions
                         continue;
                     }
 
-                    $conditions = $this->getConditionsForState($baseJob, $baseJob);
-                    $transition = $this->getTransitionForConditions($conditions, $basePromise);
-
-                    if ($transition) {
-                        $baseJob->setState($transition->getToState());
+                    if (ConditionTransitionHandler::checkConditionAndApplyTransition($baseJob, $baseJob, $basePromise)) {
                         PromiseJob::saveBaseJob($baseJob);
                     }
                 }
 
-                $conditions = $this->getConditionsForState($basePromise, $basePromise);
-                $transition = $this->getTransitionForConditions($conditions, $basePromise);
-                if ($transition) {
-                    $basePromise->setState($transition->getToState());
+                if (ConditionTransitionHandler::checkConditionAndApplyTransition($basePromise, $basePromise, $basePromise)) {
                     Promise::saveBasePromise($basePromise);
                 }
             },

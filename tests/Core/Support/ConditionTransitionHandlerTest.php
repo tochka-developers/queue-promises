@@ -5,15 +5,15 @@ namespace Tochka\Promises\Tests\Core\Support;
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
-use Tochka\Promises\Core\Support\ConditionTransitionsTrait;
+use Tochka\Promises\Core\Support\ConditionTransitionHandler;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Tests\TestCase;
 use Tochka\Promises\Tests\TestHelpers\TestPromise;
 
 /**
- * @covers \Tochka\Promises\Core\Support\ConditionTransitionsTrait
+ * @covers \Tochka\Promises\Core\Support\ConditionTransitionHandler
  */
-class ConditionTransitionsTraitTest extends TestCase
+class ConditionTransitionHandlerTest extends TestCase
 {
     public function getTransitionForConditionsProvider(): array
     {
@@ -44,7 +44,7 @@ class ConditionTransitionsTraitTest extends TestCase
 
     /**
      * @dataProvider getTransitionForConditionsProvider
-     * @covers       \Tochka\Promises\Core\Support\ConditionTransitionsTrait::getTransitionForConditions
+     * @covers       \Tochka\Promises\Core\Support\ConditionTransitionHandler::getTransitionForConditions
      *
      * @param array<ConditionTransition> $conditions
      * @param ConditionTransition|null   $expected
@@ -53,8 +53,8 @@ class ConditionTransitionsTraitTest extends TestCase
     {
         $basePromise = new BasePromise(new TestPromise());
 
-        $listener = \Mockery::mock(ConditionTransitionsTrait::class);
-        $result = $listener->getTransitionForConditions($conditions, $basePromise);
+        $handler = new ConditionTransitionHandler();
+        $result = $handler->getTransitionForConditions($conditions, $basePromise);
 
         self::assertEquals($expected, $result);
     }
@@ -114,7 +114,7 @@ class ConditionTransitionsTraitTest extends TestCase
 
     /**
      * @dataProvider getConditionsForStateProvider
-     * @covers       \Tochka\Promises\Core\Support\ConditionTransitionsTrait::getConditionsForState
+     * @covers       \Tochka\Promises\Core\Support\ConditionTransitionHandler::getConditionsForState
      *
      * @param StateEnum                  $state
      * @param array<ConditionTransition> $conditions
@@ -126,9 +126,73 @@ class ConditionTransitionsTraitTest extends TestCase
         $basePromise->setState($state);
         $basePromise->setConditions($conditions);
 
-        $listener = \Mockery::mock(ConditionTransitionsTrait::class);
-        $result = $listener->getConditionsForState($basePromise, $basePromise);
+        $handler = new ConditionTransitionHandler();
+        $result = $handler->getConditionsForState($basePromise, $basePromise);
 
         self::assertEqualsCanonicalizing($expected, $result);
+    }
+
+    /**
+     * @covers \Tochka\Promises\Core\Support\ConditionTransitionHandler::checkConditionAndApplyTransition
+     */
+    public function testCheckConditionAndApplyTransition(): void
+    {
+        $basePromise = new BasePromise(new TestPromise());
+
+        $trueConditionMock = \Mockery::mock(ConditionContract::class);
+        $trueConditionMock->shouldReceive('condition')
+            ->andReturn(true);
+
+        $conditionTransition = new ConditionTransition($trueConditionMock, StateEnum::WAITING(), StateEnum::RUNNING());
+
+        $mock = \Mockery::mock(ConditionTransitionHandler::class);
+        $mock->makePartial();
+
+        $mock->shouldReceive('getConditionsForState')
+            ->once()
+            ->with($basePromise, $basePromise)
+            ->andReturn([$conditionTransition]);
+
+        $mock->shouldReceive('getTransitionForConditions')
+            ->once()
+            ->with([$conditionTransition], $basePromise)
+            ->andReturn($conditionTransition);
+
+        $result = $mock->checkConditionAndApplyTransition($basePromise, $basePromise, $basePromise);
+
+        self::assertTrue($result);
+        self::assertEquals(StateEnum::RUNNING(), $basePromise->getState());
+    }
+
+    /**
+     * @covers \Tochka\Promises\Core\Support\ConditionTransitionHandler::checkConditionAndApplyTransition
+     */
+    public function testCheckConditionAndApplyTransitionFalse(): void
+    {
+        $basePromise = new BasePromise(new TestPromise());
+
+        $falseConditionMock = \Mockery::mock(ConditionContract::class);
+        $falseConditionMock->shouldReceive('condition')
+            ->andReturn(false);
+
+        $conditionTransition = new ConditionTransition($falseConditionMock, StateEnum::WAITING(), StateEnum::RUNNING());
+
+        $mock = \Mockery::mock(ConditionTransitionHandler::class);
+        $mock->makePartial();
+
+        $mock->shouldReceive('getConditionsForState')
+            ->once()
+            ->with($basePromise, $basePromise)
+            ->andReturn([$conditionTransition]);
+
+        $mock->shouldReceive('getTransitionForConditions')
+            ->once()
+            ->with([$conditionTransition], $basePromise)
+            ->andReturn(null);
+
+        $result = $mock->checkConditionAndApplyTransition($basePromise, $basePromise, $basePromise);
+
+        self::assertFalse($result);
+        self::assertEquals(StateEnum::WAITING(), $basePromise->getState());
     }
 }
