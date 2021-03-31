@@ -28,26 +28,47 @@ class CheckStateConditions
             return;
         }
 
-        DB::transaction(
-            function () use ($basePromise, $promisedJob) {
-                /** @var array<PromiseJob> $jobs */
-                $jobs = PromiseJob::byPromise($basePromise->getPromiseId())->lock()->get();
-                foreach ($jobs as $job) {
-                    $baseJob = $job->getBaseJob();
+        $jobIds = PromiseJob::byPromise($basePromise->getPromiseId())
+            ->get()
+            ->pluck('id');
+
+        foreach ($jobIds as $jobId) {
+            DB::transaction(
+                function () use ($basePromise, $promisedJob, $jobId) {
+                    /** @var PromiseJob $currentJob */
+                    $currentJob = PromiseJob::lockForUpdate()->find($jobId);
+                    $baseJob = $currentJob->getBaseJob();
                     if ($promisedJob !== null && $baseJob->getJobId() === $promisedJob->getJobId()) {
-                        continue;
+                        return;
                     }
 
-                    if (ConditionTransitionHandler::checkConditionAndApplyTransition($baseJob, $baseJob, $basePromise)) {
+                    if (ConditionTransitionHandler::checkConditionAndApplyTransition(
+                        $baseJob,
+                        $baseJob,
+                        $basePromise
+                    )) {
                         PromiseJob::saveBaseJob($baseJob);
                     }
-                }
+                },
+                3
+            );
+        }
 
-                if (ConditionTransitionHandler::checkConditionAndApplyTransition($basePromise, $basePromise, $basePromise)) {
+        DB::transaction(
+            function () use ($basePromise) {
+                /** @var Promise $promise */
+                $promise = Promise::lockForUpdate()->find($basePromise->getPromiseId());
+                $basePromise = $promise->getBasePromise();
+
+                if (ConditionTransitionHandler::checkConditionAndApplyTransition(
+                    $basePromise,
+                    $basePromise,
+                    $basePromise
+                )) {
                     Promise::saveBasePromise($basePromise);
                 }
             },
-            5
+            3
         );
     }
 }

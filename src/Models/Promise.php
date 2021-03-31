@@ -38,6 +38,7 @@ use Tochka\Promises\Models\Factories\PromiseFactory;
  * @method static Builder|self forWatch()
  * @method static self|null find(int $id)
  * @method static Builder where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder lockForUpdate()
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class Promise extends Model

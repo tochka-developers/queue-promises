@@ -4,6 +4,7 @@ namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Models\Promise;
@@ -79,31 +80,56 @@ class PromiseWatcher
 
     public function checkPromiseConditions(Promise $promise): void
     {
-        $basePromise = $promise->getBasePromise();
-        if ($basePromise->getTimeoutAt() <= Carbon::now()) {
-            $basePromise->setState(StateEnum::TIMEOUT());
-        } else {
-            ConditionTransitionHandler::checkConditionAndApplyTransition($basePromise, $basePromise, $basePromise);
-        }
+        DB::transaction(
+            function () use ($promise) {
+                /** @var Promise|null $lockedPromise */
+                $lockedPromise = Promise::lockForUpdate()->find($promise->id);
+                if ($lockedPromise === null) {
+                    return;
+                }
 
-        $nextWatch = Carbon::now()->addSeconds(watcher_watch_timeout());
-        if ($nextWatch > Carbon::now()) {
-            $basePromise->setWatchAt($nextWatch);
-        }
+                $basePromise = $lockedPromise->getBasePromise();
+                if ($basePromise->getTimeoutAt() <= Carbon::now()) {
+                    $basePromise->setState(StateEnum::TIMEOUT());
+                } else {
+                    ConditionTransitionHandler::checkConditionAndApplyTransition(
+                        $basePromise,
+                        $basePromise,
+                        $basePromise
+                    );
+                }
 
-        Promise::saveBasePromise($basePromise);
+                $nextWatch = Carbon::now()->addSeconds(watcher_watch_timeout());
+                if ($nextWatch > Carbon::now()) {
+                    $basePromise->setWatchAt($nextWatch);
+                }
+
+                Promise::saveBasePromise($basePromise);
+            },
+            3
+        );
 
         foreach ($promise->jobs as $job) {
-            $this->checkJobConditions($job, $basePromise);
+            $this->checkJobConditions($job, $promise->getBasePromise());
         }
     }
 
     public function checkJobConditions(PromiseJob $promiseJob, BasePromise $basePromise): void
     {
-        $baseJob = $promiseJob->getBaseJob();
+        DB::transaction(
+            function () use ($promiseJob, $basePromise) {
+                /** @var PromiseJob|null $lockedJob */
+                $lockedJob = PromiseJob::lockForUpdate()->find($promiseJob->id);
+                if ($lockedJob === null) {
+                    return;
+                }
+                $baseJob = $lockedJob->getBaseJob();
 
-        if (ConditionTransitionHandler::checkConditionAndApplyTransition($baseJob, $baseJob, $basePromise)) {
-            PromiseJob::saveBaseJob($baseJob);
-        }
+                if (ConditionTransitionHandler::checkConditionAndApplyTransition($baseJob, $baseJob, $basePromise)) {
+                    PromiseJob::saveBaseJob($baseJob);
+                }
+            },
+            3
+        );
     }
 }

@@ -131,7 +131,11 @@ class PromiseWatcherTest extends TestCase
 
         ConditionTransitionHandler::shouldReceive('checkConditionAndApplyTransition')
             ->once()
-            ->with($basePromise, $basePromise, $basePromise)
+            ->with(
+                IsInstanceOf::anInstanceOf(StatesContract::class),
+                IsInstanceOf::anInstanceOf(ConditionTransitionsContract::class),
+                IsInstanceOf::anInstanceOf(BasePromise::class),
+            )
             ->andReturnUsing(
                 function (
                     StatesContract $statesInstance,
@@ -193,7 +197,11 @@ class PromiseWatcherTest extends TestCase
 
         ConditionTransitionHandler::shouldReceive('checkConditionAndApplyTransition')
             ->once()
-            ->with($baseJob, $baseJob, $basePromise)
+            ->with(
+                IsInstanceOf::anInstanceOf(StatesContract::class),
+                IsInstanceOf::anInstanceOf(ConditionTransitionsContract::class),
+                IsInstanceOf::anInstanceOf(BasePromise::class),
+            )
             ->andReturnUsing(
                 function (
                     StatesContract $statesInstance,

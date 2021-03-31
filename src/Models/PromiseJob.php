@@ -35,6 +35,7 @@ use Tochka\Promises\Models\Factories\PromiseJobFactory;
  * @property Promise|null               $promise
  * @method static Builder byPromise(int $promiseId)
  * @method static self|null find(int $id)
+ * @method static lockForUpdate()
  * @mixin Builder
  */
 class PromiseJob extends Model
