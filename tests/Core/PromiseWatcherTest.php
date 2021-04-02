@@ -29,7 +29,7 @@ class PromiseWatcherTest extends TestCase
      */
     public function testSleep(): void
     {
-        $expectedTime = 2000000;
+        $expectedTime = 10000;
 
         $mock = \Mockery::mock(PromiseWatcher::class);
         $mock->makePartial()->shouldAllowMockingProtectedMethods();
@@ -51,7 +51,8 @@ class PromiseWatcherTest extends TestCase
      */
     public function testSleepSmall(): void
     {
-        $expectedTime = 100000;
+        $workTime = 200;
+        $expectedTime = 1000000 - $workTime;
 
         $mock = \Mockery::mock(PromiseWatcher::class);
         $mock->makePartial()->shouldAllowMockingProtectedMethods();
@@ -63,7 +64,7 @@ class PromiseWatcherTest extends TestCase
         $expectedNow = Carbon::now();
         Carbon::setTestNow($expectedNow);
         $mock->startTime();
-        Carbon::setTestNow($expectedNow->addMicroseconds(200));
+        Carbon::setTestNow($expectedNow->addMicroseconds($workTime));
         $mock->calcDiffAndSleep();
     }
 

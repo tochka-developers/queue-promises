@@ -13,7 +13,8 @@ use Tochka\Promises\Models\PromiseJob;
 class PromiseWatcher
 {
     private Carbon $iterationTime;
-    private int $minSleepTime = 100000;
+    private int $minSleepTime = 10000;
+    private int $minIterationTime = 1000000;
 
     /**
      * @codeCoverageIgnore
@@ -59,7 +60,7 @@ class PromiseWatcher
 
     public function calcDiffAndSleep(): void
     {
-        $sleepTime = Carbon::now()->diffInMicroseconds($this->iterationTime);
+        $sleepTime = $this->minIterationTime - Carbon::now()->diffInMicroseconds($this->iterationTime);
 
         if ($sleepTime < $this->minSleepTime) {
             $sleepTime = $this->minSleepTime;

@@ -71,6 +71,11 @@ class GarbageCollectorTest extends TestCase
         $basePromise = new BasePromise(new TestPromise());
         Promise::saveBasePromise($basePromise);
 
+        $waitEvent = new WaitEvent('Test', '1');
+
+        $baseJob = new BaseJob($basePromise->getPromiseId(), $waitEvent);
+        PromiseJob::saveBaseJob($baseJob);
+
         PromiseJob::factory()->count(2)->create(['promise_id' => $basePromise->getPromiseId()]);
 
         $mock = \Mockery::mock(GarbageCollector::class, [0, 0, StateEnum::finishedStates()]);
@@ -81,14 +86,15 @@ class GarbageCollectorTest extends TestCase
             ->with($basePromise)
             ->andReturn(false);
 
-        $mock->shouldReceive('checkJobsToDelete')
-            ->twice();
-
         $mock->checkPromiseToDelete($basePromise);
 
         $actualPromise = Promise::find($basePromise->getPromiseId());
+        $actualPromiseJob = PromiseJob::find($baseJob->getJobId());
+        $actualWaitEvent = PromiseEvent::find($waitEvent->getId());
 
         self::assertNull($actualPromise);
+        self::assertNull($actualPromiseJob);
+        self::assertNull($actualWaitEvent);
     }
 
     /**
@@ -197,78 +203,5 @@ class GarbageCollectorTest extends TestCase
         $result = $gc->checkHasParentPromise($basePromise);
 
         self::assertFalse($result);
-    }
-
-    /**
-     * @covers \Tochka\Promises\Core\GarbageCollector::checkJobsToDelete
-     * @throws \Exception
-     */
-    public function testCheckJobsToDelete(): void
-    {
-        /** @var PromiseJob $promiseJob */
-        $promiseJob = PromiseJob::factory()->create();
-        $gc = new GarbageCollector(0,0, []);
-
-        $gc->checkJobsToDelete($promiseJob->getBaseJob());
-
-        $actualPromiseJob = PromiseJob::find($promiseJob->id);
-        self::assertNull($actualPromiseJob);
-    }
-
-    /**
-     * @covers \Tochka\Promises\Core\GarbageCollector::checkJobsToDelete
-     * @throws \Exception
-     */
-    public function testCheckJobsToDeleteWaitEventAttached(): void
-    {
-        $waitEvent = new WaitEvent('Test', '1');
-
-        $baseJob = new BaseJob(1, $waitEvent);
-        PromiseJob::saveBaseJob($baseJob);
-
-        $waitEvent->setBaseJobId($baseJob->getJobId());
-        PromiseEvent::saveWaitEvent($waitEvent);
-
-        $baseJob->setInitial($waitEvent);
-        PromiseJob::saveBaseJob($baseJob);
-
-        $gc = new GarbageCollector(0,0, []);
-
-        $gc->checkJobsToDelete($baseJob);
-
-        $actualPromiseJob = PromiseJob::find($baseJob->getJobId());
-        $actualWaitEvent = PromiseEvent::find($waitEvent->getId());
-
-        self::assertNull($actualPromiseJob);
-        self::assertNull($actualWaitEvent);
-    }
-
-    /**
-     * @covers \Tochka\Promises\Core\GarbageCollector::checkJobsToDelete
-     * @throws \Exception
-     */
-    public function testCheckJobsToDeleteWaitEventNotAttached(): void
-    {
-        $waitEvent = new WaitEvent('Test', '1');
-
-        $baseJob = new BaseJob(1, $waitEvent);
-        PromiseJob::saveBaseJob($baseJob);
-
-        $waitEvent->setBaseJobId($baseJob->getJobId());
-        PromiseEvent::saveWaitEvent($waitEvent);
-        $waitEvent->setAttachedModel(null);
-
-        $baseJob->setInitial($waitEvent);
-        PromiseJob::saveBaseJob($baseJob);
-
-        $gc = new GarbageCollector(0,0, []);
-
-        $gc->checkJobsToDelete($baseJob);
-
-        $actualPromiseJob = PromiseJob::find($baseJob->getJobId());
-        $actualWaitEvent = PromiseEvent::find($waitEvent->getId());
-
-        self::assertNull($actualPromiseJob);
-        self::assertNull($actualWaitEvent);
     }
 }

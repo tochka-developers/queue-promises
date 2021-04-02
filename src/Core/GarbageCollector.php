@@ -51,27 +51,29 @@ class GarbageCollector
             /** @var array<Promise> $promises */
             foreach ($promises as $promise) {
                 try {
-                    DB::transaction(
-                        function () use ($promise) {
-                            $this->checkPromiseToDelete($promise->getBasePromise());
-                        },
-                        3
-                    );
+                    $this->checkPromiseToDelete($promise->getBasePromise());
                 } catch (\Throwable $e) {
                     report($e);
                 }
             }
+
+            // дадим возможность поработать другим задачам
+            $this->sleep(0.1);
         };
     }
 
     /**
-     * @param int $sleepTime
+     * @param int|float $seconds
      *
      * @codeCoverageIgnore
      */
-    protected function sleep(int $sleepTime): void
+    protected function sleep($seconds): void
     {
-        sleep($sleepTime);
+        if ($seconds < 1) {
+            usleep($seconds * 1000000);
+        } else {
+            sleep($seconds);
+        }
     }
 
     /**
@@ -86,10 +88,9 @@ class GarbageCollector
         }
 
         /** @var array<PromiseJob> $jobs */
-        $jobs = PromiseJob::byPromise($basePromise->getPromiseId())->get();
-        foreach ($jobs as $job) {
-            $this->checkJobsToDelete($job->getBaseJob());
-        }
+        $jobIds = PromiseJob::byPromise($basePromise->getPromiseId())->get()->pluck('id')->all();
+        PromiseJob::byPromise($basePromise->getPromiseId())->delete();
+        PromiseEvent::whereIn('job_id', $jobIds)->delete();
 
         $basePromise->getAttachedModel()->delete();
     }
@@ -115,25 +116,5 @@ class GarbageCollector
         }
 
         return false;
-    }
-
-    /**
-     * @param \Tochka\Promises\Core\BaseJob $baseJob
-     *
-     * @throws \Exception
-     */
-    public function checkJobsToDelete(BaseJob $baseJob): void
-    {
-        $handler = $baseJob->getInitialJob();
-
-        if ($handler instanceof WaitEvent) {
-            if ($handler->getAttachedModel() !== null) {
-                $handler->getAttachedModel()->delete();
-            } else {
-                PromiseEvent::where('id', $handler->getId())->delete();
-            }
-        }
-
-        $baseJob->getAttachedModel()->delete();
     }
 }

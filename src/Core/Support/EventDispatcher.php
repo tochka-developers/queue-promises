@@ -13,37 +13,37 @@ class EventDispatcher
 {
     public function dispatch(PromisedEvent $event): void
     {
-        DB::transaction(
-            function () use ($event) {
-                $promiseEvents = PromiseEvent::byEvent(get_class($event), $event->getUniqueId())->lock()->get();
+        $promiseEvents = PromiseEvent::byEvent(get_class($event), $event->getUniqueId())->lock()->get();
 
-                if (!$promiseEvents->count()) {
-                    return;
-                }
+        if (!$promiseEvents->count()) {
+            return;
+        }
 
-                /** @var PromiseEvent $promiseEvent */
-                foreach ($promiseEvents as $promiseEvent) {
-                    $this->updateEventState($event, $promiseEvent->getWaitEvent());
-                }
-            },
-            3
-        );
+        /** @var PromiseEvent $promiseEvent */
+        foreach ($promiseEvents as $promiseEvent) {
+            $this->updateEventState($event, $promiseEvent->getWaitEvent());
+        }
     }
 
     public function updateEventState(PromisedEvent $event, WaitEvent $waitEvent): void
     {
-        $cloneWaitEvent = clone $waitEvent;
+        DB::transaction(
+            function () use ($event, $waitEvent) {
+                $cloneWaitEvent = clone $waitEvent;
 
-        $job = PromiseJob::find($cloneWaitEvent->getBaseJobId());
-        if ($job !== null) {
-            $cloneWaitEvent->setEvent($event);
-            $cloneWaitEvent->setAttachedModel(null);
+                $job = PromiseJob::lockForUpdate()->find($cloneWaitEvent->getBaseJobId());
+                if ($job !== null) {
+                    $cloneWaitEvent->setEvent($event);
+                    $cloneWaitEvent->setAttachedModel(null);
 
-            $baseJob = $job->getBaseJob();
-            $baseJob->setState(StateEnum::SUCCESS());
-            $baseJob->setResult($cloneWaitEvent);
+                    $baseJob = $job->getBaseJob();
+                    $baseJob->setState(StateEnum::SUCCESS());
+                    $baseJob->setResult($cloneWaitEvent);
 
-            PromiseJob::saveBaseJob($baseJob);
-        }
+                    PromiseJob::saveBaseJob($baseJob);
+                }
+            },
+            3
+        );
     }
 }
