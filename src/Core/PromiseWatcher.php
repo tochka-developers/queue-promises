@@ -33,7 +33,7 @@ class PromiseWatcher
         Promise::inStates([StateEnum::WAITING(), StateEnum::RUNNING()])
             ->forWatch()
             ->with('jobs')
-            ->chunk(
+            ->chunkById(
                 100,
                 $this->getChunkHandleCallback()
             );

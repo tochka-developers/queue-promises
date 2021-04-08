@@ -39,7 +39,7 @@ class GarbageCollector
     {
         Promise::where('updated_at', '<=', Carbon::now()->subSeconds($this->deleteOlderThen))
             ->whereIn('state', $this->states)
-            ->chunk(
+            ->chunkById(
                 100,
                 $this->getChunkHandleCallback()
             );
