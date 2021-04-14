@@ -141,6 +141,8 @@ class PromiseJob extends Model
         $model->save();
 
         $baseJob->setJobId($model->id);
+        $baseJob->setCreatedAt($model->created_at);
+        $baseJob->setUpdatedAt($model->updated_at);
         $baseJob->setAttachedModel($model);
 
         return $model;

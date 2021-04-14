@@ -161,6 +161,8 @@ class Promise extends Model
         $model->save();
 
         $basePromise->setPromiseId($model->id);
+        $basePromise->setCreatedAt($model->created_at);
+        $basePromise->setUpdatedAt($model->updated_at);
         $basePromise->setAttachedModel($model);
 
         return $model;

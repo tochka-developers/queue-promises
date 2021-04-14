@@ -37,8 +37,7 @@ class GarbageCollector
 
     public function iteration(): void
     {
-        Promise::where('updated_at', '<=', Carbon::now()->subSeconds($this->deleteOlderThen))
-            ->whereIn('state', $this->states)
+        Promise::whereIn('state', $this->states)
             ->chunkById(
                 100,
                 $this->getChunkHandleCallback()
@@ -83,7 +82,10 @@ class GarbageCollector
      */
     public function checkPromiseToDelete(BasePromise $basePromise): void
     {
-        if ($this->checkHasParentPromise($basePromise)) {
+        if (
+            $basePromise->getUpdatedAt() > Carbon::now()->subSeconds($this->deleteOlderThen)
+            || $this->checkHasParentPromise($basePromise)
+        ) {
             return;
         }
 
