@@ -5,6 +5,7 @@ namespace Tochka\Promises\Core;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Tochka\Promises\Core\Support\DaemonWithSignals;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Models\Promise;
@@ -12,6 +13,8 @@ use Tochka\Promises\Models\PromiseJob;
 
 class PromiseWatcher
 {
+    use DaemonWithSignals;
+
     private Carbon $iterationTime;
     private int $minSleepTime = 10000;
     private int $minIterationTime = 1000000;
@@ -21,7 +24,21 @@ class PromiseWatcher
      */
     public function watch(): void
     {
+        if ($this->supportsAsyncSignals()) {
+            $this->listenForSignals();
+        }
+
         while (true) {
+            if ($this->shouldQuit()) {
+                return;
+            }
+
+            if ($this->paused()) {
+                $this->sleep(1);
+
+                continue;
+            }
+
             $this->startTime();
             $this->watchIteration();
             $this->calcDiffAndSleep();
@@ -42,6 +59,10 @@ class PromiseWatcher
     protected function getChunkHandleCallback(): callable
     {
         return function (Collection $promises) {
+            if ($this->paused() || $this->shouldQuit()) {
+                return false;
+            }
+
             /** @var Promise $promise */
             foreach ($promises as $promise) {
                 try {
@@ -50,6 +71,8 @@ class PromiseWatcher
                     report($e);
                 }
             }
+
+            return true;
         };
     }
 

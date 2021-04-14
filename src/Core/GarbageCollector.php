@@ -4,24 +4,27 @@ namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Tochka\Promises\Core\Support\DaemonWithSignals;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Models\PromiseJob;
-use Tochka\Promises\Support\WaitEvent;
 
 class GarbageCollector
 {
+    use DaemonWithSignals;
+
     private int $sleepTime;
     private int $deleteOlderThen;
     /** @var array<string> */
     private array $states;
+    private Carbon $lastIteration;
 
     public function __construct(int $sleepTime, int $deleteOlderThen, array $states)
     {
         $this->sleepTime = $sleepTime;
         $this->deleteOlderThen = $deleteOlderThen;
         $this->states = $states;
+        $this->lastIteration = Carbon::parse(0);
     }
 
     /**
@@ -29,9 +32,24 @@ class GarbageCollector
      */
     public function handle(): void
     {
+        if ($this->supportsAsyncSignals()) {
+            $this->listenForSignals();
+        }
+
         while (true) {
+            if ($this->shouldQuit()) {
+                return;
+            }
+
+            if ($this->paused() || $this->sleepAfterLastIteration()) {
+                $this->sleep(1);
+
+                continue;
+            }
+
             $this->iteration();
-            $this->sleep($this->sleepTime);
+
+            $this->lastIteration = Carbon::now();
         }
     }
 
@@ -39,7 +57,7 @@ class GarbageCollector
     {
         Promise::whereIn('state', $this->states)
             ->chunkById(
-                100,
+                2,
                 $this->getChunkHandleCallback()
             );
     }
@@ -47,6 +65,10 @@ class GarbageCollector
     protected function getChunkHandleCallback(): callable
     {
         return function (Collection $promises) {
+            if ($this->paused() || $this->shouldQuit()) {
+                return false;
+            }
+
             /** @var array<Promise> $promises */
             foreach ($promises as $promise) {
                 try {
@@ -58,6 +80,8 @@ class GarbageCollector
 
             // дадим возможность поработать другим задачам
             $this->sleep(0.1);
+
+            return true;
         };
     }
 
@@ -118,5 +142,10 @@ class GarbageCollector
         }
 
         return false;
+    }
+
+    private function sleepAfterLastIteration(): bool
+    {
+        return $this->lastIteration > Carbon::now()->subSeconds($this->sleepTime);
     }
 }
