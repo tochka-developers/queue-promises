@@ -5,6 +5,7 @@ namespace Tochka\Promises\Core;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Tochka\Promises\Core\Support\DaemonWithSignals;
+use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Models\PromiseJob;
@@ -73,6 +74,12 @@ class GarbageCollector
             foreach ($promises as $promise) {
                 try {
                     $this->checkPromiseToDelete($promise->getBasePromise());
+                } catch (IncorrectResolvingClass $e) {
+                    /** @var array<PromiseJob> $jobs */
+                    $jobIds = PromiseJob::byPromise($promise->id)->get()->pluck('id')->all();
+                    PromiseJob::byPromise($promise->id)->delete();
+                    PromiseEvent::whereIn('job_id', $jobIds)->delete();
+                    $promise->delete();
                 } catch (\Throwable $e) {
                     report($e);
                 }

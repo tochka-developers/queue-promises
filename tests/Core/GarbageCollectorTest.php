@@ -10,6 +10,7 @@ use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\GarbageCollector;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Models\PromiseJob;
@@ -39,6 +40,41 @@ class GarbageCollectorTest extends TestCase
             ->with(IsInstanceOf::anInstanceOf(BasePromise::class));
 
         $mock->iteration();
+    }
+
+    /**
+     * @covers \Tochka\Promises\Core\GarbageCollector::iteration
+     */
+    public function testIterationUnknownHandler(): void
+    {
+        $expectException = new IncorrectResolvingClass('test');
+
+        $basePromise = new BasePromise(new TestPromise());
+        $basePromise->setState(StateEnum::SUCCESS());
+        Promise::saveBasePromise($basePromise);
+
+        $waitEvent = new WaitEvent('Test', '1');
+
+        $baseJob = new BaseJob($basePromise->getPromiseId(), $waitEvent);
+        PromiseJob::saveBaseJob($baseJob);
+
+        $mock = \Mockery::mock(GarbageCollector::class, [0, 0, StateEnum::finishedStates()]);
+        $mock->makePartial();
+
+        $mock->shouldReceive('checkPromiseToDelete')
+            ->once()
+            ->with(IsInstanceOf::anInstanceOf(BasePromise::class))
+            ->andThrow($expectException);
+
+        $mock->iteration();
+
+        $actualPromise = Promise::find($basePromise->getPromiseId());
+        $actualPromiseJob = PromiseJob::find($baseJob->getJobId());
+        $actualWaitEvent = PromiseEvent::find($waitEvent->getId());
+
+        // self::assertNull($actualPromise);
+        // self::assertNull($actualPromiseJob);
+        // self::assertNull($actualWaitEvent);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Tochka\Promises\Models\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 
 class SerializableClassCast implements CastsAttributes
 {
@@ -14,14 +15,25 @@ class SerializableClassCast implements CastsAttributes
      *
      * @return mixed
      * @throws \JsonException
-     * @noinspection PhpMissingParamTypeInspection
      */
     public function get($model, string $key, $value, array $attributes)
     {
-        return $value === null ? $value : unserialize(
+        if ($value === null) {
+            return null;
+        }
+
+        $castedObject = unserialize(
             json_decode($value, true, 512, JSON_THROW_ON_ERROR),
             ['allowed_classes' => true]
         );
+
+        if ($castedObject instanceof \__PHP_Incomplete_Class) {
+            throw new IncorrectResolvingClass(
+                'Unknown class after deserialization. Most likely the serialized class no longer exists.'
+            );
+        }
+
+        return $castedObject;
     }
 
     /**
@@ -32,7 +44,6 @@ class SerializableClassCast implements CastsAttributes
      *
      * @return array
      * @throws \JsonException
-     * @noinspection PhpMissingParamTypeInspection
      */
     public function set($model, string $key, $value, array $attributes): array
     {
