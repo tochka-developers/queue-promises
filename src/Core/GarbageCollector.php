@@ -58,7 +58,7 @@ class GarbageCollector
     {
         Promise::whereIn('state', $this->states)
             ->chunkById(
-                2,
+                100,
                 $this->getChunkHandleCallback()
             );
     }
