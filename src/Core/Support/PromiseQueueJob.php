@@ -105,7 +105,22 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
                     continue;
                 }
 
-                $params[] = null;
+                if (!$parameter->isVariadic()) {
+                    continue;
+                }
+
+                if ($parameter->allowsNull()) {
+                    $params[] = null;
+                } else {
+                    throw new \RuntimeException(
+                        sprintf(
+                            'Error while dispatch promise handler method [%s]. Parameter [%s] not allow null value, but result for this parameter is empty',
+                            $reflectionMethod->getDeclaringClass() . '::' . $method,
+                            $parameter->getName()
+                        )
+                    );
+                }
+
                 continue;
             }
 
