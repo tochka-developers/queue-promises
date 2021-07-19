@@ -105,7 +105,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
                     continue;
                 }
 
-                if (!$parameter->isVariadic()) {
+                if ($parameter->isVariadic()) {
                     continue;
                 }
 
