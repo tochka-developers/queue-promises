@@ -29,6 +29,7 @@ class CheckStateConditions
         }
 
         $jobIds = PromiseJob::byPromise($basePromise->getPromiseId())
+            ->orderBy('id')
             ->get()
             ->pluck('id');
 

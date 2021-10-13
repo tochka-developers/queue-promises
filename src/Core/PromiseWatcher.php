@@ -49,7 +49,9 @@ class PromiseWatcher
     {
         Promise::inStates([StateEnum::WAITING(), StateEnum::RUNNING()])
             ->forWatch()
-            ->with('jobs')
+            ->with(['jobs' => function($query) {
+                $query->orderBy('id');
+            }])
             ->chunkById(
                 100,
                 $this->getChunkHandleCallback()

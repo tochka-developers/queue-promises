@@ -111,7 +111,7 @@ class Promise extends Model
      */
     public function events(): HasMany
     {
-        return $this->hasMany(PromiseJob::class, 'promise_id', 'id');
+        return $this->hasMany(PromiseEvent::class, 'promise_id', 'id');
     }
 
     public function scopeInStates(Builder $query, array $states): Builder
