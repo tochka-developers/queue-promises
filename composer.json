@@ -19,7 +19,7 @@
         "php": "^7.4|^8.0",
         "ext-json": "*",
         "ext-pcntl": "*",
-        "bensampo/laravel-enum": "^2.1|^3.0",
+        "bensampo/laravel-enum": "^2.1|^3.0|^4.0",
         "fntneves/laravel-transactional-events": "^1.8|^2.0",
         "laravel/framework": "^8.0",
         "nesbot/carbon": "^2.0"
