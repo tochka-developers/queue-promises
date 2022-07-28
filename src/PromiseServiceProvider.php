@@ -90,9 +90,12 @@ class PromiseServiceProvider extends ServiceProvider
                     return;
                 }
                 $baseJob = $job->getBaseJob();
-                $baseJob->setException($event->exception);
-                $baseJob->setState(StateEnum::FAILED());
-                PromiseJob::saveBaseJob($baseJob);
+
+                if ($baseJob->getState()->in([StateEnum::WAITING(), StateEnum::RUNNING()])) {
+                    $baseJob->setException($event->exception);
+                    $baseJob->setState(StateEnum::FAILED());
+                    PromiseJob::saveBaseJob($baseJob);
+                }
             }
         );
 
