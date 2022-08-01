@@ -9,6 +9,7 @@ use Tochka\Promises\Core\FakePromiseRunner;
 
 /**
  * @method static run(PromiseHandler $handler, MayPromised[] $jobs)
+ * @method static hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args)
  * @method static assertRun(string $promiseHandler)
  * @method static assertNotRun(string $promiseHandler)
  * @method static assertAddedJobsCount(string $promiseHandler, int $expected)

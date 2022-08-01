@@ -15,7 +15,7 @@ use Tochka\Promises\Models\PromiseJob;
 
 trait DefaultPromise
 {
-    use BaseJobId;
+    use PromisedJob;
 
     /** @var array<MayPromised> */
     private array $jobs = [];
