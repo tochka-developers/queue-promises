@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Support\ExpiredAt;
 use Tochka\Promises\Support\Timeout;
 use Tochka\Promises\Tests\TestCase;
 use Tochka\Promises\Tests\TestHelpers\TestPromise;
@@ -16,7 +15,6 @@ use Tochka\Promises\Tests\TestHelpers\TestPromise;
  */
 class TimeoutTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Support\Timeout::promiseConditionsTimeout
      */

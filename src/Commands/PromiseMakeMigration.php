@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Commands;
@@ -52,12 +53,12 @@ class PromiseMakeMigration extends Command
         if ($migrationName === null) {
             $migrationsToRun = array_filter(
                 $this->migrations,
-                fn(MigrationContract $migration) => $migration->isMainMigration()
+                fn (MigrationContract $migration) => $migration->isMainMigration()
             );
         } else {
             $migrationsToRun = array_filter(
                 $this->migrations,
-                fn(MigrationContract $migration) => $migration->getName() === $migrationName
+                fn (MigrationContract $migration) => $migration->getName() === $migrationName
             );
             if (count($migrationsToRun) === 0) {
                 throw new \InvalidArgumentException(

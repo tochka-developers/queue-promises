@@ -12,7 +12,6 @@ use Tochka\Promises\Tests\TestCase;
  */
 class BaseJobDispatcherTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Core\Support\BaseJobDispatcher::addDispatcher
      * @covers \Tochka\Promises\Core\Support\BaseJobDispatcher::dispatch
@@ -47,5 +46,4 @@ class BaseJobDispatcherTest extends TestCase
 
         $dispatcher->dispatch($mockMayPromised);
     }
-
 }

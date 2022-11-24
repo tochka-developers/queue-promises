@@ -19,7 +19,6 @@ use Tochka\Promises\Tests\TestHelpers\TestPromise;
  */
 class SyncTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Support\Sync::promiseConditionsSync
      */

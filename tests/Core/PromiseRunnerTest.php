@@ -76,7 +76,7 @@ class PromiseRunnerTest extends TestCase
      */
     public function testHookTraitsMethod(): void
     {
-        $testHandler = new class implements PromiseHandler {
+        $testHandler = new class () implements PromiseHandler {
             use DefaultPromise;
             use TestConditionTrait;
         };
@@ -103,7 +103,7 @@ class PromiseRunnerTest extends TestCase
             Sync::class           => Sync::class,
         ];
 
-        $testHandler = new class implements PromiseHandler {
+        $testHandler = new class () implements PromiseHandler {
             use DefaultPromise;
             use Sync;
         };

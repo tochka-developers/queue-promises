@@ -38,11 +38,11 @@ class QueuePromiseMiddleware
     {
         // меняем состояние только если задача находится в состоянии ожидание или запущена
         if ($queueJob instanceof JobStateContract && $baseJob->getState()->in(
-                [
-                    StateEnum::WAITING(),
-                    StateEnum::RUNNING(),
-                ]
-            )) {
+            [
+                StateEnum::WAITING(),
+                StateEnum::RUNNING(),
+            ]
+        )) {
             $baseJob->setState($queueJob->getState());
         }
 

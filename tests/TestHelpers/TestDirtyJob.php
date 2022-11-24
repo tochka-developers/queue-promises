@@ -10,7 +10,8 @@ use Tochka\Promises\Support\PromisedJob;
 
 class TestDirtyJob implements MayPromised
 {
-    use PromisedJob, InteractsWithQueue;
+    use PromisedJob;
+    use InteractsWithQueue;
 
     private string $message;
 

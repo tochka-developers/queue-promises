@@ -1,8 +1,10 @@
 <?php
+
 /** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Models;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,16 +25,16 @@ use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseJobFactory;
 
 /**
- * @property int                        $id
- * @property int                        $promise_id
- * @property StateEnum                  $state
+ * @property int $id
+ * @property int $promise_id
+ * @property StateEnum $state
  * @property array<ConditionTransition> $conditions
- * @property MayPromised                $initial_job
- * @property MayPromised                $result_job
- * @property \Exception|null            $exception
- * @property \Carbon\Carbon             $created_at
- * @property \Carbon\Carbon             $updated_at
- * @property Promise|null               $promise
+ * @property MayPromised $initial_job
+ * @property MayPromised $result_job
+ * @property \Exception|null $exception
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Promise|null $promise
  * @method static Builder byPromise(int $promiseId)
  * @method static self|null find(int $id)
  * @method static lockForUpdate()
@@ -44,16 +46,17 @@ class PromiseJob extends Model
 
     /** @var array<string,string> */
     protected $casts = [
-        'promise_id'  => 'int',
-        'state'       => StateEnum::class,
-        'conditions'  => ConditionsCast::class,
+        'promise_id' => 'int',
+        'state' => StateEnum::class,
+        'conditions' => ConditionsCast::class,
         'initial_job' => SerializableClassCast::class,
-        'result_job'  => SerializableClassCast::class,
-        'exception'   => SerializableClassCast::class,
+        'result_job' => SerializableClassCast::class,
+        'exception' => SerializableClassCast::class,
     ];
 
     private ?BaseJob $baseJob = null;
     private ?StateEnum $changedState = null;
+    private bool $nestedEvents = false;
 
     protected static function booted(): void
     {
@@ -65,7 +68,14 @@ class PromiseJob extends Model
                     $promiseJob->setChangedState($oldState);
 
                     Event::dispatch(new StateChanging($promiseJob->getBaseJob(), $oldState, $currentState));
-                    Event::dispatch(new PromiseJobStateChanging($promiseJob->getBaseJob(), $oldState, $currentState));
+                    Event::dispatch(
+                        new PromiseJobStateChanging(
+                            $promiseJob->getBaseJob(),
+                            $oldState,
+                            $currentState,
+                            $promiseJob->nestedEvents
+                        )
+                    );
                 }
             }
         );
@@ -77,10 +87,22 @@ class PromiseJob extends Model
                     $currentState = $promiseJob->state;
 
                     Event::dispatch(new StateChanged($promiseJob->getBaseJob(), $oldState, $currentState));
-                    Event::dispatch(new PromiseJobStateChanged($promiseJob->getBaseJob(), $oldState, $currentState));
+                    Event::dispatch(
+                        new PromiseJobStateChanged(
+                            $promiseJob->getBaseJob(),
+                            $oldState,
+                            $currentState,
+                            $promiseJob->nestedEvents
+                        )
+                    );
                 }
             }
         );
+    }
+
+    public function setNestedEvents(bool $nestedEvents)
+    {
+        $this->nestedEvents = $nestedEvents;
     }
 
     public function getConnectionName(): ?string
@@ -96,7 +118,7 @@ class PromiseJob extends Model
 
     /**
      * @codeCoverageIgnore
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function promise(): BelongsTo
     {

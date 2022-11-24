@@ -3,7 +3,6 @@
 namespace Tochka\Promises\Tests\Listeners;
 
 use Illuminate\Support\Facades\Log;
-use Tochka\Promises\Contracts\StateChangedContract;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;

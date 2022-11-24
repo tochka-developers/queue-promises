@@ -18,7 +18,6 @@ use Tochka\Promises\Tests\TestHelpers\TestPromise;
  */
 class ASyncTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Support\ASync::promiseConditionsASync
      */

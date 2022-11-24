@@ -2,8 +2,6 @@
 
 namespace Tochka\Promises\Tests\Core;
 
-use Faker\Provider\Base;
-use PHPUnit\Util\Test;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\PromiseJob;

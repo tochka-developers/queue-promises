@@ -29,10 +29,14 @@ class PromiseJobTest extends TestCase
     {
         $conditions = [
             new ConditionTransition(
-                new Positive(), StateEnum::RUNNING(), StateEnum::SUCCESS()
+                new Positive(),
+                StateEnum::RUNNING(),
+                StateEnum::SUCCESS()
             ),
             new ConditionTransition(
-                new Positive(), StateEnum::RUNNING(), StateEnum::FAILED()
+                new Positive(),
+                StateEnum::RUNNING(),
+                StateEnum::FAILED()
             ),
         ];
 

@@ -1,8 +1,10 @@
 <?php
+
 /** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,13 +15,13 @@ use Tochka\Promises\Models\Factories\PromiseEventFactory;
 use Tochka\Promises\Support\WaitEvent;
 
 /**
- * @property int                $id
- * @property int                $job_id
- * @property string             $event_name
- * @property string             $event_unique_id
- * @property \Carbon\Carbon     $created_at
- * @property \Carbon\Carbon     $updated_at
- * @property PromiseJob|null    $job
+ * @property int $id
+ * @property int $job_id
+ * @property string $event_name
+ * @property string $event_unique_id
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property PromiseJob|null $job
  * @method static Builder byJob(int $jobId)
  * @method static Builder byEvent(string $eventName, string $eventUniqueId)
  * @method static self|null find(int $id)
@@ -32,10 +34,10 @@ class PromiseEvent extends Model
 
     /** @var array<string, string> */
     protected $casts = [
-        'job_id'          => 'int',
-        'event_name'      => 'string',
+        'job_id' => 'int',
+        'event_name' => 'string',
         'event_unique_id' => 'string',
-        'event'           => SerializableClassCast::class,
+        'event' => SerializableClassCast::class,
     ];
 
     private ?WaitEvent $baseEvent = null;
@@ -53,7 +55,7 @@ class PromiseEvent extends Model
 
     /**
      * @codeCoverageIgnore
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function job(): BelongsTo
     {

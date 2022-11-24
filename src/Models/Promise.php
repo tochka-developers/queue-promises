@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpMissingFieldTypeInspection */
 
 namespace Tochka\Promises\Models;
@@ -24,22 +25,21 @@ use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseFactory;
 
 /**
- * @property int                            $id
- * @property StateEnum                      $state
- * @property array<ConditionTransition>     $conditions
- * @property PromiseHandler                 $promise_handler
- * @property \Carbon\Carbon                 $created_at
- * @property \Carbon\Carbon                 $updated_at
- * @property \Carbon\Carbon                 $watch_at
- * @property \Carbon\Carbon                 $timeout_at
- * @property array<PromiseJob>|Collection   $jobs
+ * @property int $id
+ * @property StateEnum $state
+ * @property array<ConditionTransition> $conditions
+ * @property PromiseHandler $promise_handler
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon $watch_at
+ * @property Carbon $timeout_at
+ * @property array<PromiseJob>|Collection $jobs
  * @property array<PromiseEvent>|Collection $events
  * @method static Builder|self inStates(array $states)
  * @method static Builder|self forWatch()
  * @method static self|null find(int $id)
  * @method static Builder where($column, $operator = null, $value = null, $boolean = 'and')
  * @method static Builder lockForUpdate()
- * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class Promise extends Model
 {
@@ -47,15 +47,16 @@ class Promise extends Model
 
     /** @var array<string, string> */
     protected $casts = [
-        'state'           => StateEnum::class,
-        'conditions'      => ConditionsCast::class,
+        'state' => StateEnum::class,
+        'conditions' => ConditionsCast::class,
         'promise_handler' => SerializableClassCast::class,
-        'watch_at'        => 'datetime',
-        'timeout_at'      => 'datetime',
+        'watch_at' => 'datetime',
+        'timeout_at' => 'datetime',
     ];
 
     private ?BasePromise $basePromise = null;
     private ?StateEnum $changedState = null;
+    private bool $nestedEvents = false;
 
     protected static function booted(): void
     {
@@ -66,8 +67,17 @@ class Promise extends Model
                     $currentState = $promise->state;
                     $promise->setChangedState($oldState);
 
-                    Event::dispatch(new StateChanging($promise->getBasePromise(), $oldState, $currentState));
-                    Event::dispatch(new PromiseStateChanging($promise->getBasePromise(), $oldState, $currentState));
+                    Event::dispatch(
+                        new StateChanging($promise->getBasePromise(), $oldState, $currentState)
+                    );
+                    Event::dispatch(
+                        new PromiseStateChanging(
+                            $promise->getBasePromise(),
+                            $oldState,
+                            $currentState,
+                            $promise->nestedEvents
+                        )
+                    );
                 }
             }
         );
@@ -78,11 +88,25 @@ class Promise extends Model
                     $oldState = $promise->getChangedState();
                     $currentState = $promise->state;
 
-                    Event::dispatch(new StateChanged($promise->getBasePromise(), $oldState, $currentState));
-                    Event::dispatch(new PromiseStateChanged($promise->getBasePromise(), $oldState, $currentState));
+                    Event::dispatch(
+                        new StateChanged($promise->getBasePromise(), $oldState, $currentState)
+                    );
+                    Event::dispatch(
+                        new PromiseStateChanged(
+                            $promise->getBasePromise(),
+                            $oldState,
+                            $currentState,
+                            $promise->nestedEvents
+                        )
+                    );
                 }
             }
         );
+    }
+
+    public function setNestedEvents(bool $nestedEvents)
+    {
+        $this->nestedEvents = $nestedEvents;
     }
 
     public function getConnectionName(): ?string
@@ -98,7 +122,7 @@ class Promise extends Model
 
     /**
      * @codeCoverageIgnore
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function jobs(): HasMany
     {
@@ -107,7 +131,7 @@ class Promise extends Model
 
     /**
      * @codeCoverageIgnore
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function events(): HasMany
     {

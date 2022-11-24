@@ -15,7 +15,6 @@ use Tochka\Promises\Tests\TestHelpers\TestPromise;
  */
 class ExpiredAtTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Support\ExpiredAt::promiseConditionsExpiredAt
      */

@@ -12,11 +12,9 @@ class TestFilterListener
 
     public function test($event): void
     {
-
     }
 
     public function test2($event): void
     {
-
     }
 }

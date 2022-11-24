@@ -2,7 +2,6 @@
 
 namespace Tochka\Promises\Tests\Core;
 
-use Faker\Provider\Base;
 use Hamcrest\Core\IsInstanceOf;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -179,7 +178,7 @@ class GarbageCollectorTest extends TestCase
         $basePromise = new BasePromise($childPromise);
         Promise::saveBasePromise($basePromise);
 
-        $gc = new GarbageCollector(0,0, []);
+        $gc = new GarbageCollector(0, 0, []);
 
         $result = $gc->checkHasParentPromise($basePromise);
 
@@ -195,7 +194,7 @@ class GarbageCollectorTest extends TestCase
         $basePromise = new BasePromise($childPromise);
         Promise::saveBasePromise($basePromise);
 
-        $gc = new GarbageCollector(0,0, []);
+        $gc = new GarbageCollector(0, 0, []);
 
         $result = $gc->checkHasParentPromise($basePromise);
 
@@ -213,7 +212,7 @@ class GarbageCollectorTest extends TestCase
         $basePromise = new BasePromise($childPromise);
         Promise::saveBasePromise($basePromise);
 
-        $gc = new GarbageCollector(0,0, []);
+        $gc = new GarbageCollector(0, 0, []);
 
         $result = $gc->checkHasParentPromise($basePromise);
 
@@ -234,7 +233,7 @@ class GarbageCollectorTest extends TestCase
         $basePromise = new BasePromise($childPromise);
         Promise::saveBasePromise($basePromise);
 
-        $gc = new GarbageCollector(0,0, []);
+        $gc = new GarbageCollector(0, 0, []);
 
         $result = $gc->checkHasParentPromise($basePromise);
 

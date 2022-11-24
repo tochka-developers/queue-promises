@@ -9,16 +9,13 @@ trait TestConditionTrait
 {
     public function promiseConditionsTestConditionTrait(BasePromise $promise): void
     {
-
     }
 
     public function jobConditionsTestConditionTrait(BasePromise $promise, BaseJob $baseJob): void
     {
-
     }
 
     public function afterRunTestConditionTrait(BasePromise $promise, BaseJob $baseJob): void
     {
-
     }
 }

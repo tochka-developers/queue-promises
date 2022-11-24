@@ -14,7 +14,6 @@ use Tochka\Promises\Events\PromiseStateChanging;
 use Tochka\Promises\Events\StateChanged;
 use Tochka\Promises\Events\StateChanging;
 use Tochka\Promises\Models\Promise;
-use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Tests\TestCase;
 use Tochka\Promises\Tests\TestHelpers\TestPromise;
 
@@ -36,10 +35,14 @@ class PromiseTest extends TestCase
 
         $conditions = [
             new ConditionTransition(
-                new Positive(), StateEnum::RUNNING(), StateEnum::SUCCESS()
+                new Positive(),
+                StateEnum::RUNNING(),
+                StateEnum::SUCCESS()
             ),
             new ConditionTransition(
-                new Positive(), StateEnum::RUNNING(), StateEnum::FAILED()
+                new Positive(),
+                StateEnum::RUNNING(),
+                StateEnum::FAILED()
             ),
         ];
 

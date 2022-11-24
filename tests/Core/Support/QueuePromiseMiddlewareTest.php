@@ -33,7 +33,7 @@ class QueuePromiseMiddlewareTest extends TestCase
         $middleware->shouldReceive('setJobStateAndResult')
             ->never();
 
-        $result = $middleware->handle($testJob, fn() => $expected);
+        $result = $middleware->handle($testJob, fn () => $expected);
 
         self::assertEquals($expected, $result);
     }
@@ -55,7 +55,7 @@ class QueuePromiseMiddlewareTest extends TestCase
         $middleware->shouldReceive('setJobStateAndResult')
             ->never();
 
-        $result = $middleware->handle($testJob, fn() => $expected);
+        $result = $middleware->handle($testJob, fn () => $expected);
 
         self::assertEquals($expected, $result);
     }
@@ -81,7 +81,7 @@ class QueuePromiseMiddlewareTest extends TestCase
         $middleware->shouldReceive('setJobStateAndResult')
             ->once();
 
-        $result = $middleware->handle($testJob, fn() => $expected);
+        $result = $middleware->handle($testJob, fn () => $expected);
 
         self::assertEquals($expected, $result);
     }
@@ -110,7 +110,7 @@ class QueuePromiseMiddlewareTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
 
-        $result = $middleware->handle($testJob, fn() => $expected);
+        $result = $middleware->handle($testJob, fn () => $expected);
 
         self::assertEquals($expected, $result);
     }

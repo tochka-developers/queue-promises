@@ -12,7 +12,6 @@ use Tochka\Promises\Tests\TestHelpers\TestEvent;
  */
 class WaitEventTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Support\WaitEvent::setAttachedModel
      * @covers \Tochka\Promises\Support\WaitEvent::getAttachedModel

@@ -11,7 +11,6 @@ use Tochka\Promises\Tests\TestCase;
  */
 class TimeTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Core\Support\Time::getCreatedAt
      * @covers \Tochka\Promises\Core\Support\Time::setCreatedAt

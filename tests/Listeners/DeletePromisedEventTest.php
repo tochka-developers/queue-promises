@@ -7,7 +7,6 @@ use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Listeners\DeletePromisedEvent;
 use Tochka\Promises\Models\PromiseEvent;
-use Tochka\Promises\Support\WaitEvent;
 use Tochka\Promises\Tests\TestCase;
 
 /**
@@ -15,7 +14,6 @@ use Tochka\Promises\Tests\TestCase;
  */
 class DeletePromisedEventTest extends TestCase
 {
-
     /**
      * @covers \Tochka\Promises\Listeners\DeletePromisedEvent::dispatchJob
      * @throws \Exception
