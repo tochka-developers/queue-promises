@@ -11,6 +11,7 @@ use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Support\BaseJobId;
 use Tochka\Promises\Support\DefaultPromise;
+use Tochka\Promises\Support\PromisedJob;
 use Tochka\Promises\Support\Sync;
 use Tochka\Promises\Tests\TestCase;
 use Tochka\Promises\Tests\TestHelpers\TestConditionTrait;
@@ -98,9 +99,10 @@ class PromiseRunnerTest extends TestCase
     public function testGetHandlerTraits(): void
     {
         $expected = [
-            BaseJobId::class      => BaseJobId::class,
+            BaseJobId::class => BaseJobId::class,
             DefaultPromise::class => DefaultPromise::class,
-            Sync::class           => Sync::class,
+            Sync::class => Sync::class,
+            PromisedJob::class => PromisedJob::class,
         ];
 
         $testHandler = new class () implements PromiseHandler {
