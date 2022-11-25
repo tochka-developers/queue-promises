@@ -2,7 +2,9 @@
 
 namespace Tochka\Promises\Core\Support;
 
+use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Tochka\Promises\Contracts\JobFacadeContract;
 use Tochka\Promises\Contracts\JobStateContract;
@@ -19,6 +21,7 @@ use Tochka\Promises\Support\WaitEvent;
  */
 class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, JobFacadeContract
 {
+    use Queueable;
     use PromisedJob;
 
     private int $promise_id;
@@ -39,7 +42,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
 
     /**
      * @throws \ReflectionException
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws BindingResolutionException
      */
     public function handle(): void
     {
@@ -74,7 +77,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
      *
      * @return mixed|bool
      * @throws \ReflectionException
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws BindingResolutionException
      */
     protected function dispatchMethodWithParams(string $method)
     {

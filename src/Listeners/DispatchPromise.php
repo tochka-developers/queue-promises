@@ -2,6 +2,8 @@
 
 namespace Tochka\Promises\Listeners;
 
+use Tochka\Promises\Contracts\CustomConnection;
+use Tochka\Promises\Contracts\CustomQueue;
 use Tochka\Promises\Core\Support\PromiseQueueJob;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseStateChanged;
@@ -27,12 +29,22 @@ class DispatchPromise
 
     public function dispatchPromise(PromiseStateChanged $event): void
     {
-        dispatch(
-            new PromiseQueueJob(
-                $event->getPromise()->getPromiseId(),
-                $event->getPromise()->getPromiseHandler(),
-                $event->getPromise()->getState()
-            )
+        $promiseQueueJob = new PromiseQueueJob(
+            $event->getPromise()->getPromiseId(),
+            $event->getPromise()->getPromiseHandler(),
+            $event->getPromise()->getState()
         );
+
+        $promiseHandler = $event->getPromise()->getPromiseHandler();
+
+        if ($promiseHandler instanceof CustomConnection) {
+            $promiseQueueJob->onQueue($promiseHandler->getConnection());
+        }
+
+        if ($promiseHandler instanceof CustomQueue) {
+            $promiseQueueJob->onQueue($promiseHandler->getQueue());
+        }
+
+        dispatch($promiseQueueJob);
     }
 }
