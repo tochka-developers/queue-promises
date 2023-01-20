@@ -2,6 +2,9 @@
 
 namespace Tochka\Promises\Listeners;
 
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Tochka\Promises\Contracts\CustomConnection;
 use Tochka\Promises\Contracts\CustomQueue;
 use Tochka\Promises\Core\Support\PromiseQueueJob;
@@ -27,6 +30,9 @@ class DispatchPromise
         ],
     ];
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function dispatchPromise(PromiseStateChanged $event): void
     {
         $promiseQueueJob = new PromiseQueueJob(
@@ -38,13 +44,14 @@ class DispatchPromise
         $promiseHandler = $event->getPromise()->getPromiseHandler();
 
         if ($promiseHandler instanceof CustomConnection) {
-            $promiseQueueJob->onQueue($promiseHandler->getConnection());
+            $promiseQueueJob->onConnection($promiseHandler->getConnection());
         }
 
         if ($promiseHandler instanceof CustomQueue) {
             $promiseQueueJob->onQueue($promiseHandler->getQueue());
         }
 
-        dispatch($promiseQueueJob);
+        $dispatcher = Container::getInstance()->make(Dispatcher::class);
+        $dispatcher->dispatch($promiseQueueJob);
     }
 }

@@ -186,11 +186,11 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
         return $this->promise_handler;
     }
 
-    /**
-     * Tags for Horizon UI
-     *
-     * @return array<string>
-     */
+    public function displayName(): string
+    {
+        return sprintf('%s[%d]', get_class($this->promise_handler), $this->promise_id);
+    }
+
     public function tags(): array
     {
         return [
