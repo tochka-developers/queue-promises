@@ -3,6 +3,7 @@
 namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\PromiseHandler;
@@ -16,6 +17,7 @@ use Tochka\Promises\Models\Promise;
 class BasePromise implements StatesContract, ConditionTransitionsContract
 {
     use ConditionTransitions;
+    use SerializesModels;
     use States;
     use Time;
 

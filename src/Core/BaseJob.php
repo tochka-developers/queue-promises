@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Core;
 
+use Illuminate\Queue\SerializesModels;
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\StatesContract;
@@ -14,6 +15,7 @@ use Tochka\Promises\Models\PromiseJob;
 class BaseJob implements StatesContract, ConditionTransitionsContract
 {
     use ConditionTransitions;
+    use SerializesModels;
     use States;
     use Time;
 
