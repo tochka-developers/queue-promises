@@ -6,6 +6,7 @@ use Illuminate\Support\Collection;
 use Tochka\Promises\Conditions\EmptyJobs;
 use Tochka\Promises\Conditions\PromiseInState;
 use Tochka\Promises\Contracts\MayPromised;
+use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
@@ -28,7 +29,7 @@ trait DefaultPromise
 
     public function run(): void
     {
-        /** @var \Tochka\Promises\Contracts\PromiseHandler|self $this */
+        /** @var PromiseHandler|self $this */
         Promises::run($this, $this->jobs);
         $this->jobs = [];
     }
@@ -41,9 +42,6 @@ trait DefaultPromise
     }
 
     /**
-     * @param \Tochka\Promises\Core\BasePromise $promise
-     * @param \Tochka\Promises\Core\BaseJob     $job
-     *
      * @noinspection PhpUnusedParameterInspection
      */
     public function jobConditionsDefaultPromise(BasePromise $promise, BaseJob $job): void
@@ -76,7 +74,7 @@ trait DefaultPromise
     }
 
     /**
-     * @return \Illuminate\Support\Collection|array<BaseJob>
+     * @return Collection<BaseJob>
      */
     public function getResults(): Collection
     {

@@ -2,7 +2,11 @@
 
 namespace Tochka\Promises\Core;
 
+use Illuminate\Support\Facades\Event;
+use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
+use Tochka\Promises\Events\PromiseRan;
+use Tochka\Promises\Events\PromiseRunning;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
@@ -12,12 +16,14 @@ class PromiseRunner
     private array $traits = [];
 
     /**
-     * @param PromiseHandler                                $handler
-     * @param array<\Tochka\Promises\Contracts\MayPromised> $jobs
+     * @param PromiseHandler $handler
+     * @param array<MayPromised> $jobs
      */
     public function run(PromiseHandler $handler, array $jobs): void
     {
         $basePromise = new BasePromise($handler);
+
+        Event::dispatch(new PromiseRunning($handler));
 
         $this->hookTraitsMethod($handler, 'promiseConditions', $basePromise);
 
@@ -39,6 +45,8 @@ class PromiseRunner
         $this->hookTraitsMethod($handler, 'afterRun');
 
         $basePromise->dispatch();
+
+        Event::dispatch(new PromiseRan($basePromise));
     }
 
     public function hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args): void
