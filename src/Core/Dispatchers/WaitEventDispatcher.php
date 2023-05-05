@@ -21,10 +21,10 @@ class WaitEventDispatcher implements DispatcherContract
         PromiseEvent::saveWaitEvent($promised);
 
         // Чтобы сохранить ID события в задачу-обертку
-        $promise_job = PromiseJob::find($promised->getBaseJobId());
-        if ($promise_job !== null) {
-            $promise_job->initial_job = $promised;
-            $promise_job->save();
+        $promiseJob = PromiseJob::find($promised->getBaseJobId());
+        if ($promiseJob !== null) {
+            $promiseJob->initial_job = $promised;
+            $promiseJob->save();
         }
     }
 }

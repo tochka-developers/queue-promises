@@ -26,14 +26,15 @@ class PromiseJobRegistry
     /**
      * @param int $promise_id
      *
-     * @return \Illuminate\Support\Collection|BaseJob[]
+     * @return Collection<array-key, BaseJob>
      */
     public function loadByPromiseId(int $promise_id): Collection
     {
+        /** @psalm-suppress InvalidTemplateParam */
         return PromiseJob::byPromise($promise_id)
             ->get()
             ->map(
-                function (PromiseJob $jobModel) {
+                function (PromiseJob $jobModel): BaseJob {
                     return $jobModel->getBaseJob();
                 }
             );

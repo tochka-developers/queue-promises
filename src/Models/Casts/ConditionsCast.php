@@ -6,7 +6,7 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Tochka\Promises\Core\Support\ConditionTransition;
 
 /**
- * @template-implements CastsAttributes<array<ConditionTransition>, string>
+ * @template-implements CastsAttributes<array<ConditionTransition>, array<ConditionTransition>>
  */
 class ConditionsCast implements CastsAttributes
 {

@@ -15,31 +15,26 @@ class PromiseEventRegistry
     /**
      * @param string $event_name
      * @param string $event_unique_id
-     *
-     * @return \Tochka\Promises\Support\WaitEvent[]|Collection
+     * @return Collection<array-key, WaitEvent>
      */
     public function loadByEvent(string $event_name, string $event_unique_id): Collection
     {
+        /** @psalm-suppress InvalidTemplateParam */
         return PromiseEvent::byEvent($event_name, $event_unique_id)
             ->get()
             ->map(
-                function (PromiseEvent $promiseEventModel) {
+                function (PromiseEvent $promiseEventModel): WaitEvent {
                     return $promiseEventModel->getWaitEvent();
                 }
             );
     }
 
-    /**
-     * @param \Tochka\Promises\Support\WaitEvent $waitEvent
-     */
     public function save(WaitEvent $waitEvent): void
     {
         PromiseEvent::saveWaitEvent($waitEvent);
     }
 
     /**
-     * @param int $id
-     *
      * @throws \Exception
      */
     public function delete(int $id): void

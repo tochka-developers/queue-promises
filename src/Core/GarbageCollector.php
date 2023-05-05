@@ -25,7 +25,7 @@ class GarbageCollector
         $this->sleepTime = $sleepTime;
         $this->deleteOlderThen = $deleteOlderThen;
         $this->states = $states;
-        $this->lastIteration = Carbon::parse(0);
+        $this->lastIteration = Carbon::minValue();
     }
 
     /**

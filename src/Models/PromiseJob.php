@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpMissingFieldTypeInspection */
-
 namespace Tochka\Promises\Models;
 
 use Carbon\Carbon;
@@ -38,7 +36,6 @@ use Tochka\Promises\Models\Factories\PromiseJobFactory;
  * @method static Builder byPromise(int $promiseId)
  * @method static self|null find(int $id)
  * @method static lockForUpdate()
- * @mixin Builder
  */
 class PromiseJob extends Model
 {
@@ -100,7 +97,7 @@ class PromiseJob extends Model
         );
     }
 
-    public function setNestedEvents(bool $nestedEvents)
+    public function setNestedEvents(bool $nestedEvents): void
     {
         $this->nestedEvents = $nestedEvents;
     }

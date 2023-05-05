@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Collection;
 use Tochka\Promises\Contracts\JobFacadeContract;
 use Tochka\Promises\Contracts\JobStateContract;
 use Tochka\Promises\Contracts\MayPromised;
@@ -134,21 +135,24 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     }
 
     /**
-     * @return array<string, array<MayPromised>>
+     * @return array<class-string<MayPromised|PromisedEvent>, non-empty-list<MayPromised|PromisedEvent>>
      */
     private function getResults(): array
     {
         $results = [];
 
-        $jobs = PromiseJob::byPromise($this->getPromiseId())->orderBy('id')->get();
-        /** @var PromiseJob $job */
+        /** @var Collection<array-key,PromiseJob> $jobs */
+        $jobs = PromiseJob::byPromise($this->getPromiseId())
+            ->orderBy('id')
+            ->get();
+
         foreach ($jobs as $job) {
             $resultJob = $job->getBaseJob()->getResultJob();
-            $results[\get_class($resultJob)][] = $resultJob;
+            $results[$resultJob::class][] = $resultJob;
             if ($resultJob instanceof WaitEvent) {
                 $resultEvent = $resultJob->getEvent();
                 if ($resultEvent !== null) {
-                    $results[\get_class($resultEvent)][] = $resultEvent;
+                    $results[$resultEvent::class][] = $resultEvent;
                 }
             }
         }
