@@ -5,15 +5,12 @@ namespace Tochka\Promises\Models\Casts;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 
+/**
+ * @template-implements CastsAttributes<object, string>
+ */
 class SerializableClassCast implements CastsAttributes
 {
     /**
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @param string                              $key
-     * @param mixed                               $value
-     * @param array                               $attributes
-     *
-     * @return mixed
      * @throws \JsonException
      */
     public function get($model, string $key, $value, array $attributes)
@@ -37,12 +34,6 @@ class SerializableClassCast implements CastsAttributes
     }
 
     /**
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @param string                              $key
-     * @param mixed                               $value
-     * @param array                               $attributes
-     *
-     * @return array
      * @throws \JsonException
      */
     public function set($model, string $key, $value, array $attributes): array

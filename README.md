@@ -1,8 +1,10 @@
 # Queue Promises
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=alert_status)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=bugs)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=code_smells)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=tochka-developers_queue-promises&metric=coverage)](https://sonarcloud.io/dashboard?id=tochka-developers_queue-promises)
+[![Packagist](https://img.shields.io/packagist/v/tochka-developers/queue-promises.svg)](https://packagist.org/packages/tochka-developers/queue-promises)
+[![Packagist](https://img.shields.io/packagist/dt/tochka-developers/queue-promises.svg)](https://packagist.org/packages/tochka-developers/queue-promises)
+[![build](https://github.com/tochka-developers/queue-promises/actions/workflows/main.yml/badge.svg)](https://github.com/tochka-developers/queue-promises/actions/workflows/main.yml)
+[![Psalm coverage](https://shepherd.dev/github/tochka-developers/queue-promises/coverage.svg)](https://shepherd.dev/github/tochka-developers/queue-promises)
+[![Psalm level](https://shepherd.dev/github/tochka-developers/queue-promises/level.svg)](https://psalm.dev)
+[![Coverage Status](https://coveralls.io/repos/github/tochka-developers/queue-promises/badge.svg?branch=master)](https://coveralls.io/github/tochka-developers/queue-promises)
 
 The module allows chaining of Laravel jobs. The promise will be executed after all chained jobs are finished 
 (either completed successfully or failed). The promise has access to job results. 
