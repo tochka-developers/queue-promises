@@ -26,6 +26,7 @@ use Tochka\Promises\Models\Factories\PromiseFactory;
 
 /**
  * @property int $id
+ * @property int|null $parent_job_id
  * @property StateEnum $state
  * @property array<ConditionTransition> $conditions
  * @property PromiseHandler $promise_handler
@@ -104,7 +105,7 @@ class Promise extends Model
         );
     }
 
-    public function setNestedEvents(bool $nestedEvents)
+    public function setNestedEvents(bool $nestedEvents): void
     {
         $this->nestedEvents = $nestedEvents;
     }
@@ -167,6 +168,7 @@ class Promise extends Model
         $this->basePromise->setUpdatedAt($this->updated_at);
         $this->basePromise->setWatchAt($this->watch_at);
         $this->basePromise->setTimeoutAt($this->timeout_at);
+        $this->basePromise->setParentJobId($this->parent_job_id);
         $this->basePromise->setAttachedModel($this);
 
         return $this->basePromise;
@@ -181,6 +183,7 @@ class Promise extends Model
         $model->promise_handler = clone $basePromise->getPromiseHandler();
         $model->watch_at = $basePromise->getWatchAt();
         $model->timeout_at = $basePromise->getTimeoutAt();
+        $model->parent_job_id = $basePromise->getParentJobId();
 
         $model->save();
 

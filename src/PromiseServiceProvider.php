@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use Tochka\Promises\Commands\PromiseClean;
 use Tochka\Promises\Commands\PromiseGc;
 use Tochka\Promises\Commands\PromiseMakeMigration;
 use Tochka\Promises\Commands\PromiseWatch;
@@ -50,6 +51,7 @@ class PromiseServiceProvider extends ServiceProvider
                 [
                     PromiseWatch::class,
                     PromiseGc::class,
+                    PromiseClean::class,
                     PromiseMakeMigration::class,
                 ]
             );
@@ -69,7 +71,7 @@ class PromiseServiceProvider extends ServiceProvider
 
                 if ($job instanceof MayPromised && $job->getBaseJobId() !== null) {
                     return [
-                        'promised'    => true,
+                        'promised' => true,
                         'base_job_id' => $job->getBaseJobId(),
                     ];
                 }
@@ -186,7 +188,19 @@ class PromiseServiceProvider extends ServiceProvider
         $this->app->singleton(
             Facades\PromiseWatcher::class,
             static function () {
-                return new PromiseWatcher();
+                $sleepTime = Config::get('promises.watcher_sleep', 60 * 10);
+                $promisesTable = Config::get('promises.database.table_promises', 'promises');
+                $promiseJobsTable = Config::get('promises.database.table_jobs', 'promise_jobs');
+                $promiseChunkSize = Config::get('promises.garbage_collector.promise_chunk_size', 100);
+                $jobsChunkSize = Config::get('promises.garbage_collector.jobs_chunk_size', 500);
+
+                return new PromiseWatcher(
+                    $sleepTime,
+                    $promisesTable,
+                    $promiseJobsTable,
+                    $promiseChunkSize,
+                    $jobsChunkSize
+                );
             }
         );
 
@@ -200,11 +214,25 @@ class PromiseServiceProvider extends ServiceProvider
         $this->app->singleton(
             Facades\GarbageCollector::class,
             static function () {
-                $timeout = Config::get('promises.garbage_collector.timeout', 60 * 10);
-                $timeToDelete = Config::get('promises.garbage_collector.older_then', 60 * 60 * 24 * 7);
+                $sleepTime = Config::get('promises.garbage_collector.timeout', 60 * 10);
+                $deleteOlderThen = Config::get('promises.garbage_collector.older_then', 60 * 60 * 24 * 7);
                 $states = Config::get('promises.garbage_collector.states', []);
+                $promisesTable = Config::get('promises.database.table_promises', 'promises');
+                $promiseJobsTable = Config::get('promises.database.table_jobs', 'promise_jobs');
+                $promiseEventsTable = Config::get('promises.database.table_events', 'promise_events');
+                $promiseChunkSize = Config::get('promises.garbage_collector.promise_chunk_size', 100);
+                $jobsChunkSize = Config::get('promises.garbage_collector.jobs_chunk_size', 500);
 
-                return new GarbageCollector($timeout, $timeToDelete, $states);
+                return new GarbageCollector(
+                    $sleepTime,
+                    $deleteOlderThen,
+                    $states,
+                    $promisesTable,
+                    $promiseJobsTable,
+                    $promiseEventsTable,
+                    $promiseChunkSize,
+                    $jobsChunkSize,
+                );
             }
         );
 

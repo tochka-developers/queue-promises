@@ -25,7 +25,7 @@ class GarbageCollectorTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @covers \Tochka\Promises\Core\GarbageCollector::iteration
+     * @covers \Tochka\Promises\Core\GarbageCollector::clean
      */
     public function testIteration(): void
     {
@@ -38,11 +38,11 @@ class GarbageCollectorTest extends TestCase
             ->twice()
             ->with(IsInstanceOf::anInstanceOf(BasePromise::class));
 
-        $mock->iteration();
+        $mock->clean();
     }
 
     /**
-     * @covers \Tochka\Promises\Core\GarbageCollector::iteration
+     * @covers \Tochka\Promises\Core\GarbageCollector::clean
      */
     public function testIterationUnknownHandler(): void
     {
@@ -65,7 +65,7 @@ class GarbageCollectorTest extends TestCase
             ->with(IsInstanceOf::anInstanceOf(BasePromise::class))
             ->andThrow($expectException);
 
-        $mock->iteration();
+        $mock->clean();
 
         $actualPromise = Promise::find($basePromise->getPromiseId());
         $actualPromiseJob = PromiseJob::find($baseJob->getJobId());
@@ -77,7 +77,7 @@ class GarbageCollectorTest extends TestCase
     }
 
     /**
-     * @covers \Tochka\Promises\Core\GarbageCollector::iteration
+     * @covers \Tochka\Promises\Core\GarbageCollector::clean
      */
     public function testIterationException(): void
     {
@@ -94,7 +94,7 @@ class GarbageCollectorTest extends TestCase
 
         app(ExceptionHandler::class)->shouldReport($expectException);
 
-        $mock->iteration();
+        $mock->clean();
     }
 
     /**

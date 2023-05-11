@@ -22,6 +22,7 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
     use Time;
 
     private ?int $id = null;
+    private ?int $parentJobId;
     private PromiseHandler $promiseHandler;
     private Promise $model;
     private Carbon $watchAt;
@@ -30,6 +31,7 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
     public function __construct(PromiseHandler $promiseHandler)
     {
         $this->promiseHandler = $promiseHandler;
+        $this->parentJobId = $promiseHandler->getBaseJobId();
         $this->state = StateEnum::WAITING();
         $this->model = new Promise();
         $this->watchAt = Carbon::now()->addSeconds(watcher_watch_timeout());
@@ -54,6 +56,16 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
     public function setPromiseId(int $id): void
     {
         $this->id = $id;
+    }
+
+    public function getParentJobId(): ?int
+    {
+        return $this->parentJobId;
+    }
+
+    public function setParentJobId(?int $id): void
+    {
+        $this->parentJobId = $id;
     }
 
     public function getAttachedModel(): Promise

@@ -4,155 +4,130 @@ namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Tochka\Promises\Core\Support\DaemonWithSignals;
-use Tochka\Promises\Exceptions\IncorrectResolvingClass;
-use Tochka\Promises\Models\Promise;
-use Tochka\Promises\Models\PromiseEvent;
-use Tochka\Promises\Models\PromiseJob;
+use Illuminate\Support\Facades\DB;
+use Tochka\Promises\Core\Support\DaemonWorker;
 
 class GarbageCollector
 {
-    use DaemonWithSignals;
+    use DaemonWorker;
 
-    private int $sleepTime;
     private int $deleteOlderThen;
     /** @var array<string> */
     private array $states;
-    private Carbon $lastIteration;
 
-    public function __construct(int $sleepTime, int $deleteOlderThen, array $states)
-    {
+    private string $promisesTable;
+    private string $promiseJobsTable;
+    private string $promiseEventsTable;
+    private int $promiseChunkSize;
+    private int $jobsChunkSize;
+
+    public function __construct(
+        int $sleepTime,
+        int $deleteOlderThen,
+        array $states,
+        string $promisesTable,
+        string $promiseJobsTable,
+        string $promiseEventsTable,
+        int $promiseChunkSize = 100,
+        int $jobsChunkSize = 500,
+    ) {
         $this->sleepTime = $sleepTime;
         $this->deleteOlderThen = $deleteOlderThen;
         $this->states = $states;
+
+        $this->promisesTable = $promisesTable;
+        $this->promiseJobsTable = $promiseJobsTable;
+        $this->promiseEventsTable = $promiseEventsTable;
+
+        $this->promiseChunkSize = $promiseChunkSize;
+        $this->jobsChunkSize = $jobsChunkSize;
+
         $this->lastIteration = Carbon::minValue();
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     public function handle(): void
     {
-        if ($this->supportsAsyncSignals()) {
-            $this->listenForSignals();
-        }
+        $this->daemon(function () {
+            $this->clean();
+        });
+    }
 
+    public function clean(): void
+    {
         while (true) {
-            if ($this->shouldQuit()) {
+            $promises = DB::table($this->promisesTable)
+                ->select([$this->promiseColumn('id')])
+                ->leftJoin(
+                    $this->promiseJobsTable,
+                    $this->promiseJobsColumn('id'),
+                    '=',
+                    $this->promiseColumn('parent_job_id')
+                )
+                ->whereIn($this->promiseColumn('state'), $this->states)
+                ->where($this->promiseColumn('updated_at'), '<', Carbon::now()->subSeconds($this->deleteOlderThen))
+                ->whereNull($this->promiseJobsColumn('id'))
+                ->limit($this->promiseChunkSize)
+                ->pluck('id')
+                ->all();
+
+            if (empty($promises)) {
                 return;
             }
 
-            if ($this->paused() || $this->sleepAfterLastIteration()) {
-                $this->sleep(1);
+            $this->handlePromiseChunks($promises);
 
-                continue;
-            }
-
-            $this->iteration();
-
-            $this->lastIteration = Carbon::now();
+            $this->sleep(0.05);
         }
     }
 
-    public function iteration(): void
+    private function promiseColumn(string $columnName): string
     {
-        Promise::whereIn('state', $this->states)
-            ->chunkById(
-                100,
-                $this->getChunkHandleCallback()
-            );
+        return $this->promisesTable . '.' . $columnName;
     }
 
-    protected function getChunkHandleCallback(): callable
+    private function promiseJobsColumn(string $columnName): string
     {
-        return function (Collection $promises) {
-            if ($this->paused() || $this->shouldQuit()) {
-                return false;
-            }
-
-            /** @var array<Promise> $promises */
-            foreach ($promises as $promise) {
-                try {
-                    $this->checkPromiseToDelete($promise->getBasePromise());
-                } catch (IncorrectResolvingClass $e) {
-                    /** @var array<PromiseJob> $jobs */
-                    $jobIds = PromiseJob::byPromise($promise->id)->get()->pluck('id')->all();
-                    PromiseJob::byPromise($promise->id)->delete();
-                    PromiseEvent::whereIn('job_id', $jobIds)->delete();
-                    $promise->delete();
-                } catch (\Throwable $e) {
-                    report($e);
-                }
-            }
-
-            // дадим возможность поработать другим задачам
-            $this->sleep(0.1);
-
-            return true;
-        };
+        return $this->promiseJobsTable . '.' . $columnName;
     }
 
     /**
-     * @param int|float $seconds
-     *
-     * @codeCoverageIgnore
-     */
-    protected function sleep($seconds): void
-    {
-        if ($seconds < 1) {
-            usleep($seconds * 1000000);
-        } else {
-            sleep($seconds);
-        }
-    }
-
-    /**
-     * @param \Tochka\Promises\Core\BasePromise $basePromise
-     *
-     * @throws \Exception
-     */
-    public function checkPromiseToDelete(BasePromise $basePromise): void
-    {
-        if (
-            $basePromise->getUpdatedAt() > Carbon::now()->subSeconds($this->deleteOlderThen)
-            || $this->checkHasParentPromise($basePromise)
-        ) {
-            return;
-        }
-
-        /** @var array<PromiseJob> $jobs */
-        $jobIds = PromiseJob::byPromise($basePromise->getPromiseId())->get()->pluck('id')->all();
-        PromiseJob::byPromise($basePromise->getPromiseId())->delete();
-        PromiseEvent::whereIn('job_id', $jobIds)->delete();
-
-        $basePromise->getAttachedModel()->delete();
-    }
-
-    /**
-     * Проверяем, если текущий промис является дочерним другого промиса, который не был удален, то пока не удаляем
-     * текущий. Рано и поздно GC удалит родительский промис, и тогда можно будет грохнуть текущий
-     *
-     * @param \Tochka\Promises\Core\BasePromise $basePromise
-     *
+     * @param array<int, int> $promiseIds
      * @return bool
      */
-    public function checkHasParentPromise(BasePromise $basePromise): bool
+    private function handlePromiseChunks(array $promiseIds): bool
     {
-        $handler = $basePromise->getPromiseHandler();
-        if ($handler->getBaseJobId() !== null) {
-            $parentJob = PromiseJob::find($handler->getBaseJobId());
-            if ($parentJob !== null) {
-                $parentPromise = Promise::find($parentJob->getBaseJob()->getPromiseId());
-
-                return $parentPromise !== null;
-            }
+        if ($this->paused() || $this->shouldQuit()) {
+            return false;
         }
 
-        return false;
+        DB::table($this->promiseJobsTable)
+            ->select(['id'])
+            ->whereIn('promise_id', $promiseIds)
+            ->chunkById(
+                $this->jobsChunkSize,
+                $this->handleJobsChunks(...)
+            );
+
+        DB::table($this->promisesTable)->whereIn('id', $promiseIds)->delete();
+
+        return true;
     }
 
-    private function sleepAfterLastIteration(): bool
+    /**
+     * @param Collection<int, object{id: string}> $jobs
+     * @return bool
+     */
+    private function handleJobsChunks(Collection $jobs): bool
     {
-        return $this->lastIteration > Carbon::now()->subSeconds($this->sleepTime);
+        if ($this->paused() || $this->shouldQuit()) {
+            return false;
+        }
+
+        $jobsIds = $jobs->pluck('id')->all();
+
+        DB::table($this->promiseEventsTable)->whereIn('job_id', $jobsIds)->delete();
+        DB::table($this->promiseJobsTable)->whereIn('id', $jobsIds)->delete();
+
+        return true;
     }
 }

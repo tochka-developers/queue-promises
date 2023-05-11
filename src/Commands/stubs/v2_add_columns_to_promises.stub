@@ -8,16 +8,10 @@ return new class () extends Migration
 {
     public function up(): void
     {
-        Schema::create('{{table}}', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::table('{{table}}', function (Blueprint $table) {
             $table->bigInteger('parent_job_id')->nullable();
-            $table->string('state');
-            $table->longText('conditions');
-            $table->longText('promise_handler');
-            $table->timestamp('watch_at')->nullable();
-            $table->timestamp('timeout_at')->nullable();
-            $table->timestamps();
 
+            $table->dropIndex('{{table}}_state_index');
             $table->index(['state', 'updated_at']);
             $table->index(['state', 'watch_at']);
         });
@@ -25,6 +19,12 @@ return new class () extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('{{table}}');
+        Schema::table('{{table}}', function (Blueprint $table) {
+            $table->dropIndex('{{table}}_state_updated_at_index');
+            $table->dropIndex('{{table}}_state_watch_at_index');
+            $table->index('state');
+
+            $table->dropColumn('parent_job_id');
+        });
     }
 };

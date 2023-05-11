@@ -171,7 +171,7 @@ class PromiseJob extends Model
     {
         try {
             $property = (new \ReflectionClass($job))->getProperty('job');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $job;
         }
 

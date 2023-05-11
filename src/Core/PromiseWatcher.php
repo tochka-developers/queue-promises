@@ -3,9 +3,8 @@
 namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tochka\Promises\Core\Support\DaemonWithSignals;
+use Tochka\Promises\Core\Support\DaemonWorker;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Models\Promise;
@@ -13,105 +12,86 @@ use Tochka\Promises\Models\PromiseJob;
 
 class PromiseWatcher
 {
-    use DaemonWithSignals;
+    use DaemonWorker;
 
-    private Carbon $iterationTime;
-    private int $minSleepTime = 10000;
-    private int $minIterationTime = 1000000;
+    private string $promisesTable;
+    private string $promiseJobsTable;
+    private int $promiseChunkSize;
+    private int $jobsChunkSize;
 
-    /**
-     * @codeCoverageIgnore
-     */
+    public function __construct(
+        int $sleepTime,
+        string $promisesTable,
+        string $promiseJobsTable,
+        int $promiseChunkSize = 100,
+        int $jobsChunkSize = 500,
+    )
+    {
+        $this->sleepTime = $sleepTime;
+        $this->promisesTable = $promisesTable;
+        $this->promiseJobsTable = $promiseJobsTable;
+        $this->promiseChunkSize = $promiseChunkSize;
+        $this->jobsChunkSize = $jobsChunkSize;
+
+        $this->lastIteration = Carbon::minValue();
+    }
+
     public function watch(): void
     {
-        if ($this->supportsAsyncSignals()) {
-            $this->listenForSignals();
-        }
-
-        while (true) {
-            if ($this->shouldQuit()) {
-                return;
-            }
-
-            if ($this->paused()) {
-                $this->sleep(1);
-
-                continue;
-            }
-
-            $this->startTime();
+        $this->daemon(function () {
             $this->watchIteration();
-            $this->calcDiffAndSleep();
-        }
+        });
     }
 
     public function watchIteration(): void
     {
-        Promise::inStates([StateEnum::WAITING(), StateEnum::RUNNING()])
-            ->forWatch()
-            ->with(['jobs' => function ($query) {
-                $query->orderBy('id');
-            }])
-            ->chunkById(
-                100,
-                $this->getChunkHandleCallback()
-            );
-    }
+        while (true) {
+            $promises = DB::table($this->promisesTable)
+                ->whereIn('state', [StateEnum::WAITING, StateEnum::RUNNING])
+                ->where('watch_at', '<', Carbon::now())
+                ->limit($this->promiseChunkSize)
+                ->pluck('id')
+                ->all();
 
-    protected function getChunkHandleCallback(): callable
-    {
-        return function (Collection $promises) {
-            if ($this->paused() || $this->shouldQuit()) {
-                return false;
+            if (empty($promises)) {
+                return;
             }
 
-            /** @var Promise $promise */
-            foreach ($promises as $promise) {
-                try {
-                    $this->checkPromiseConditions($promise);
-                } catch (\Throwable $e) {
-                    report($e);
-                }
-            }
+            $this->handlePromiseChunks($promises);
 
-            return true;
-        };
-    }
-
-    public function startTime(): void
-    {
-        $this->iterationTime = Carbon::now();
-    }
-
-    public function calcDiffAndSleep(): void
-    {
-        $sleepTime = $this->minIterationTime - Carbon::now()->diffInMicroseconds($this->iterationTime);
-
-        if ($sleepTime < $this->minSleepTime) {
-            $sleepTime = $this->minSleepTime;
+            $this->sleep(0.05);
         }
-
-        $this->sleep($sleepTime);
     }
 
     /**
-     * @param int $sleepTime
-     *
-     * @codeCoverageIgnore
+     * @param array<int> $promiseIds
+     * @return bool
      */
-    protected function sleep(int $sleepTime): void
+    private function handlePromiseChunks(array $promiseIds): bool
     {
-        usleep($sleepTime);
+        if ($this->paused() || $this->shouldQuit()) {
+            return false;
+        }
+
+        foreach ($promiseIds as $promise) {
+            try {
+                $this->checkPromiseConditions($promise);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        return true;
     }
 
-    public function checkPromiseConditions(Promise $promise): void
+    public function checkPromiseConditions(int $promiseId): void
     {
-        DB::transaction(
-            function () use ($promise) {
+        $basePromise = DB::transaction(
+            function () use ($promiseId) {
                 /** @var Promise|null $lockedPromise */
-                $lockedPromise = Promise::lockForUpdate()->find($promise->id);
+                $lockedPromise = Promise::lockForUpdate()->find($promiseId);
                 if ($lockedPromise === null) {
-                    return;
+                    return null;
                 }
 
                 $basePromise = $lockedPromise->getBasePromise();
@@ -131,21 +111,33 @@ class PromiseWatcher
                 }
 
                 Promise::saveBasePromise($basePromise);
+
+                return $basePromise;
             },
             3
         );
 
-        foreach ($promise->jobs as $job) {
-            $this->checkJobConditions($job, $promise->getBasePromise());
+        if ($basePromise === null) {
+            return;
+        }
+
+        $jobsIds = DB::table($this->promiseJobsTable)
+            ->select(['id'])
+            ->where('promise_id', $promiseId)
+            ->pluck('id')
+            ->all();
+
+        foreach ($jobsIds as $jobId) {
+            $this->checkJobConditions($jobId, $basePromise);
         }
     }
 
-    public function checkJobConditions(PromiseJob $promiseJob, BasePromise $basePromise): void
+    public function checkJobConditions(int $jobId, BasePromise $basePromise): void
     {
         DB::transaction(
-            function () use ($promiseJob, $basePromise) {
+            function () use ($jobId, $basePromise) {
                 /** @var PromiseJob|null $lockedJob */
-                $lockedJob = PromiseJob::lockForUpdate()->find($promiseJob->id);
+                $lockedJob = PromiseJob::lockForUpdate()->find($jobId);
                 if ($lockedJob === null) {
                     return;
                 }

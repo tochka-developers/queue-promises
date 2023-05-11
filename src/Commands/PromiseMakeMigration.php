@@ -5,15 +5,17 @@
 namespace Tochka\Promises\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Database\Migrations\MigrationCreator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
 use Tochka\Promises\Commands\Migrations\MigrationContract;
 use Tochka\Promises\Commands\Migrations\PromiseEvents;
 use Tochka\Promises\Commands\Migrations\PromiseJobs;
 use Tochka\Promises\Commands\Migrations\Promises;
 use Tochka\Promises\Commands\Migrations\UpdateV1;
+use Tochka\Promises\Commands\Migrations\UpdateV2;
 
 class PromiseMakeMigration extends Command
 {
@@ -37,13 +39,13 @@ class PromiseMakeMigration extends Command
             new PromiseJobs(),
             new PromiseEvents(),
             new UpdateV1(),
+            new UpdateV2(),
         ];
     }
 
     /**
      * Execute the console command.
      *
-     * @return void
      * @throws \Exception
      */
     public function handle(): void
@@ -74,8 +76,7 @@ class PromiseMakeMigration extends Command
             $this->replaceMigration(
                 $this->createTableMigration($migrationName),
                 $migration->getStub(),
-                $tableName,
-                Str::studly($tableName)
+                $tableName
             );
             $this->info(sprintf('Migration for table [%s] created!', $tableName));
         }
@@ -88,14 +89,11 @@ class PromiseMakeMigration extends Command
     /**
      * Create a base migration file for the table.
      *
-     * @param string $migrationName
-     *
-     * @return string
      * @throws \Exception
      */
     protected function createTableMigration(string $migrationName): string
     {
-        /** @var \Illuminate\Database\Migrations\MigrationCreator $migrationCreator */
+        /** @var MigrationCreator $migrationCreator */
         $migrationCreator = $this->laravel['migration.creator'];
 
         return $migrationCreator->create(
@@ -107,21 +105,11 @@ class PromiseMakeMigration extends Command
     /**
      * Replace the generated migration with the failed job table stub.
      *
-     * @param string $path
-     * @param string $stub
-     * @param string $table
-     * @param string $tableClassName
-     *
-     * @return void
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
-    protected function replaceMigration(string $path, string $stub, string $table, string $tableClassName): void
+    protected function replaceMigration(string $path, string $stub, string $table): void
     {
-        $stub = str_replace(
-            ['{{table}}', '{{tableClassName}}'],
-            [$table, $tableClassName],
-            $this->files->get(__DIR__ . '/stubs/' . $stub)
-        );
+        $stub = str_replace('{{table}}', $table, $this->files->get(__DIR__ . '/stubs/' . $stub));
 
         $this->files->put($path, $stub);
     }
