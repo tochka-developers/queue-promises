@@ -106,6 +106,9 @@ class PromiseWatcher
                 }
 
                 $nextWatch = Carbon::now()->addSeconds(watcher_watch_timeout());
+                if ($nextWatch > $basePromise->getTimeoutAt()) {
+                    $nextWatch = $basePromise->getTimeoutAt();
+                }
                 if ($nextWatch > Carbon::now()) {
                     $basePromise->setWatchAt($nextWatch);
                 }
