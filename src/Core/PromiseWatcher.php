@@ -25,8 +25,7 @@ class PromiseWatcher
         string $promiseJobsTable,
         int $promiseChunkSize = 100,
         int $jobsChunkSize = 500,
-    )
-    {
+    ) {
         $this->sleepTime = $sleepTime;
         $this->promisesTable = $promisesTable;
         $this->promiseJobsTable = $promiseJobsTable;

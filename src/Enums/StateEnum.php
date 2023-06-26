@@ -11,6 +11,8 @@ use BenSampo\Enum\Enum;
  * @method static static FAILED()
  * @method static static TIMEOUT()
  * @method static static CANCELED()
+ *
+ * @template-extends Enum<string>
  */
 final class StateEnum extends Enum
 {
