@@ -3,9 +3,9 @@
 namespace Tochka\Promises\Listeners;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Contracts\NestedEventContract;
 use Tochka\Promises\Contracts\StateChangedContract;
+use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
 use Tochka\Promises\Facades\ConditionTransitionHandler;
@@ -22,14 +22,14 @@ class CheckStateConditions
 
         if ($event instanceof PromiseStateChanged) {
             $basePromise = $event->getPromise();
-            $promisedJob = null;
+            $currentJobId = null;
         } elseif ($event instanceof PromiseJobStateChanged) {
             $promiseModel = $event->getPromiseJob()->getAttachedModel()->promise;
             if ($promiseModel === null) {
                 return;
             }
             $basePromise = $promiseModel->getBasePromise();
-            $promisedJob = $event->getPromiseJob();
+            $currentJobId = $event->getPromiseJob()->getJobId();
         } else {
             return;
         }
@@ -37,17 +37,23 @@ class CheckStateConditions
         $jobIds = PromiseJob::byPromise($basePromise->getPromiseId())
             ->orderBy('id')
             ->get()
-            ->pluck('id');
+            ->pluck('id')
+            ->toArray();
 
+        $this->checkStateConditions($basePromise, $jobIds, $currentJobId);
+    }
+
+    private function checkStateConditions(BasePromise $basePromise, array $jobIds, ?int $currentJobId = null): void
+    {
         $stateChanges = false;
 
         foreach ($jobIds as $jobId) {
             DB::transaction(
-                function () use ($basePromise, $promisedJob, $jobId, &$stateChanges) {
+                function () use ($basePromise, $currentJobId, $jobId, &$stateChanges) {
                     /** @var PromiseJob $currentJob */
                     $currentJob = PromiseJob::lockForUpdate()->find($jobId);
                     $baseJob = $currentJob->getBaseJob();
-                    if ($promisedJob !== null && $baseJob->getJobId() === $promisedJob->getJobId()) {
+                    if ($currentJobId !== null && $baseJob->getJobId() === $currentJobId) {
                         return;
                     }
 
@@ -86,9 +92,9 @@ class CheckStateConditions
             3
         );
 
-        // вызываем событие на промисе, чтобы еще раз чекнуть все условия переходов
+        // если были какие-либо изменения состояний в джобах или промисе - то еще раз чекнем все условия переходов
         if ($stateChanges) {
-            Event::dispatch(new PromiseStateChanged($basePromise, $basePromise->getState(), $basePromise->getState()));
+            $this->checkStateConditions($basePromise, $jobIds);
         }
     }
 }

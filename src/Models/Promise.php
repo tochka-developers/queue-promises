@@ -11,15 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Events\PromiseStateChanged;
-use Tochka\Promises\Events\PromiseStateChanging;
-use Tochka\Promises\Events\StateChanged;
-use Tochka\Promises\Events\StateChanging;
 use Tochka\Promises\Models\Casts\ConditionsCast;
 use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseFactory;
@@ -59,55 +54,14 @@ class Promise extends Model
     private ?StateEnum $changedState = null;
     private bool $nestedEvents = false;
 
-    protected static function booted(): void
-    {
-        static::updating(
-            function (Promise $promise) {
-                if ($promise->isDirty('state')) {
-                    $oldState = $promise->getOriginal('state');
-                    $currentState = $promise->state;
-                    $promise->setChangedState($oldState);
-
-                    Event::dispatch(
-                        new StateChanging($promise->getBasePromise(), $oldState, $currentState)
-                    );
-                    Event::dispatch(
-                        new PromiseStateChanging(
-                            $promise->getBasePromise(),
-                            $oldState,
-                            $currentState,
-                            $promise->nestedEvents
-                        )
-                    );
-                }
-            }
-        );
-
-        static::updated(
-            function (Promise $promise) {
-                if ($promise->wasChanged('state')) {
-                    $oldState = $promise->getChangedState();
-                    $currentState = $promise->state;
-
-                    Event::dispatch(
-                        new StateChanged($promise->getBasePromise(), $oldState, $currentState)
-                    );
-                    Event::dispatch(
-                        new PromiseStateChanged(
-                            $promise->getBasePromise(),
-                            $oldState,
-                            $currentState,
-                            $promise->nestedEvents
-                        )
-                    );
-                }
-            }
-        );
-    }
-
     public function setNestedEvents(bool $nestedEvents): void
     {
         $this->nestedEvents = $nestedEvents;
+    }
+
+    public function isNestedEvents(): bool
+    {
+        return $this->nestedEvents;
     }
 
     public function getConnectionName(): ?string
@@ -178,6 +132,7 @@ class Promise extends Model
     {
         $model = $basePromise->getAttachedModel();
 
+        $model->setChangedState($model->state);
         $model->state = $basePromise->getState();
         $model->conditions = $basePromise->getConditions();
         $model->promise_handler = clone $basePromise->getPromiseHandler();

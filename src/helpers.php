@@ -49,7 +49,7 @@ if (!function_exists('watcher_watch_timeout')) {
     {
         try {
             return app()->make('watcher_watch_timeout');
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return 0;
         }
     }

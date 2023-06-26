@@ -31,7 +31,7 @@ trait Timeout
     /**
      * Hook promiseConditions
      *
-     * @param \Tochka\Promises\Core\BasePromise $promise
+     * @param BasePromise $promise
      */
     public function promiseConditionsTimeout(BasePromise $promise): void
     {

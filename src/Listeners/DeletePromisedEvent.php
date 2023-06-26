@@ -27,7 +27,7 @@ class DeletePromisedEvent
     ];
 
     /**
-     * @param \Tochka\Promises\Events\PromiseJobStateChanged $event
+     * @param PromiseJobStateChanged $event
      *
      * @throws \Exception
      */

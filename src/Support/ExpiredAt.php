@@ -28,7 +28,7 @@ trait ExpiredAt
     /**
      * Hook promiseConditions
      *
-     * @param \Tochka\Promises\Core\BasePromise $promise
+     * @param BasePromise $promise
      */
     public function promiseConditionsExpiredAt(BasePromise $promise): void
     {

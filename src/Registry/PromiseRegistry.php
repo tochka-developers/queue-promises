@@ -13,11 +13,6 @@ use Tochka\Promises\Models\Promise;
  */
 class PromiseRegistry
 {
-    /**
-     * @param int $id
-     *
-     * @return \Tochka\Promises\Core\BasePromise
-     */
     public function load(int $id): BasePromise
     {
         /** @var Promise $promiseModel */
@@ -30,7 +25,7 @@ class PromiseRegistry
     }
 
     /**
-     * @return \Illuminate\Support\LazyCollection|BasePromise[]
+     * @return LazyCollection<int, BasePromise>
      */
     public function loadAllCursor(): LazyCollection
     {
@@ -66,7 +61,7 @@ class PromiseRegistry
     /**
      * @param array $states
      *
-     * @return \Illuminate\Support\LazyCollection|BasePromise[]
+     * @return LazyCollection<int, BasePromise>
      */
     public function loadInStatesCursor(array $states): LazyCollection
     {
@@ -101,7 +96,7 @@ class PromiseRegistry
     }
 
     /**
-     * @param \Tochka\Promises\Core\BasePromise $promise
+     * @param BasePromise $promise
      */
     public function save(BasePromise $promise): void
     {

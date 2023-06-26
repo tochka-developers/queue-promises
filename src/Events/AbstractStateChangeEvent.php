@@ -2,12 +2,11 @@
 
 namespace Tochka\Promises\Events;
 
-use Neves\Events\Contracts\TransactionalEvent;
 use Tochka\Promises\Contracts\StateChangedContract;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Enums\StateEnum;
 
-abstract class AbstractStateChangeEvent implements StateChangedContract, TransactionalEvent
+abstract class AbstractStateChangeEvent implements StateChangedContract
 {
     private StatesContract $instance;
     private StateEnum $fromState;

@@ -14,7 +14,7 @@ use Tochka\Promises\Core\FakePromiseRunner;
  * @method static assertNotRun(string $promiseHandler)
  * @method static assertAddedJobsCount(string $promiseHandler, int $expected)
  * @method static assertAddedJobs(string $promiseHandler, array $expected)
- * @see \Tochka\Promises\Core\FakePromiseRunner
+ * @see FakePromiseRunner
  * @see \Tochka\Promises\Core\PromiseRunner
  * @codeCoverageIgnore
  */

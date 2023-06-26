@@ -16,7 +16,7 @@ trait ASync
     /**
      * Hook promiseConditions
      *
-     * @param \Tochka\Promises\Core\BasePromise $promise
+     * @param BasePromise $promise
      */
     public function promiseConditionsASync(BasePromise $promise): void
     {
@@ -42,8 +42,8 @@ trait ASync
     /**
      * Hook jobConditions
      *
-     * @param \Tochka\Promises\Core\BasePromise $promise
-     * @param \Tochka\Promises\Core\BaseJob     $job
+     * @param BasePromise $promise
+     * @param BaseJob $job
      *
      * @noinspection PhpUnusedParameterInspection
      */

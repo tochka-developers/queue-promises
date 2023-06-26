@@ -43,7 +43,7 @@ class PromiseJobRegistry
     /**
      * @param int $promise_id
      *
-     * @return \Illuminate\Support\LazyCollection|BaseJob[]
+     * @return LazyCollection<int, BaseJob>
      */
     public function loadByPromiseIdCursor(int $promise_id): LazyCollection
     {
@@ -81,7 +81,7 @@ class PromiseJobRegistry
     }
 
     /**
-     * @param \Tochka\Promises\Core\BaseJob $job
+     * @param BaseJob $job
      */
     public function save(BaseJob $job): void
     {

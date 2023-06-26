@@ -34,6 +34,11 @@ use Tochka\Promises\Listeners\DeletePromisedEvent;
 use Tochka\Promises\Listeners\DispatchPromise;
 use Tochka\Promises\Listeners\DispatchPromiseJob;
 use Tochka\Promises\Listeners\LogStateChanged;
+use Tochka\Promises\Models\Observers\PromiseAfterCommitObserver;
+use Tochka\Promises\Models\Observers\PromiseBeforeCommitObserver;
+use Tochka\Promises\Models\Observers\PromiseJobAfterCommitObserver;
+use Tochka\Promises\Models\Observers\PromiseJobBeforeCommitObserver;
+use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Registry\PromiseEventRegistry;
 use Tochka\Promises\Registry\PromiseJobRegistry;
@@ -127,6 +132,11 @@ class PromiseServiceProvider extends ServiceProvider
                 }
             }
         );
+
+        Promise::observe(PromiseBeforeCommitObserver::class);
+        Promise::observe(PromiseAfterCommitObserver::class);
+        PromiseJob::observe(PromiseJobBeforeCommitObserver::class);
+        PromiseJob::observe(PromiseJobAfterCommitObserver::class);
 
         Event::listen(
             PromisedEvent::class,

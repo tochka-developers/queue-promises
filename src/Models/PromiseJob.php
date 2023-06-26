@@ -9,15 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Events\PromiseJobStateChanged;
-use Tochka\Promises\Events\PromiseJobStateChanging;
-use Tochka\Promises\Events\StateChanged;
-use Tochka\Promises\Events\StateChanging;
 use Tochka\Promises\Models\Casts\ConditionsCast;
 use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseJobFactory;
@@ -55,51 +50,14 @@ class PromiseJob extends Model
     private ?StateEnum $changedState = null;
     private bool $nestedEvents = false;
 
-    protected static function booted(): void
-    {
-        static::updating(
-            function (PromiseJob $promiseJob) {
-                if ($promiseJob->isDirty('state')) {
-                    $oldState = $promiseJob->getOriginal('state');
-                    $currentState = $promiseJob->state;
-                    $promiseJob->setChangedState($oldState);
-
-                    Event::dispatch(new StateChanging($promiseJob->getBaseJob(), $oldState, $currentState));
-                    Event::dispatch(
-                        new PromiseJobStateChanging(
-                            $promiseJob->getBaseJob(),
-                            $oldState,
-                            $currentState,
-                            $promiseJob->nestedEvents
-                        )
-                    );
-                }
-            }
-        );
-
-        static::updated(
-            function (PromiseJob $promiseJob) {
-                if ($promiseJob->wasChanged('state')) {
-                    $oldState = $promiseJob->getChangedState();
-                    $currentState = $promiseJob->state;
-
-                    Event::dispatch(new StateChanged($promiseJob->getBaseJob(), $oldState, $currentState));
-                    Event::dispatch(
-                        new PromiseJobStateChanged(
-                            $promiseJob->getBaseJob(),
-                            $oldState,
-                            $currentState,
-                            $promiseJob->nestedEvents
-                        )
-                    );
-                }
-            }
-        );
-    }
-
     public function setNestedEvents(bool $nestedEvents): void
     {
         $this->nestedEvents = $nestedEvents;
+    }
+
+    public function isNestedEvents(): bool
+    {
+        return $this->nestedEvents;
     }
 
     public function getConnectionName(): ?string
@@ -151,6 +109,7 @@ class PromiseJob extends Model
         $model = $baseJob->getAttachedModel();
 
         $model->promise_id = $baseJob->getPromiseId();
+        $model->setChangedState($model->state);
         $model->state = $baseJob->getState();
         $model->conditions = $baseJob->getConditions();
         $model->initial_job = $model->clearJobs(clone $baseJob->getInitialJob());

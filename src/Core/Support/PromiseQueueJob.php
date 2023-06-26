@@ -36,9 +36,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
         $this->promise_id = $promise_id;
         $this->promise_handler = $promise_handler;
         $this->state = $state;
-        if ($this->promise_handler instanceof MayPromised) {
-            $this->base_job_id = $this->promise_handler->getBaseJobId();
-        }
+        $this->base_job_id = $this->promise_handler->getBaseJobId();
     }
 
     /**

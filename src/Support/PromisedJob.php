@@ -15,11 +15,7 @@ trait PromisedJob
     {
         $baseJobModel = PromiseJob::find($this->getBaseJobId());
 
-        if ($baseJobModel === null) {
-            return null;
-        }
-
-        return $baseJobModel->getBaseJob();
+        return $baseJobModel?->getBaseJob();
     }
 
     public function getBasePromise(): ?BasePromise
@@ -31,10 +27,7 @@ trait PromisedJob
         }
 
         $basePromiseModel = Promise::find($baseJob->getPromiseId());
-        if ($basePromiseModel === null) {
-            return null;
-        }
 
-        return $basePromiseModel->getBasePromise();
+        return $basePromiseModel?->getBasePromise();
     }
 }
