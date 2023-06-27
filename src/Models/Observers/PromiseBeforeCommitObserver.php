@@ -11,18 +11,15 @@ class PromiseBeforeCommitObserver
 {
     public function updating(Promise $promise): void
     {
-        if ($promise->isDirty('state')) {
-            $oldState = $promise->getChangedState();
-            $currentState = $promise->state;
+        $oldState = $promise->getChangedState() ?? $promise->state;
 
-            Event::dispatch(
-                new StateChanging($promise->getBasePromise(), $oldState, $currentState)
-            );
+        if ($oldState !== $promise->state) {
+            Event::dispatch(new StateChanging($promise->getBasePromise(), $oldState, $promise->state));
             Event::dispatch(
                 new PromiseStateChanging(
                     $promise->getBasePromise(),
                     $oldState,
-                    $currentState,
+                    $promise->state,
                     $promise->isNestedEvents()
                 )
             );

@@ -13,18 +13,15 @@ class PromiseAfterCommitObserver
 
     public function updated(Promise $promise): void
     {
-        if ($promise->getChangedState() !== $promise->state) {
-            $oldState = $promise->getChangedState();
-            $currentState = $promise->state;
+        $oldState = $promise->getChangedState() ?? $promise->state;
 
-            Event::dispatch(
-                new StateChanged($promise->getBasePromise(), $oldState, $currentState)
-            );
+        if ($oldState !== $promise->state) {
+            Event::dispatch(new StateChanged($promise->getBasePromise(), $oldState, $promise->state));
             Event::dispatch(
                 new PromiseStateChanged(
                     $promise->getBasePromise(),
                     $oldState,
-                    $currentState,
+                    $promise->state,
                     $promise->isNestedEvents()
                 )
             );

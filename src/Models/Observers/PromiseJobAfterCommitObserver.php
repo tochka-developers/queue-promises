@@ -13,16 +13,15 @@ class PromiseJobAfterCommitObserver
 
     public function updated(PromiseJob $promiseJob): void
     {
-        if ($promiseJob->getChangedState() !== $promiseJob->state) {
-            $oldState = $promiseJob->getChangedState();
-            $currentState = $promiseJob->state;
+        $oldState = $promiseJob->getChangedState() ?? $promiseJob->state;
 
-            Event::dispatch(new StateChanged($promiseJob->getBaseJob(), $oldState, $currentState));
+        if ($oldState !== $promiseJob->state) {
+            Event::dispatch(new StateChanged($promiseJob->getBaseJob(), $oldState, $promiseJob->state));
             Event::dispatch(
                 new PromiseJobStateChanged(
                     $promiseJob->getBaseJob(),
                     $oldState,
-                    $currentState,
+                    $promiseJob->state,
                     $promiseJob->isNestedEvents()
                 )
             );

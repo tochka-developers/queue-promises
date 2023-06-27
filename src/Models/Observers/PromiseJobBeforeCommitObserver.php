@@ -11,16 +11,15 @@ class PromiseJobBeforeCommitObserver
 {
     public function updating(PromiseJob $promiseJob): void
     {
-        if ($promiseJob->isDirty('state')) {
-            $oldState = $promiseJob->getChangedState();
-            $currentState = $promiseJob->state;
+        $oldState = $promiseJob->getChangedState() ?? $promiseJob->state;
 
-            Event::dispatch(new StateChanging($promiseJob->getBaseJob(), $oldState, $currentState));
+        if ($oldState !== $promiseJob->state) {
+            Event::dispatch(new StateChanging($promiseJob->getBaseJob(), $oldState, $promiseJob->state));
             Event::dispatch(
                 new PromiseJobStateChanging(
                     $promiseJob->getBaseJob(),
                     $oldState,
-                    $currentState,
+                    $promiseJob->state,
                     $promiseJob->isNestedEvents()
                 )
             );
