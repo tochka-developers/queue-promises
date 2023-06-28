@@ -17,13 +17,13 @@ composer require tochka-developers/queue-promises
 ```php
 'providers' => [
     ...
-    \Tochka\Queue\Promises\QueuePromisesServiceProvider::class
+    \Tochka\Promises\PromiseServiceProvider::class
     ...
 ]
 ```
 * Publish the configuration:
 ```bash
-php artisan vendor:publish --provider="Tochka\Queue\Promises\QueuePromisesServiceProvider"
+php artisan vendor:publish --provider="Tochka\Promises\PromiseServiceProvider"
 ```
 * Configure the promise storage in `config/promises.php`. 
 
