@@ -15,7 +15,7 @@ class PromiseJobAfterCommitObserver
     {
         $oldState = $promiseJob->getChangedState() ?? $promiseJob->state;
 
-        if ($oldState !== $promiseJob->state) {
+        if ($promiseJob->state->isNot($oldState)) {
             Event::dispatch(new StateChanged($promiseJob->getBaseJob(), $oldState, $promiseJob->state));
             Event::dispatch(
                 new PromiseJobStateChanged(

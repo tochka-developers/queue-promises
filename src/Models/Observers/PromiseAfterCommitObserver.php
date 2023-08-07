@@ -15,7 +15,7 @@ class PromiseAfterCommitObserver
     {
         $oldState = $promise->getChangedState() ?? $promise->state;
 
-        if ($oldState !== $promise->state) {
+        if ($promise->state->isNot($oldState)) {
             Event::dispatch(new StateChanged($promise->getBasePromise(), $oldState, $promise->state));
             Event::dispatch(
                 new PromiseStateChanged(

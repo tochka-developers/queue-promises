@@ -13,7 +13,7 @@ class PromiseBeforeCommitObserver
     {
         $oldState = $promise->getChangedState() ?? $promise->state;
 
-        if ($oldState !== $promise->state) {
+        if ($promise->state->isNot($oldState)) {
             Event::dispatch(new StateChanging($promise->getBasePromise(), $oldState, $promise->state));
             Event::dispatch(
                 new PromiseStateChanging(
