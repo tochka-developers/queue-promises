@@ -35,16 +35,34 @@ class PromiseWatcher
         $this->lastIteration = Carbon::minValue();
     }
 
-    public function watch(): void
+    /**
+     * @param null|callable(): bool $shouldQuitCallback
+     * @param null|callable(): bool $shouldPausedCallback
+     * @return void
+     */
+    public function watch(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
-        $this->daemon(function () {
-            $this->watchIteration();
-        });
+        if ($shouldQuitCallback === null) {
+            $shouldQuitCallback = fn () => false;
+        }
+
+        if ($shouldPausedCallback === null) {
+            $shouldPausedCallback = fn () => false;
+        }
+
+        $this->daemon(function () use ($shouldQuitCallback, $shouldPausedCallback) {
+            $this->watchIteration($shouldQuitCallback, $shouldPausedCallback);
+        }, $shouldQuitCallback, $shouldPausedCallback);
     }
 
-    public function watchIteration(): void
+    /**
+     * @param callable(): bool $shouldQuitCallback
+     * @param callable(): bool $shouldPausedCallback
+     * @return void
+     */
+    public function watchIteration(callable $shouldQuitCallback, callable $shouldPausedCallback): void
     {
-        while (true) {
+        while (!$shouldQuitCallback() && !$shouldPausedCallback()) {
             $promises = DB::table($this->promisesTable)
                 ->whereIn('state', [StateEnum::WAITING, StateEnum::RUNNING])
                 ->where('watch_at', '<', Carbon::now())
@@ -56,7 +74,7 @@ class PromiseWatcher
                 return;
             }
 
-            $this->handlePromiseChunks($promises);
+            $this->handlePromiseChunks($promises, $shouldQuitCallback, $shouldPausedCallback);
 
             $this->sleep(0.05);
         }
@@ -64,15 +82,20 @@ class PromiseWatcher
 
     /**
      * @param array<int> $promiseIds
+     * @param callable(): bool $shouldQuitCallback
+     * @param callable(): bool $shouldPausedCallback
      * @return bool
      */
-    private function handlePromiseChunks(array $promiseIds): bool
-    {
-        if ($this->paused() || $this->shouldQuit()) {
-            return false;
-        }
-
+    private function handlePromiseChunks(
+        array $promiseIds,
+        callable $shouldQuitCallback,
+        callable $shouldPausedCallback
+    ): bool {
         foreach ($promiseIds as $promise) {
+            if ($shouldQuitCallback() || $shouldPausedCallback()) {
+                return false;
+            }
+
             try {
                 $this->checkPromiseConditions($promise);
             } catch (\Throwable $e) {

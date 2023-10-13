@@ -2,6 +2,4 @@
 
 namespace Tochka\Promises\Events;
 
-class PromiseStateChanged extends AbstractPromiseStateChangeEvent
-{
-}
+class PromiseStateChanged extends AbstractPromiseStateChangeEvent {}

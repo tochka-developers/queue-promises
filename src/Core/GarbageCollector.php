@@ -45,16 +45,34 @@ class GarbageCollector
         $this->lastIteration = Carbon::minValue();
     }
 
-    public function handle(): void
+    /**
+     * @param null|callable(): bool $shouldQuitCallback
+     * @param null|callable(): bool $shouldPausedCallback
+     * @return void
+     */
+    public function handle(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
-        $this->daemon(function () {
-            $this->clean();
-        });
+        if ($shouldQuitCallback === null) {
+            $shouldQuitCallback = fn () => false;
+        }
+
+        if ($shouldPausedCallback === null) {
+            $shouldPausedCallback = fn () => false;
+        }
+
+        $this->daemon(function () use ($shouldQuitCallback, $shouldPausedCallback) {
+            $this->clean($shouldQuitCallback, $shouldPausedCallback);
+        }, $shouldQuitCallback, $shouldPausedCallback);
     }
 
-    public function clean(): void
+    /**
+     * @param callable(): bool $shouldQuitCallback
+     * @param callable(): bool $shouldPausedCallback
+     * @return void
+     */
+    public function clean(callable $shouldQuitCallback, callable $shouldPausedCallback): void
     {
-        while (true) {
+        while (!$shouldQuitCallback() && !$shouldPausedCallback()) {
             $promises = DB::table($this->promisesTable)
                 ->select([$this->promiseColumn('id')])
                 ->leftJoin(
@@ -74,29 +92,21 @@ class GarbageCollector
                 return;
             }
 
-            $this->handlePromiseChunks($promises);
+            $this->handlePromiseChunks($promises, $shouldQuitCallback, $shouldPausedCallback);
 
             $this->sleep(0.05);
         }
     }
 
-    private function promiseColumn(string $columnName): string
-    {
-        return $this->promisesTable . '.' . $columnName;
-    }
-
-    private function promiseJobsColumn(string $columnName): string
-    {
-        return $this->promiseJobsTable . '.' . $columnName;
-    }
-
     /**
      * @param array<int, int> $promiseIds
+     * @param callable(): bool $shouldQuitCallback
+     * @param callable(): bool $shouldPausedCallback
      * @return bool
      */
-    private function handlePromiseChunks(array $promiseIds): bool
+    private function handlePromiseChunks(array $promiseIds, callable $shouldQuitCallback, callable $shouldPausedCallback): bool
     {
-        if ($this->paused() || $this->shouldQuit()) {
+        if ($shouldQuitCallback() || $shouldPausedCallback()) {
             return false;
         }
 
@@ -119,15 +129,21 @@ class GarbageCollector
      */
     private function handleJobsChunks(Collection $jobs): bool
     {
-        if ($this->paused() || $this->shouldQuit()) {
-            return false;
-        }
-
         $jobsIds = $jobs->pluck('id')->all();
 
         DB::table($this->promiseEventsTable)->whereIn('job_id', $jobsIds)->delete();
         DB::table($this->promiseJobsTable)->whereIn('id', $jobsIds)->delete();
 
         return true;
+    }
+
+    private function promiseColumn(string $columnName): string
+    {
+        return $this->promisesTable . '.' . $columnName;
+    }
+
+    private function promiseJobsColumn(string $columnName): string
+    {
+        return $this->promiseJobsTable . '.' . $columnName;
     }
 }

@@ -6,23 +6,30 @@ use Carbon\Carbon;
 
 trait DaemonWorker
 {
-    use DaemonWithSignals;
-
     private int $sleepTime;
     private Carbon $lastIteration;
 
-    public function daemon(callable $callback): void
+    /**
+     * @param callable $callback
+     * @param null|callable(): bool $shouldQuitCallback
+     * @param null|callable(): bool $shouldPausedCallback
+     * @return void
+     */
+    public function daemon(callable $callback, ?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
-        if ($this->supportsAsyncSignals()) {
-            $this->listenForSignals();
+        if ($shouldQuitCallback === null) {
+            $shouldQuitCallback = fn () => false;
+        }
+        if ($shouldPausedCallback === null) {
+            $shouldPausedCallback = fn () => false;
         }
 
         while (true) {
-            if ($this->shouldQuit()) {
+            if ($shouldQuitCallback()) {
                 return;
             }
 
-            if ($this->paused() || $this->sleepAfterLastIteration()) {
+            if ($shouldPausedCallback() || $this->sleepAfterLastIteration()) {
                 $this->sleep(1);
 
                 continue;

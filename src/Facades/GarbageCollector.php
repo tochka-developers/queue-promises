@@ -5,7 +5,7 @@ namespace Tochka\Promises\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void handle()
+ * @method static void handle(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
  * @method static void clean()
  * @see \Tochka\Promises\Core\GarbageCollector
  * @codeCoverageIgnore

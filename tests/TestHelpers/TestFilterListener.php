@@ -10,11 +10,7 @@ class TestFilterListener
 
     public array $transitions = [];
 
-    public function test($event): void
-    {
-    }
+    public function test($event): void {}
 
-    public function test2($event): void
-    {
-    }
+    public function test2($event): void {}
 }

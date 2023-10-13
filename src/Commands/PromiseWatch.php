@@ -12,12 +12,16 @@ use Tochka\Promises\Facades\PromiseWatcher;
  */
 class PromiseWatch extends Command
 {
+    use DaemonCommandSignals;
+
     protected $signature = 'promise:watch';
 
     protected $description = 'Смотритель промисов';
 
     public function handle(): void
     {
-        PromiseWatcher::watch();
+        $this->subscribeSignals();
+
+        PromiseWatcher::watch($this->shouldQuit(...), $this->paused(...));
     }
 }

@@ -5,7 +5,7 @@ namespace Tochka\Promises\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static watch()
+ * @method static watch(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
  * @see \Tochka\Promises\Core\PromiseWatcher
  * @codeCoverageIgnore
  */

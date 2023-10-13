@@ -12,12 +12,15 @@ use Tochka\Promises\Facades\GarbageCollector;
  */
 class PromiseGc extends Command
 {
-    protected $signature = 'promise:gc';
+    use DaemonCommandSignals;
 
+    protected $signature = 'promise:gc';
     protected $description = 'Сборщик мусора';
 
     public function handle(): void
     {
-        GarbageCollector::handle();
+        $this->subscribeSignals();
+
+        GarbageCollector::handle($this->shouldQuit(...), $this->paused(...));
     }
 }
