@@ -52,6 +52,18 @@ class GarbageCollector
      */
     public function handle(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
+        $this->daemon(function () use ($shouldQuitCallback, $shouldPausedCallback) {
+            $this->clean($shouldQuitCallback, $shouldPausedCallback);
+        }, $shouldQuitCallback, $shouldPausedCallback);
+    }
+
+    /**
+     * @param null|callable(): bool $shouldQuitCallback
+     * @param null|callable(): bool $shouldPausedCallback
+     * @return void
+     */
+    public function clean(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
+    {
         if ($shouldQuitCallback === null) {
             $shouldQuitCallback = fn () => false;
         }
@@ -60,18 +72,6 @@ class GarbageCollector
             $shouldPausedCallback = fn () => false;
         }
 
-        $this->daemon(function () use ($shouldQuitCallback, $shouldPausedCallback) {
-            $this->clean($shouldQuitCallback, $shouldPausedCallback);
-        }, $shouldQuitCallback, $shouldPausedCallback);
-    }
-
-    /**
-     * @param callable(): bool $shouldQuitCallback
-     * @param callable(): bool $shouldPausedCallback
-     * @return void
-     */
-    public function clean(callable $shouldQuitCallback, callable $shouldPausedCallback): void
-    {
         while (!$shouldQuitCallback() && !$shouldPausedCallback()) {
             $promises = DB::table($this->promisesTable)
                 ->select([$this->promiseColumn('id')])

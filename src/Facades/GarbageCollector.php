@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static void handle(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
- * @method static void clean()
+ * @method static void clean(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
  * @see \Tochka\Promises\Core\GarbageCollector
  * @codeCoverageIgnore
  */
