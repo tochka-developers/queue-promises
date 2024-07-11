@@ -51,6 +51,9 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
         $this->promiseHandler = $promiseHandler;
     }
 
+    /**
+     * @psalm-ignore-nullable-return
+     */
     public function getPromiseId(): ?int
     {
         return $this->id;

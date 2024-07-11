@@ -6,7 +6,6 @@ use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Models\PromiseJob;
 
 /**
  * @api
@@ -30,7 +29,6 @@ final class JobInState implements ConditionContract
 
     public function condition(BasePromise $basePromise): bool
     {
-        /** @var PromiseJob|null $jobModel */
         $jobModel = $basePromise->getAttachedModel()->jobs->where('id', $this->job_id)->first();
         if ($jobModel === null) {
             return true;

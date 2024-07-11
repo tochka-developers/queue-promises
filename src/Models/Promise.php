@@ -30,19 +30,13 @@ use Tochka\Promises\Models\Factories\PromiseFactory;
  * @property Carbon $updated_at
  * @property Carbon $watch_at
  * @property Carbon $timeout_at
- * @property array<PromiseJob>|Collection $jobs
- * @property array<PromiseEvent>|Collection $events
- * @method static Builder|self inStates(array $states)
- * @method static Builder|self forWatch()
- * @method static self|null find(int $id)
- * @method static Builder where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static Builder lockForUpdate()
+ * @property Collection<int, PromiseJob> $jobs
+ * @property Collection<int, PromiseEvent> $events
  */
 class Promise extends Model
 {
     use HasFactory;
 
-    /** @var array<string, string> */
     protected $casts = [
         'state' => StateEnum::class,
         'conditions' => ConditionsCast::class,

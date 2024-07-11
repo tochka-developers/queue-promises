@@ -26,7 +26,7 @@ class LogStateChanged
                 $message = sprintf(
                     'Promise [%s:%s] change state from [%s] to [%s]',
                     get_class($instance->getPromiseHandler()),
-                    $instance->getPromiseId(),
+                    $instance->getPromiseId() ?? 'unknown',
                     $event->getFromState()->value,
                     $event->getToState()->value,
                 );
@@ -37,7 +37,7 @@ class LogStateChanged
                 $message = sprintf(
                     'Promised job [%s:%s] change state from [%s] to [%s]',
                     get_class($instance->getInitialJob()),
-                    $instance->getJobId(),
+                    $instance->getJobId() ?? 'unknown',
                     $event->getFromState()->value,
                     $event->getToState()->value,
                 );

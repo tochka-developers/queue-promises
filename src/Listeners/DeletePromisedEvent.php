@@ -38,8 +38,9 @@ class DeletePromisedEvent
     {
         $job = $event->getPromiseJob()->getInitialJob();
         if ($job instanceof WaitEvent) {
-            if ($job->getAttachedModel() !== null) {
-                $job->getAttachedModel()->delete();
+            $model = $job->getAttachedModel();
+            if ($model !== null) {
+                $model->delete();
             } else {
                 PromiseEvent::where('id', $job->getId())->delete();
             }

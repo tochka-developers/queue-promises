@@ -43,10 +43,19 @@ trait DaemonWorker
 
     private function sleep(int|float $seconds): void
     {
-        if ($seconds < 1) {
-            usleep((int) ($seconds * 1000000));
+        if (is_float($seconds)) {
+            $seconds = (int) $seconds * 1000000;
+            if ($seconds < 0) {
+                return;
+            }
+
+            usleep($seconds);
         } else {
-            sleep((int) $seconds);
+            if ($seconds < 0) {
+                return;
+            }
+
+            sleep($seconds);
         }
     }
 

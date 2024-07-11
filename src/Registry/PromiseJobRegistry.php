@@ -30,7 +30,6 @@ class PromiseJobRegistry implements PromiseJobRegistryInterface
      */
     public function loadByPromiseId(int $promise_id): Collection
     {
-        /** @psalm-suppress InvalidTemplateParam */
         return PromiseJob::byPromise($promise_id)
             ->get()
             ->map(

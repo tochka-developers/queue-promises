@@ -31,7 +31,10 @@ class EventDispatcher implements EventDispatcherInterface
             function () use ($event, $waitEvent) {
                 $cloneWaitEvent = clone $waitEvent;
 
-                $job = PromiseJob::query()->lockForUpdate()->find($cloneWaitEvent->getBaseJobId());
+                $job = PromiseJob::lockForUpdate()
+                    ->where('id', $cloneWaitEvent->getBaseJobId())
+                    ->first();
+
                 if ($job !== null) {
                     $cloneWaitEvent->setEvent($event);
                     $cloneWaitEvent->setAttachedModel(null);

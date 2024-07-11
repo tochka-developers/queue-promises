@@ -19,7 +19,6 @@ class PromiseEventRegistry implements PromiseEventRegistryInterface
      */
     public function loadByEvent(string $event_name, string $event_unique_id): Collection
     {
-        /** @psalm-suppress InvalidTemplateParam */
         return PromiseEvent::byEvent($event_name, $event_unique_id)
             ->get()
             ->map(

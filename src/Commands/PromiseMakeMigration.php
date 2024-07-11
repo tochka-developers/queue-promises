@@ -51,6 +51,7 @@ class PromiseMakeMigration extends Command
      */
     public function handle(): void
     {
+        /** @var string $migrationName */
         $migrationName = $this->argument('name');
 
         if ($migrationName === null) {

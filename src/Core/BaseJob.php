@@ -53,6 +53,9 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         $this->exception = $exception;
     }
 
+    /**
+     * @psalm-ignore-nullable-return
+     */
     public function getJobId(): ?int
     {
         return $this->id;

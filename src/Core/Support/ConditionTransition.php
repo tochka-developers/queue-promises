@@ -44,9 +44,6 @@ class ConditionTransition
     }
 
     /**
-     * @param array $value
-     *
-     * @return static
      * @throws IncorrectResolvingClass
      */
     public static function fromArray(array $value): self
@@ -72,9 +69,13 @@ class ConditionTransition
             );
         }
 
-        $from_state = StateEnum::coerce($value['from_state']);
-        $to_state = StateEnum::coerce($value['to_state']);
+        $fromState = StateEnum::coerce($value['from_state']);
+        $toState = StateEnum::coerce($value['to_state']);
 
-        return new self($condition, $from_state, $to_state);
+        if ($fromState === null || $toState === null) {
+            throw new IncorrectResolvingClass('ConditionTransition array must contains required elements [from_state,to_state]');
+        }
+
+        return new self($condition, $fromState, $toState);
     }
 }

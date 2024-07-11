@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Config;
+use Tochka\Promises\Exceptions\UnknownBaseJobIdException;
 use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseEventFactory;
 use Tochka\Promises\Support\WaitEvent;
@@ -23,17 +24,11 @@ use Tochka\Promises\Support\WaitEvent;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property PromiseJob|null $job
- * @method static Builder byJob(int $jobId)
- * @method static Builder byEvent(string $eventName, string $eventUniqueId)
- * @method static self|null find(int $id)
- * @method static Builder where($column, $operator = null, $value = null, $boolean = 'and')
- * @mixin Builder
  */
 class PromiseEvent extends Model
 {
     use HasFactory;
 
-    /** @var array<string, string> */
     protected $casts = [
         'job_id' => 'int',
         'event_name' => 'string',
@@ -92,8 +87,12 @@ class PromiseEvent extends Model
         if ($model === null) {
             $model = new self();
         }
+        $baseJobId = $waitEvent->getBaseJobId();
+        if ($baseJobId === null) {
+            throw new UnknownBaseJobIdException();
+        }
 
-        $model->job_id = $waitEvent->getBaseJobId();
+        $model->job_id = $baseJobId;
         $model->event_name = $waitEvent->getEventName();
         $model->event_unique_id = $waitEvent->getEventUniqueId();
 

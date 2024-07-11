@@ -25,19 +25,15 @@ use Tochka\Promises\Models\Factories\PromiseJobFactory;
  * @property array<ConditionTransition> $conditions
  * @property MayPromised $initial_job
  * @property MayPromised $result_job
- * @property \Exception|null $exception
+ * @property \Throwable|null $exception
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Promise|null $promise
- * @method static Builder byPromise(int $promiseId)
- * @method static self|null find(int $id)
- * @method static lockForUpdate()
  */
 class PromiseJob extends Model
 {
     use HasFactory;
 
-    /** @var array<string,string> */
     protected $casts = [
         'promise_id' => 'int',
         'state' => StateEnum::class,
