@@ -31,12 +31,12 @@ class PromiseJobTest extends TestCase
             new ConditionTransition(
                 new Positive(),
                 StateEnum::RUNNING(),
-                StateEnum::SUCCESS()
+                StateEnum::SUCCESS(),
             ),
             new ConditionTransition(
                 new Positive(),
                 StateEnum::RUNNING(),
-                StateEnum::FAILED()
+                StateEnum::FAILED(),
             ),
         ];
 
@@ -48,7 +48,7 @@ class PromiseJobTest extends TestCase
                 new TestJob('initial'),
                 new TestJob('result'),
                 //new \RuntimeException('Test'),
-                null
+                null,
             ],
             'Empty' => [
                 122,
@@ -87,7 +87,7 @@ class PromiseJobTest extends TestCase
         array $conditions,
         MayPromised $initialJob,
         ?MayPromised $resultJob,
-        ?\Throwable $exception
+        ?\Throwable $exception,
     ): void {
         Event::fake();
 
@@ -161,7 +161,7 @@ class PromiseJobTest extends TestCase
                 StateChanged::class,
                 PromiseJobStateChanging::class,
                 PromiseJobStateChanged::class,
-            ]
+            ],
         );
 
         $job->save();
@@ -173,7 +173,7 @@ class PromiseJobTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
 
         Event::assertDispatched(
@@ -183,7 +183,7 @@ class PromiseJobTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
 
         Event::assertDispatched(
@@ -193,7 +193,7 @@ class PromiseJobTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
 
         Event::assertDispatched(
@@ -203,7 +203,7 @@ class PromiseJobTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
     }
 }

@@ -46,8 +46,8 @@ trait Timeout
             new ConditionTransition(
                 $condition,
                 StateEnum::RUNNING(),
-                StateEnum::TIMEOUT()
-            )
+                StateEnum::TIMEOUT(),
+            ),
         );
     }
 }

@@ -26,7 +26,7 @@ class LogStateChanged
                     get_class($instance->getPromiseHandler()),
                     $instance->getPromiseId(),
                     $event->getFromState()->value,
-                    $event->getToState()->value
+                    $event->getToState()->value,
                 );
                 $context['promise_handler'] = get_class($instance->getPromiseHandler());
                 $context['promise_id'] = $instance->getPromiseId();
@@ -38,7 +38,7 @@ class LogStateChanged
                     get_class($instance->getInitialJob()),
                     $instance->getJobId(),
                     $event->getFromState()->value,
-                    $event->getToState()->value
+                    $event->getToState()->value,
                 );
                 $context['promise_id'] = $instance->getPromiseId();
                 $context['job_handler'] = get_class($instance->getInitialJob());
@@ -48,7 +48,7 @@ class LogStateChanged
                 $message = sprintf(
                     'Some instance change state from [%s] to [%s]',
                     $event->getFromState()->value,
-                    $event->getToState()->value
+                    $event->getToState()->value,
                 );
                 break;
         }

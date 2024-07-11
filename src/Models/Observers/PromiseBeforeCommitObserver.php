@@ -20,8 +20,8 @@ class PromiseBeforeCommitObserver
                     $promise->getBasePromise(),
                     $oldState,
                     $promise->state,
-                    $promise->isNestedEvents()
-                )
+                    $promise->isNestedEvents(),
+                ),
             );
         }
     }

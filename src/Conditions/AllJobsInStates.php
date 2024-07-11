@@ -28,7 +28,7 @@ final class AllJobsInStates implements ConditionContract
             function (bool $carry, PromiseJob $job) {
                 return $carry && $job->getBaseJob()->getState()->in($this->states);
             },
-            true
+            true,
         );
     }
 }

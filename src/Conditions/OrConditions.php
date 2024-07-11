@@ -24,7 +24,7 @@ final class OrConditions implements ConditionContract
             static function (bool $carry, ConditionContract $item) use ($basePromise) {
                 return $carry || $item->condition($basePromise);
             },
-            false
+            false,
         );
     }
 }

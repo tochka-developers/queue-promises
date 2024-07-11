@@ -22,8 +22,8 @@ class PromiseAfterCommitObserver
                     $promise->getBasePromise(),
                     $oldState,
                     $promise->state,
-                    $promise->isNestedEvents()
-                )
+                    $promise->isNestedEvents(),
+                ),
             );
         }
     }

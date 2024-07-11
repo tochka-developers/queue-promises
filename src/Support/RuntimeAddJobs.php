@@ -18,8 +18,8 @@ trait RuntimeAddJobs
                 sprintf(
                     'Trait [%s] may by used only in class, implements [%s]',
                     'RuntimeAddJobs',
-                    PromiseHandler::class
-                )
+                    PromiseHandler::class,
+                ),
             );
         }
         /** @var PromiseHandler $this */

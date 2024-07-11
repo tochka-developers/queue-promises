@@ -58,13 +58,13 @@ class PromiseServiceProvider extends ServiceProvider
                     PromiseGc::class,
                     PromiseClean::class,
                     PromiseMakeMigration::class,
-                ]
+                ],
             );
 
             // публикуем конфигурации
             $this->publishes(
                 [__DIR__ . '/../config/promises.php' => $this->app->basePath() . '/config/promises.php'],
-                'promises-config'
+                'promises-config',
             );
         }
 
@@ -82,7 +82,7 @@ class PromiseServiceProvider extends ServiceProvider
                 }
 
                 return [];
-            }
+            },
         );
 
         Queue::failing(
@@ -103,7 +103,7 @@ class PromiseServiceProvider extends ServiceProvider
                     $baseJob->setState(StateEnum::FAILED());
                     PromiseJob::saveBaseJob($baseJob);
                 }
-            }
+            },
         );
 
         Queue::after(
@@ -130,7 +130,7 @@ class PromiseServiceProvider extends ServiceProvider
                     $baseJob->setState($state);
                     PromiseJob::saveBaseJob($baseJob);
                 }
-            }
+            },
         );
 
         Promise::observe(PromiseBeforeCommitObserver::class);
@@ -142,7 +142,7 @@ class PromiseServiceProvider extends ServiceProvider
             PromisedEvent::class,
             static function (PromisedEvent $event) {
                 Facades\EventDispatcher::dispatch($event);
-            }
+            },
         );
 
         Event::listen(StateChanged::class, LogStateChanged::class);
@@ -163,7 +163,7 @@ class PromiseServiceProvider extends ServiceProvider
         if (Config::get('promises.fire_updates', false)) {
             $this->app->instance(
                 'watcher_watch_timeout',
-                Config::get('promises.watcher_watch_timeout', 60 * 10)
+                Config::get('promises.watcher_watch_timeout', 60 * 10),
             );
         } else {
             $this->app->instance('watcher_watch_timeout', 0);
@@ -178,21 +178,21 @@ class PromiseServiceProvider extends ServiceProvider
                 $dispatcher->addDispatcher(new PromiseDispatcher());
 
                 return $dispatcher;
-            }
+            },
         );
 
         $this->app->singleton(
             Facades\EventDispatcher::class,
             static function () {
                 return new EventDispatcher();
-            }
+            },
         );
 
         $this->app->singleton(
             Facades\Promises::class,
             static function () {
                 return new PromiseRunner();
-            }
+            },
         );
 
         $this->app->singleton(
@@ -209,16 +209,16 @@ class PromiseServiceProvider extends ServiceProvider
                     $promisesTable,
                     $promiseJobsTable,
                     $promiseChunkSize,
-                    $jobsChunkSize
+                    $jobsChunkSize,
                 );
-            }
+            },
         );
 
         $this->app->singleton(
             Facades\ConditionTransitionHandler::class,
             static function () {
                 return new ConditionTransitionHandler();
-            }
+            },
         );
 
         $this->app->singleton(
@@ -243,28 +243,28 @@ class PromiseServiceProvider extends ServiceProvider
                     $promiseChunkSize,
                     $jobsChunkSize,
                 );
-            }
+            },
         );
 
         $this->app->singleton(
             Facades\PromiseRegistry::class,
             static function () {
                 return new PromiseRegistry();
-            }
+            },
         );
 
         $this->app->singleton(
             Facades\PromiseJobRegistry::class,
             static function () {
                 return new PromiseJobRegistry();
-            }
+            },
         );
 
         $this->app->singleton(
             Facades\PromiseEventRegistry::class,
             static function () {
                 return new PromiseEventRegistry();
-            }
+            },
         );
     }
 }

@@ -21,7 +21,7 @@ return new class () extends Migration {
 
                 $table->index('promise_id');
                 $table->index('state');
-            }
+            },
         );
     }
 

@@ -41,7 +41,7 @@ class QueuePromiseMiddleware
             [
                 StateEnum::WAITING(),
                 StateEnum::RUNNING(),
-            ]
+            ],
         )) {
             $baseJob->setState($queueJob->getState());
         }

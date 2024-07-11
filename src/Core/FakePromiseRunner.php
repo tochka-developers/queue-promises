@@ -32,7 +32,7 @@ class FakePromiseRunner
         PHPUnit::assertArrayHasKey(
             $promiseHandler,
             $this->promises,
-            sprintf('Check promise handler [%s] is run', $promiseHandler)
+            sprintf('Check promise handler [%s] is run', $promiseHandler),
         );
     }
 
@@ -41,7 +41,7 @@ class FakePromiseRunner
         PHPUnit::assertArrayNotHasKey(
             $promiseHandler,
             $this->promises,
-            sprintf('Check promise handler [%s] is not run', $promiseHandler)
+            sprintf('Check promise handler [%s] is not run', $promiseHandler),
         );
     }
 
@@ -50,12 +50,12 @@ class FakePromiseRunner
         PHPUnit::assertArrayHasKey(
             $promiseHandler,
             $this->jobs,
-            sprintf('Check promised job added count [%s]', $promiseHandler)
+            sprintf('Check promised job added count [%s]', $promiseHandler),
         );
         PHPUnit::assertCount(
             $expected,
             $this->jobs[$promiseHandler] ?? [],
-            sprintf('Check promised job added count [%s]', $promiseHandler)
+            sprintf('Check promised job added count [%s]', $promiseHandler),
         );
     }
 
@@ -64,12 +64,12 @@ class FakePromiseRunner
         PHPUnit::assertArrayHasKey(
             $promiseHandler,
             $this->jobs,
-            sprintf('Check promised job added [%s]', $promiseHandler)
+            sprintf('Check promised job added [%s]', $promiseHandler),
         );
         PHPUnit::assertEquals(
             $expected,
             $this->jobs[$promiseHandler] ?? [],
-            sprintf('Check promised job added [%s]', $promiseHandler)
+            sprintf('Check promised job added [%s]', $promiseHandler),
         );
     }
 }

@@ -8,12 +8,12 @@ use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Core\FakePromiseRunner;
 
 /**
- * @method static run(PromiseHandler $handler, MayPromised[] $jobs)
- * @method static hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args)
- * @method static assertRun(string $promiseHandler)
- * @method static assertNotRun(string $promiseHandler)
- * @method static assertAddedJobsCount(string $promiseHandler, int $expected)
- * @method static assertAddedJobs(string $promiseHandler, array $expected)
+ * @method static void run(PromiseHandler $handler, MayPromised[] $jobs)
+ * @method static void hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args)
+ * @method static void assertRun(string $promiseHandler)
+ * @method static void assertNotRun(string $promiseHandler)
+ * @method static void assertAddedJobsCount(string $promiseHandler, int $expected)
+ * @method static void assertAddedJobs(string $promiseHandler, array $expected)
  * @see FakePromiseRunner
  * @see \Tochka\Promises\Core\PromiseRunner
  * @codeCoverageIgnore
@@ -54,7 +54,7 @@ class Promises extends Facade
             $callable(),
             function () use ($originalDispatcher) {
                 static::swap($originalDispatcher);
-            }
+            },
         );
     }
 }

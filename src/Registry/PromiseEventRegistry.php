@@ -25,7 +25,7 @@ class PromiseEventRegistry
             ->map(
                 function (PromiseEvent $promiseEventModel): WaitEvent {
                     return $promiseEventModel->getWaitEvent();
-                }
+                },
             );
     }
 

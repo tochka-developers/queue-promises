@@ -21,7 +21,7 @@ return new class () extends Migration {
 
                 $table->index(['state', 'updated_at']);
                 $table->index(['state', 'watch_at']);
-            }
+            },
         );
     }
 

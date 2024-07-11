@@ -104,7 +104,7 @@ class Promise extends Model
             function (Builder $query) {
                 $query->where('watch_at', '<=', Carbon::now())
                     ->orWhere('timeout_at', '<=', Carbon::now());
-            }
+            },
         );
     }
 

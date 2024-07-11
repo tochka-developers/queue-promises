@@ -39,7 +39,7 @@ class DispatchPromiseTest extends TestCase
                 self::assertEquals($basePromise->getPromiseHandler(), $job->getPromiseHandler());
 
                 return true;
-            }
+            },
         );
     }
 }

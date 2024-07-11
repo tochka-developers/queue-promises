@@ -11,7 +11,7 @@ final class Timeout implements ConditionContract
     private Carbon $expired_at;
 
     /**
-     * @param int|Carbon|\DateInterval $timeout Таймаут в минутах или время истечения
+     * @param int|Carbon|\DateInterval|string $timeout Таймаут в минутах или время истечения
      */
     public function __construct($timeout)
     {

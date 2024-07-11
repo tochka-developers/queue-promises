@@ -36,7 +36,7 @@ class PromiseRegistry
                 foreach (Promise::cursor() as $promise) {
                     yield $promise->getBasePromise();
                 }
-            }
+            },
         );
     }
 
@@ -54,7 +54,7 @@ class PromiseRegistry
                 foreach ($promises as $promise) {
                     $callback($promise->getBasePromise());
                 }
-            }
+            },
         );
     }
 
@@ -72,7 +72,7 @@ class PromiseRegistry
                 foreach (Promise::whereIn('state', $states)->cursor() as $promise) {
                     yield $promise->getBasePromise();
                 }
-            }
+            },
         );
     }
 
@@ -91,7 +91,7 @@ class PromiseRegistry
                 foreach ($promises as $promise) {
                     $callback($promise->getBasePromise());
                 }
-            }
+            },
         );
     }
 

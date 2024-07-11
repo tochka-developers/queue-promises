@@ -69,5 +69,5 @@ return [
          */
         'promise_chunk_size' => 100,
         'jobs_chunk_size' => 500,
-    ]
+    ],
 ];

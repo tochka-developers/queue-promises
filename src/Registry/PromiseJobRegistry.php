@@ -36,7 +36,7 @@ class PromiseJobRegistry
             ->map(
                 function (PromiseJob $jobModel): BaseJob {
                     return $jobModel->getBaseJob();
-                }
+                },
             );
     }
 
@@ -53,7 +53,7 @@ class PromiseJobRegistry
                 foreach (PromiseJob::byPromise($promise_id)->cursor() as $job) {
                     yield $job->getBaseJob();
                 }
-            }
+            },
         );
     }
 
@@ -71,7 +71,7 @@ class PromiseJobRegistry
                 foreach ($jobs as $job) {
                     $callback($job->getBaseJob());
                 }
-            }
+            },
         );
     }
 

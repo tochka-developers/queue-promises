@@ -29,7 +29,7 @@ class ConditionTransitionsTest extends TestCase
             [
                 $condition1,
                 $condition2,
-            ]
+            ],
         );
         $mock->addCondition($condition3);
 
@@ -41,7 +41,7 @@ class ConditionTransitionsTest extends TestCase
                 $condition2,
                 $condition3,
             ],
-            $result
+            $result,
         );
     }
 }

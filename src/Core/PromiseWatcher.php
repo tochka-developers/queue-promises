@@ -43,11 +43,11 @@ class PromiseWatcher
     public function watch(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
         if ($shouldQuitCallback === null) {
-            $shouldQuitCallback = fn () => false;
+            $shouldQuitCallback = fn() => false;
         }
 
         if ($shouldPausedCallback === null) {
-            $shouldPausedCallback = fn () => false;
+            $shouldPausedCallback = fn() => false;
         }
 
         $this->daemon(function () use ($shouldQuitCallback, $shouldPausedCallback) {
@@ -89,7 +89,7 @@ class PromiseWatcher
     private function handlePromiseChunks(
         array $promiseIds,
         callable $shouldQuitCallback,
-        callable $shouldPausedCallback
+        callable $shouldPausedCallback,
     ): bool {
         foreach ($promiseIds as $promise) {
             if ($shouldQuitCallback() || $shouldPausedCallback()) {
@@ -123,7 +123,7 @@ class PromiseWatcher
                     ConditionTransitionHandler::checkConditionAndApplyTransition(
                         $basePromise,
                         $basePromise,
-                        $basePromise
+                        $basePromise,
                     );
                 }
 
@@ -139,7 +139,7 @@ class PromiseWatcher
 
                 return $basePromise;
             },
-            3
+            3,
         );
 
         if ($basePromise === null) {
@@ -162,7 +162,7 @@ class PromiseWatcher
         DB::transaction(
             function () use ($jobId, $basePromise) {
                 /** @var PromiseJob|null $lockedJob */
-                $lockedJob = PromiseJob::lockForUpdate()->find($jobId);
+                $lockedJob = PromiseJob::query()->lockForUpdate()->find($jobId);
                 if ($lockedJob === null) {
                     return;
                 }
@@ -172,7 +172,7 @@ class PromiseWatcher
                     PromiseJob::saveBaseJob($baseJob);
                 }
             },
-            3
+            3,
         );
     }
 }

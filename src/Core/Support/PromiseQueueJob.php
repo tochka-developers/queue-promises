@@ -118,8 +118,8 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
                         sprintf(
                             'Error while dispatch promise handler method [%s]. Parameter [%s] not allow null value, but result for this parameter is empty',
                             $reflectionMethod->getDeclaringClass()->getName() . '::' . $method,
-                            $parameter->getName()
-                        )
+                            $parameter->getName(),
+                        ),
                     );
                 }
 
@@ -162,7 +162,7 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     {
         $paramType = $parameter->getType();
         if (!$paramType instanceof \ReflectionNamedType) {
-            return (string)$paramType;
+            return (string) $paramType;
         }
 
         return $paramType->getName();

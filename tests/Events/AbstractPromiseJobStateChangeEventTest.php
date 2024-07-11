@@ -23,7 +23,7 @@ class AbstractPromiseJobStateChangeEventTest extends TestCase
         $baseJob = new BaseJob(1, new TestJob('test'));
         $mock = \Mockery::mock(
             AbstractPromiseJobStateChangeEvent::class,
-            [$baseJob, StateEnum::WAITING(), StateEnum::RUNNING()]
+            [$baseJob, StateEnum::WAITING(), StateEnum::RUNNING()],
         );
         $mock->makePartial();
 

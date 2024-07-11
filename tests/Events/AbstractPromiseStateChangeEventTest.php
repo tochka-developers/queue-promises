@@ -23,7 +23,7 @@ class AbstractPromiseStateChangeEventTest extends TestCase
         $basePromise = new BasePromise(new TestPromise());
         $mock = \Mockery::mock(
             AbstractPromiseStateChangeEvent::class,
-            [$basePromise, StateEnum::WAITING(), StateEnum::RUNNING()]
+            [$basePromise, StateEnum::WAITING(), StateEnum::RUNNING()],
         );
         $mock->makePartial();
 

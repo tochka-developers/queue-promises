@@ -25,8 +25,8 @@ trait ASync
             new ConditionTransition(
                 new AllJobsInStates(StateEnum::successStates()),
                 StateEnum::RUNNING(),
-                StateEnum::SUCCESS()
-            )
+                StateEnum::SUCCESS(),
+            ),
         );
 
         $andCondition = new AndConditions();
@@ -35,7 +35,7 @@ trait ASync
 
         // Если все задачи завершены, и хотя бы одна в состоянии failed или timeout - то меняем состояние промиса на failed
         $promise->addCondition(
-            new ConditionTransition($andCondition, StateEnum::RUNNING(), StateEnum::FAILED())
+            new ConditionTransition($andCondition, StateEnum::RUNNING(), StateEnum::FAILED()),
         );
     }
 

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Facade;
 use Tochka\Promises\Contracts\PromisedEvent;
 
 /**
- * @method static dispatch(PromisedEvent $event)
+ * @method static void dispatch(PromisedEvent $event)
  * @see \Tochka\Promises\Core\Support\EventDispatcher
  * @codeCoverageIgnore
  */

@@ -43,7 +43,7 @@ class DispatchPromise
         $promiseQueueJob = new PromiseQueueJob(
             $event->getPromise()->getPromiseId(),
             $event->getPromise()->getPromiseHandler(),
-            $event->getPromise()->getState()
+            $event->getPromise()->getState(),
         );
 
         $promiseHandler = $event->getPromise()->getPromiseHandler();

@@ -57,7 +57,7 @@ class ConditionTransition
             || !array_key_exists('to_state', $value)
         ) {
             throw new IncorrectResolvingClass(
-                'ConditionTransition array must contains required elements [condition,from_state,to_state]'
+                'ConditionTransition array must contains required elements [condition,from_state,to_state]',
             );
         }
 
@@ -67,8 +67,8 @@ class ConditionTransition
                 sprintf(
                     'Condition must implements contract [%s], but class [%s] is incorrect',
                     ConditionContract::class,
-                    get_class($condition)
-                )
+                    get_class($condition),
+                ),
             );
         }
 

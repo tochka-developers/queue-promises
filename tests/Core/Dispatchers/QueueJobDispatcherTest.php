@@ -27,7 +27,7 @@ class QueueJobDispatcherTest extends TestCase
             Dispatcher::class,
             function (MockInterface $mock) {
                 $mock->shouldReceive('dispatch')->once();
-            }
+            },
         );
 
         $dispatcher->dispatch($mockQueue);

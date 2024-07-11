@@ -65,11 +65,11 @@ class GarbageCollector
     public function clean(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
         if ($shouldQuitCallback === null) {
-            $shouldQuitCallback = fn () => false;
+            $shouldQuitCallback = fn() => false;
         }
 
         if ($shouldPausedCallback === null) {
-            $shouldPausedCallback = fn () => false;
+            $shouldPausedCallback = fn() => false;
         }
 
         while (!$shouldQuitCallback() && !$shouldPausedCallback()) {
@@ -79,7 +79,7 @@ class GarbageCollector
                     $this->promiseJobsTable,
                     $this->promiseJobsColumn('id'),
                     '=',
-                    $this->promiseColumn('parent_job_id')
+                    $this->promiseColumn('parent_job_id'),
                 )
                 ->whereIn($this->promiseColumn('state'), $this->states)
                 ->where($this->promiseColumn('updated_at'), '<', Carbon::now()->subSeconds($this->deleteOlderThen))
@@ -115,7 +115,7 @@ class GarbageCollector
             ->whereIn('promise_id', $promiseIds)
             ->chunkById(
                 $this->jobsChunkSize,
-                $this->handleJobsChunks(...)
+                $this->handleJobsChunks(...),
             );
 
         DB::table($this->promisesTable)->whereIn('id', $promiseIds)->delete();

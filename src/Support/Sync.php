@@ -27,16 +27,16 @@ trait Sync
             new ConditionTransition(
                 new AllJobsInStates(StateEnum::successStates()),
                 StateEnum::RUNNING(),
-                StateEnum::SUCCESS()
-            )
+                StateEnum::SUCCESS(),
+            ),
         );
         // Если хотя бы одна задача в состоянии failed или timout - меняем состояние промиса на failed
         $promise->addCondition(
             new ConditionTransition(
                 new OneJobInState(StateEnum::failedStates()),
                 StateEnum::RUNNING(),
-                StateEnum::FAILED()
-            )
+                StateEnum::FAILED(),
+            ),
         );
     }
 
@@ -58,7 +58,7 @@ trait Sync
             $conditionTransition = new ConditionTransition(
                 new JobInState($this->previousJob, StateEnum::successStates()),
                 StateEnum::WAITING(),
-                StateEnum::RUNNING()
+                StateEnum::RUNNING(),
             );
         }
 

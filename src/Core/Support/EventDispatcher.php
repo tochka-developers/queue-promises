@@ -31,7 +31,7 @@ class EventDispatcher
             function () use ($event, $waitEvent) {
                 $cloneWaitEvent = clone $waitEvent;
 
-                $job = PromiseJob::lockForUpdate()->find($cloneWaitEvent->getBaseJobId());
+                $job = PromiseJob::query()->lockForUpdate()->find($cloneWaitEvent->getBaseJobId());
                 if ($job !== null) {
                     $cloneWaitEvent->setEvent($event);
                     $cloneWaitEvent->setAttachedModel(null);
@@ -43,7 +43,7 @@ class EventDispatcher
                     PromiseJob::saveBaseJob($baseJob);
                 }
             },
-            3
+            3,
         );
     }
 }

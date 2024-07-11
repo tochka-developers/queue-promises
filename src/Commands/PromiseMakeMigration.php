@@ -55,16 +55,16 @@ class PromiseMakeMigration extends Command
         if ($migrationName === null) {
             $migrationsToRun = array_filter(
                 $this->migrations,
-                fn (MigrationContract $migration) => $migration->isMainMigration()
+                fn(MigrationContract $migration) => $migration->isMainMigration(),
             );
         } else {
             $migrationsToRun = array_filter(
                 $this->migrations,
-                fn (MigrationContract $migration) => $migration->getName() === $migrationName
+                fn(MigrationContract $migration) => $migration->getName() === $migrationName,
             );
             if (count($migrationsToRun) === 0) {
                 throw new \InvalidArgumentException(
-                    sprintf('Migrations with name [%s] does not exists', $migrationName)
+                    sprintf('Migrations with name [%s] does not exists', $migrationName),
                 );
             }
         }
@@ -76,7 +76,7 @@ class PromiseMakeMigration extends Command
             $this->replaceMigration(
                 $this->createTableMigration($migrationName),
                 $migration->getStub(),
-                $tableName
+                $tableName,
             );
             $this->info(sprintf('Migration for table [%s] created!', $tableName));
         }
@@ -98,7 +98,7 @@ class PromiseMakeMigration extends Command
 
         return $migrationCreator->create(
             $migrationName,
-            $this->laravel->databasePath() . '/migrations'
+            $this->laravel->databasePath() . '/migrations',
         );
     }
 

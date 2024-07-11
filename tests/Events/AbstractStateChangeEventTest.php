@@ -22,7 +22,7 @@ class AbstractStateChangeEventTest extends TestCase
         $baseInstance = \Mockery::mock(StatesContract::class);
         $mock = \Mockery::mock(
             AbstractStateChangeEvent::class,
-            [$baseInstance, StateEnum::WAITING(), StateEnum::RUNNING()]
+            [$baseInstance, StateEnum::WAITING(), StateEnum::RUNNING()],
         );
         $mock->makePartial();
 

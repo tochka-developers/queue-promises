@@ -51,7 +51,7 @@ class CheckStateConditions
             DB::transaction(
                 function () use ($basePromise, $currentJobId, $jobId, &$stateChanges) {
                     /** @var PromiseJob $currentJob */
-                    $currentJob = PromiseJob::lockForUpdate()->find($jobId);
+                    $currentJob = PromiseJob::query()->lockForUpdate()->find($jobId);
                     $baseJob = $currentJob->getBaseJob();
                     if ($currentJobId !== null && $baseJob->getJobId() === $currentJobId) {
                         return;
@@ -60,7 +60,7 @@ class CheckStateConditions
                     if (ConditionTransitionHandler::checkConditionAndApplyTransition(
                         $baseJob,
                         $baseJob,
-                        $basePromise
+                        $basePromise,
                     )) {
                         $stateChanges = true;
                         // включаем вложенные события, чтобы не обрабатывать их этим слушателем
@@ -68,7 +68,7 @@ class CheckStateConditions
                         PromiseJob::saveBaseJob($baseJob);
                     }
                 },
-                3
+                3,
             );
         }
 
@@ -81,7 +81,7 @@ class CheckStateConditions
                 if (ConditionTransitionHandler::checkConditionAndApplyTransition(
                     $basePromise,
                     $basePromise,
-                    $basePromise
+                    $basePromise,
                 )) {
                     $stateChanges = true;
                     // включаем вложенные события, чтобы не обрабатывать их этим слушателем
@@ -89,7 +89,7 @@ class CheckStateConditions
                     Promise::saveBasePromise($basePromise);
                 }
             },
-            3
+            3,
         );
 
         // если были какие-либо изменения состояний в джобах или промисе - то еще раз чекнем все условия переходов

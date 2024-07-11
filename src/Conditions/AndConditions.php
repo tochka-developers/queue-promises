@@ -24,7 +24,7 @@ final class AndConditions implements ConditionContract
             static function (bool $carry, ConditionContract $item) use ($basePromise) {
                 return $carry && $item->condition($basePromise);
             },
-            true
+            true,
         );
     }
 }

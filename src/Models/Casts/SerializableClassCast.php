@@ -21,12 +21,12 @@ class SerializableClassCast implements CastsAttributes
 
         $castedObject = unserialize(
             json_decode($value, true, 512, JSON_THROW_ON_ERROR),
-            ['allowed_classes' => true]
+            ['allowed_classes' => true],
         );
 
         if ($castedObject instanceof \__PHP_Incomplete_Class) {
             throw new IncorrectResolvingClass(
-                'Unknown class after deserialization. Most likely the serialized class no longer exists.'
+                'Unknown class after deserialization. Most likely the serialized class no longer exists.',
             );
         }
 

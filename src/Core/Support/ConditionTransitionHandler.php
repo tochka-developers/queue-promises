@@ -16,7 +16,7 @@ class ConditionTransitionHandler
      */
     public function getConditionsForState(
         StatesContract $state,
-        ConditionTransitionsContract $conditionTransitions
+        ConditionTransitionsContract $conditionTransitions,
     ): array {
         $conditions = $conditionTransitions->getConditions();
 
@@ -24,7 +24,7 @@ class ConditionTransitionHandler
             $conditions,
             static function (ConditionTransition $conditionTransition) use ($state) {
                 return $conditionTransition->getFromState()->is($state->getState());
-            }
+            },
         );
     }
 
@@ -49,7 +49,7 @@ class ConditionTransitionHandler
     public function checkConditionAndApplyTransition(
         StatesContract $statesInstance,
         ConditionTransitionsContract $conditionTransitionsInstance,
-        BasePromise $basePromise
+        BasePromise $basePromise,
     ): bool {
         $conditions = $this->getConditionsForState($statesInstance, $conditionTransitionsInstance);
         $transition = $this->getTransitionForConditions($conditions, $basePromise);

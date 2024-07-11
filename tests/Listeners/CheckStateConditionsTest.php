@@ -40,7 +40,7 @@ class CheckStateConditionsTest extends TestCase
             [
                 'promise_id' => $promise->id,
                 'state'      => StateEnum::WAITING(),
-            ]
+            ],
         );
         $baseJob = $promiseJob->getBaseJob();
         $promiseJob->promise = $promise;
@@ -61,12 +61,12 @@ class CheckStateConditionsTest extends TestCase
                 function (
                     StatesContract $statesInstance,
                     ConditionTransitionsContract $conditionTransitionsInstance,
-                    BasePromise $basePromise
+                    BasePromise $basePromise,
                 ) {
                     $statesInstance->setState(StateEnum::RUNNING());
 
                     return true;
-                }
+                },
             );
 
         $listener->handle($event);
@@ -123,12 +123,12 @@ class CheckStateConditionsTest extends TestCase
                 function (
                     StatesContract $statesInstance,
                     ConditionTransitionsContract $conditionTransitionsInstance,
-                    BasePromise $basePromise
+                    BasePromise $basePromise,
                 ) {
                     $statesInstance->setState(StateEnum::SUCCESS());
 
                     return true;
-                }
+                },
             );
 
         $listener->handle($event);

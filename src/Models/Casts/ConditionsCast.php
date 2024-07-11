@@ -23,7 +23,7 @@ class ConditionsCast implements CastsAttributes
             static function ($conditionTransition) {
                 return ConditionTransition::fromArray($conditionTransition);
             },
-            json_decode($value, true, 512, JSON_THROW_ON_ERROR)
+            json_decode($value, true, 512, JSON_THROW_ON_ERROR),
         );
     }
 
@@ -42,9 +42,9 @@ class ConditionsCast implements CastsAttributes
                     static function (ConditionTransition $conditionTransition) {
                         return $conditionTransition->toArray();
                     },
-                    $value
+                    $value,
                 ),
-                JSON_THROW_ON_ERROR
+                JSON_THROW_ON_ERROR,
             ),
         ];
     }

@@ -18,7 +18,7 @@ return new class () extends Migration {
 
                 $table->index(['event_name', 'event_unique_id']);
                 $table->index('job_id');
-            }
+            },
         );
     }
 

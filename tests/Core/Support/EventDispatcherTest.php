@@ -50,8 +50,8 @@ class EventDispatcherTest extends TestCase
                             && $actual->getEventUniqueId() === $waitEvent->getEventUniqueId()
                             && $actual->getId() === $waitEvent->getId()
                             && $actual->getBaseJobId() === $waitEvent->getBaseJobId();
-                    }
-                )
+                    },
+                ),
             );
 
         $dispatcher->dispatch($promisedEvent);

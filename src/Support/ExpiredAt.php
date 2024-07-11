@@ -42,8 +42,8 @@ trait ExpiredAt
             new ConditionTransition(
                 new Timeout($this->getExpiredAt()),
                 StateEnum::RUNNING(),
-                StateEnum::TIMEOUT()
-            )
+                StateEnum::TIMEOUT(),
+            ),
         );
     }
 }

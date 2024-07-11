@@ -20,8 +20,8 @@ class PromiseJobBeforeCommitObserver
                     $promiseJob->getBaseJob(),
                     $oldState,
                     $promiseJob->state,
-                    $promiseJob->isNestedEvents()
-                )
+                    $promiseJob->isNestedEvents(),
+                ),
             );
         }
     }

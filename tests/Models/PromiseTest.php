@@ -37,12 +37,12 @@ class PromiseTest extends TestCase
             new ConditionTransition(
                 new Positive(),
                 StateEnum::RUNNING(),
-                StateEnum::SUCCESS()
+                StateEnum::SUCCESS(),
             ),
             new ConditionTransition(
                 new Positive(),
                 StateEnum::RUNNING(),
-                StateEnum::FAILED()
+                StateEnum::FAILED(),
             ),
         ];
 
@@ -124,7 +124,7 @@ class PromiseTest extends TestCase
                 StateChanged::class,
                 PromiseStateChanging::class,
                 PromiseStateChanged::class,
-            ]
+            ],
         );
 
         $promise->save();
@@ -136,7 +136,7 @@ class PromiseTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
 
         Event::assertDispatched(
@@ -146,7 +146,7 @@ class PromiseTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
 
         Event::assertDispatched(
@@ -156,7 +156,7 @@ class PromiseTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
 
         Event::assertDispatched(
@@ -166,7 +166,7 @@ class PromiseTest extends TestCase
                 self::assertEquals(StateEnum::SUCCESS(), $event->getToState());
 
                 return true;
-            }
+            },
         );
     }
 }

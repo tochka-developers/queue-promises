@@ -37,7 +37,7 @@ trait DefaultPromise
     public function promiseConditionsDefaultPromise(BasePromise $promise): void
     {
         $promise->addCondition(
-            new ConditionTransition(new EmptyJobs(), StateEnum::RUNNING(), StateEnum::SUCCESS())
+            new ConditionTransition(new EmptyJobs(), StateEnum::RUNNING(), StateEnum::SUCCESS()),
         );
     }
 
@@ -51,15 +51,15 @@ trait DefaultPromise
             new ConditionTransition(
                 new PromiseInState(StateEnum::finishedStates()),
                 StateEnum::WAITING(),
-                StateEnum::CANCELED()
-            )
+                StateEnum::CANCELED(),
+            ),
         );
         $job->addCondition(
             new ConditionTransition(
                 new PromiseInState(StateEnum::finishedStates()),
                 StateEnum::RUNNING(),
-                StateEnum::TIMEOUT()
-            )
+                StateEnum::TIMEOUT(),
+            ),
         );
     }
 
@@ -81,7 +81,7 @@ trait DefaultPromise
         return PromiseJob::byPromise($this->getPromiseId())->get()->map(
             function (PromiseJob $job) {
                 return $job->getBaseJob();
-            }
+            },
         );
     }
 }
