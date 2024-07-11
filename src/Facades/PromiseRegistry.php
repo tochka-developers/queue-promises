@@ -5,9 +5,10 @@
 namespace Tochka\Promises\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Tochka\Promises\Registry\PromiseRegistryInterface;
 
 /**
- * @deprecated Use \Tochka\Promises\Models\Promise
+ * @api
  * @method static save(\Tochka\Promises\Core\BasePromise $promise)
  * @method static \Tochka\Promises\Core\BasePromise load(int $id)
  * @method static \Tochka\Promises\Core\BasePromise[]|\Illuminate\Support\LazyCollection loadAllCursor()
@@ -15,13 +16,15 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Tochka\Promises\Core\BasePromise[]|\Illuminate\Support\LazyCollection loadInStatesCursor(array $states)
  * @method static void loadInStatesChunk(array $states, callable $callback, int $chunk_size = 1000)
  * @method static delete(int $id)
- * @see \Tochka\Promises\Registry\PromiseRegistry
+ * @see PromiseRegistryInterface
  * @codeCoverageIgnore
+ *
+ * @deprecated Inject contract
  */
 class PromiseRegistry extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return self::class;
+        return PromiseRegistryInterface::class;
     }
 }

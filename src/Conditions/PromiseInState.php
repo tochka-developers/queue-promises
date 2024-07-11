@@ -6,6 +6,9 @@ use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
 
+/**
+ * @api
+ */
 final class PromiseInState implements ConditionContract
 {
     /** @var array<StateEnum> */

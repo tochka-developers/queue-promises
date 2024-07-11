@@ -19,6 +19,7 @@ use Tochka\Promises\Support\WaitEvent;
 
 /**
  * Задача, выполняющая обработку результата промиса
+ * @api
  */
 class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, JobFacadeContract
 {

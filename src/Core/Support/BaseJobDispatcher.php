@@ -8,7 +8,7 @@ use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Events\PromiseJobStarted;
 use Tochka\Promises\Events\PromiseJobStarting;
 
-class BaseJobDispatcher
+class BaseJobDispatcher implements BaseJobDispatcherInterface
 {
     /** @var array<DispatcherContract> */
     private array $dispatchers = [];

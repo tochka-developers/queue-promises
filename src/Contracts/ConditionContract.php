@@ -5,7 +5,7 @@ namespace Tochka\Promises\Contracts;
 use Tochka\Promises\Core\BasePromise;
 
 /**
- * @codeCoverageIgnore
+ * @api
  */
 interface ConditionContract
 {

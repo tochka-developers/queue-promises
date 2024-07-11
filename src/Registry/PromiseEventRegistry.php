@@ -10,7 +10,7 @@ use Tochka\Promises\Support\WaitEvent;
  * Связь WaitEvent с сущностью в БД
  * @codeCoverageIgnore
  */
-class PromiseEventRegistry
+class PromiseEventRegistry implements PromiseEventRegistryInterface
 {
     /**
      * @param string $event_name

@@ -7,6 +7,9 @@ use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\StateChanged;
 use Tochka\Promises\Models\PromiseJob;
 
+/**
+ * @api
+ */
 class PromiseJobAfterCommitObserver
 {
     public bool $afterCommit = true;

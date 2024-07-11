@@ -15,6 +15,7 @@ use Tochka\Promises\Models\Factories\PromiseEventFactory;
 use Tochka\Promises\Support\WaitEvent;
 
 /**
+ * @api
  * @property int $id
  * @property int $job_id
  * @property string $event_name

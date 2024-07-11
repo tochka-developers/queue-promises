@@ -8,6 +8,9 @@ use Tochka\Promises\Listeners\Support\FilterTransitionsTrait;
 use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Support\WaitEvent;
 
+/**
+ * @api
+ */
 class DeletePromisedEvent
 {
     use FilterTransitionsTrait;

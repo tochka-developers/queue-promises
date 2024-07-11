@@ -3,7 +3,7 @@
 namespace Tochka\Promises\Contracts;
 
 /**
- * @codeCoverageIgnore
+ * @api
  */
 interface MayPromised
 {

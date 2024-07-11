@@ -2,8 +2,10 @@
 
 namespace Tochka\Promises;
 
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -19,11 +21,17 @@ use Tochka\Promises\Core\Dispatchers\PromiseDispatcher;
 use Tochka\Promises\Core\Dispatchers\QueueJobDispatcher;
 use Tochka\Promises\Core\Dispatchers\WaitEventDispatcher;
 use Tochka\Promises\Core\GarbageCollector;
+use Tochka\Promises\Core\GarbageCollectorInterface;
 use Tochka\Promises\Core\PromiseRunner;
+use Tochka\Promises\Core\PromiseRunnerInterface;
 use Tochka\Promises\Core\PromiseWatcher;
+use Tochka\Promises\Core\PromiseWatcherInterface;
 use Tochka\Promises\Core\Support\BaseJobDispatcher;
+use Tochka\Promises\Core\Support\BaseJobDispatcherInterface;
 use Tochka\Promises\Core\Support\ConditionTransitionHandler;
+use Tochka\Promises\Core\Support\ConditionTransitionHandlerInterface;
 use Tochka\Promises\Core\Support\EventDispatcher;
+use Tochka\Promises\Core\Support\EventDispatcherInterface;
 use Tochka\Promises\Core\Support\QueuePromiseMiddleware;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
@@ -41,11 +49,15 @@ use Tochka\Promises\Models\Observers\PromiseJobBeforeCommitObserver;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Registry\PromiseEventRegistry;
+use Tochka\Promises\Registry\PromiseEventRegistryInterface;
 use Tochka\Promises\Registry\PromiseJobRegistry;
+use Tochka\Promises\Registry\PromiseJobRegistryInterface;
 use Tochka\Promises\Registry\PromiseRegistry;
+use Tochka\Promises\Registry\PromiseRegistryInterface;
 
 /**
  * @codeCoverageIgnore
+ * @api
  */
 class PromiseServiceProvider extends ServiceProvider
 {
@@ -141,7 +153,9 @@ class PromiseServiceProvider extends ServiceProvider
         Event::listen(
             PromisedEvent::class,
             static function (PromisedEvent $event) {
-                Facades\EventDispatcher::dispatch($event);
+                /** @var EventDispatcherInterface $eventDispatcher */
+                $eventDispatcher = App::make(EventDispatcherInterface::class);
+                $eventDispatcher->dispatch($event);
             },
         );
 
@@ -170,8 +184,8 @@ class PromiseServiceProvider extends ServiceProvider
         }
 
         $this->app->singleton(
-            Facades\BaseJobDispatcher::class,
-            static function () {
+            BaseJobDispatcherInterface::class,
+            static function (): BaseJobDispatcherInterface {
                 $dispatcher = new BaseJobDispatcher();
                 $dispatcher->addDispatcher(new WaitEventDispatcher());
                 $dispatcher->addDispatcher(new QueueJobDispatcher());
@@ -181,49 +195,28 @@ class PromiseServiceProvider extends ServiceProvider
             },
         );
 
+        $this->app->singleton(EventDispatcherInterface::class, EventDispatcher::class);
+        $this->app->singleton(PromiseRunnerInterface::class, PromiseRunner::class);
+        $this->app->singleton(ConditionTransitionHandlerInterface::class, ConditionTransitionHandler::class);
+        $this->app->singleton(PromiseEventRegistryInterface::class, PromiseEventRegistry::class);
+        $this->app->singleton(PromiseJobRegistryInterface::class, PromiseJobRegistry::class);
+        $this->app->singleton(PromiseRegistryInterface::class, PromiseRegistry::class);
+
         $this->app->singleton(
-            Facades\EventDispatcher::class,
-            static function () {
-                return new EventDispatcher();
+            PromiseWatcherInterface::class,
+            static function (Container $container): PromiseWatcherInterface {
+                return $container->make(PromiseWatcher::class, [
+                    'sleepTime' => Config::get('promises.watcher_sleep', 60 * 10),
+                    'promisesTable' => Config::get('promises.database.table_promises', 'promises'),
+                    'promiseJobsTable' => Config::get('promises.database.table_jobs', 'promise_jobs'),
+                    'promiseChunkSize' => Config::get('promises.garbage_collector.promise_chunk_size', 100),
+                ]);
             },
         );
 
         $this->app->singleton(
-            Facades\Promises::class,
-            static function () {
-                return new PromiseRunner();
-            },
-        );
-
-        $this->app->singleton(
-            Facades\PromiseWatcher::class,
-            static function () {
-                $sleepTime = Config::get('promises.watcher_sleep', 60 * 10);
-                $promisesTable = Config::get('promises.database.table_promises', 'promises');
-                $promiseJobsTable = Config::get('promises.database.table_jobs', 'promise_jobs');
-                $promiseChunkSize = Config::get('promises.garbage_collector.promise_chunk_size', 100);
-                $jobsChunkSize = Config::get('promises.garbage_collector.jobs_chunk_size', 500);
-
-                return new PromiseWatcher(
-                    $sleepTime,
-                    $promisesTable,
-                    $promiseJobsTable,
-                    $promiseChunkSize,
-                    $jobsChunkSize,
-                );
-            },
-        );
-
-        $this->app->singleton(
-            Facades\ConditionTransitionHandler::class,
-            static function () {
-                return new ConditionTransitionHandler();
-            },
-        );
-
-        $this->app->singleton(
-            Facades\GarbageCollector::class,
-            static function () {
+            GarbageCollectorInterface::class,
+            static function (): GarbageCollectorInterface {
                 $sleepTime = Config::get('promises.garbage_collector.timeout', 60 * 10);
                 $deleteOlderThen = Config::get('promises.garbage_collector.older_then', 60 * 60 * 24 * 7);
                 $states = Config::get('promises.garbage_collector.states', []);
@@ -243,27 +236,6 @@ class PromiseServiceProvider extends ServiceProvider
                     $promiseChunkSize,
                     $jobsChunkSize,
                 );
-            },
-        );
-
-        $this->app->singleton(
-            Facades\PromiseRegistry::class,
-            static function () {
-                return new PromiseRegistry();
-            },
-        );
-
-        $this->app->singleton(
-            Facades\PromiseJobRegistry::class,
-            static function () {
-                return new PromiseJobRegistry();
-            },
-        );
-
-        $this->app->singleton(
-            Facades\PromiseEventRegistry::class,
-            static function () {
-                return new PromiseEventRegistry();
             },
         );
     }

@@ -6,14 +6,21 @@ use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Contracts\NestedEventContract;
 use Tochka\Promises\Contracts\StateChangedContract;
 use Tochka\Promises\Core\BasePromise;
+use Tochka\Promises\Core\Support\ConditionTransitionHandlerInterface;
 use Tochka\Promises\Events\PromiseJobStateChanged;
 use Tochka\Promises\Events\PromiseStateChanged;
-use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
+/**
+ * @api
+ */
 class CheckStateConditions
 {
+    public function __construct(
+        private readonly ConditionTransitionHandlerInterface $conditionTransitionHandler,
+    ) {}
+
     public function handle(StateChangedContract $event): void
     {
         if ($event instanceof NestedEventContract && $event->isNested()) {
@@ -57,7 +64,7 @@ class CheckStateConditions
                         return;
                     }
 
-                    if (ConditionTransitionHandler::checkConditionAndApplyTransition(
+                    if ($this->conditionTransitionHandler->checkConditionAndApplyTransition(
                         $baseJob,
                         $baseJob,
                         $basePromise,
@@ -78,7 +85,7 @@ class CheckStateConditions
                 $promise = Promise::lockForUpdate()->find($basePromise->getPromiseId());
                 $basePromise = $promise->getBasePromise();
 
-                if (ConditionTransitionHandler::checkConditionAndApplyTransition(
+                if ($this->conditionTransitionHandler->checkConditionAndApplyTransition(
                     $basePromise,
                     $basePromise,
                     $basePromise,

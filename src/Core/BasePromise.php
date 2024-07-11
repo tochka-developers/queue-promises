@@ -14,6 +14,9 @@ use Tochka\Promises\Core\Support\Time;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\Promise;
 
+/**
+ * @api
+ */
 class BasePromise implements StatesContract, ConditionTransitionsContract
 {
     use ConditionTransitions;

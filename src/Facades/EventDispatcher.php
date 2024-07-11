@@ -4,16 +4,20 @@ namespace Tochka\Promises\Facades;
 
 use Illuminate\Support\Facades\Facade;
 use Tochka\Promises\Contracts\PromisedEvent;
+use Tochka\Promises\Core\Support\EventDispatcherInterface;
 
 /**
+ * @api
  * @method static void dispatch(PromisedEvent $event)
- * @see \Tochka\Promises\Core\Support\EventDispatcher
+ * @see EventDispatcherInterface
  * @codeCoverageIgnore
+ *
+ * @deprecated Inject contract
  */
 class EventDispatcher extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return self::class;
+        return EventDispatcherInterface::class;
     }
 }

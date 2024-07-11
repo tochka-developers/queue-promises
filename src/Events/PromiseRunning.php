@@ -4,6 +4,9 @@ namespace Tochka\Promises\Events;
 
 use Tochka\Promises\Contracts\PromiseHandler;
 
+/**
+ * @api
+ */
 class PromiseRunning
 {
     private PromiseHandler $promiseHandler;

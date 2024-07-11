@@ -17,6 +17,8 @@ class QueuePromiseMiddleware
      *
      * @return mixed
      * @throws \Exception
+     *
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function handle($queueJob, $next)
     {

@@ -6,8 +6,10 @@ use Illuminate\Support\Facades\Facade;
 use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 use Tochka\Promises\Core\FakePromiseRunner;
+use Tochka\Promises\Core\PromiseRunnerInterface;
 
 /**
+ * @api
  * @method static void run(PromiseHandler $handler, MayPromised[] $jobs)
  * @method static void hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args)
  * @method static void assertRun(string $promiseHandler)
@@ -15,14 +17,14 @@ use Tochka\Promises\Core\FakePromiseRunner;
  * @method static void assertAddedJobsCount(string $promiseHandler, int $expected)
  * @method static void assertAddedJobs(string $promiseHandler, array $expected)
  * @see FakePromiseRunner
- * @see \Tochka\Promises\Core\PromiseRunner
+ * @see PromiseRunnerInterface
  * @codeCoverageIgnore
  */
 class Promises extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return self::class;
+        return PromiseRunnerInterface::class;
     }
 
     /**

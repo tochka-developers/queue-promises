@@ -5,6 +5,9 @@ namespace Tochka\Promises\Conditions;
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 
+/**
+ * @api
+ */
 final class AndConditions implements ConditionContract
 {
     /** @var array<ConditionContract> */

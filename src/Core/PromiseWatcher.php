@@ -4,42 +4,30 @@ namespace Tochka\Promises\Core;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Tochka\Promises\Core\Support\ConditionTransitionHandlerInterface;
 use Tochka\Promises\Core\Support\DaemonWorker;
 use Tochka\Promises\Enums\StateEnum;
-use Tochka\Promises\Facades\ConditionTransitionHandler;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
-class PromiseWatcher
+class PromiseWatcher implements PromiseWatcherInterface
 {
     use DaemonWorker;
 
-    private string $promisesTable;
-    private string $promiseJobsTable;
-    private int $promiseChunkSize;
-    private int $jobsChunkSize;
-
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function __construct(
+        private readonly ConditionTransitionHandlerInterface $conditionTransitionHandler,
         int $sleepTime,
-        string $promisesTable,
-        string $promiseJobsTable,
-        int $promiseChunkSize = 100,
-        int $jobsChunkSize = 500,
+        private readonly string $promisesTable,
+        private readonly string $promiseJobsTable,
+        private readonly int $promiseChunkSize = 100,
     ) {
         $this->sleepTime = $sleepTime;
-        $this->promisesTable = $promisesTable;
-        $this->promiseJobsTable = $promiseJobsTable;
-        $this->promiseChunkSize = $promiseChunkSize;
-        $this->jobsChunkSize = $jobsChunkSize;
-
         $this->lastIteration = Carbon::minValue();
     }
 
-    /**
-     * @param null|callable(): bool $shouldQuitCallback
-     * @param null|callable(): bool $shouldPausedCallback
-     * @return void
-     */
     public function watch(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
         if ($shouldQuitCallback === null) {
@@ -55,11 +43,6 @@ class PromiseWatcher
         }, $shouldQuitCallback, $shouldPausedCallback);
     }
 
-    /**
-     * @param callable(): bool $shouldQuitCallback
-     * @param callable(): bool $shouldPausedCallback
-     * @return void
-     */
     public function watchIteration(callable $shouldQuitCallback, callable $shouldPausedCallback): void
     {
         while (!$shouldQuitCallback() && !$shouldPausedCallback()) {
@@ -84,16 +67,15 @@ class PromiseWatcher
      * @param array<int> $promiseIds
      * @param callable(): bool $shouldQuitCallback
      * @param callable(): bool $shouldPausedCallback
-     * @return bool
      */
     private function handlePromiseChunks(
         array $promiseIds,
         callable $shouldQuitCallback,
         callable $shouldPausedCallback,
-    ): bool {
+    ): void {
         foreach ($promiseIds as $promise) {
             if ($shouldQuitCallback() || $shouldPausedCallback()) {
-                return false;
+                return;
             }
 
             try {
@@ -102,8 +84,6 @@ class PromiseWatcher
                 report($e);
             }
         }
-
-        return true;
     }
 
     public function checkPromiseConditions(int $promiseId): void
@@ -120,7 +100,7 @@ class PromiseWatcher
                 if ($basePromise->getTimeoutAt() <= Carbon::now()) {
                     $basePromise->setState(StateEnum::TIMEOUT());
                 } else {
-                    ConditionTransitionHandler::checkConditionAndApplyTransition(
+                    $this->conditionTransitionHandler->checkConditionAndApplyTransition(
                         $basePromise,
                         $basePromise,
                         $basePromise,
@@ -168,7 +148,11 @@ class PromiseWatcher
                 }
                 $baseJob = $lockedJob->getBaseJob();
 
-                if (ConditionTransitionHandler::checkConditionAndApplyTransition($baseJob, $baseJob, $basePromise)) {
+                if ($this->conditionTransitionHandler->checkConditionAndApplyTransition(
+                    $baseJob,
+                    $baseJob,
+                    $basePromise,
+                )) {
                     PromiseJob::saveBaseJob($baseJob);
                 }
             },

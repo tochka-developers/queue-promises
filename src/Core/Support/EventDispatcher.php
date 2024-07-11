@@ -9,7 +9,7 @@ use Tochka\Promises\Models\PromiseEvent;
 use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Support\WaitEvent;
 
-class EventDispatcher
+class EventDispatcher implements EventDispatcherInterface
 {
     public function dispatch(PromisedEvent $event): void
     {

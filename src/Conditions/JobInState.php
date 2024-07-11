@@ -8,6 +8,9 @@ use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\PromiseJob;
 
+/**
+ * @api
+ */
 final class JobInState implements ConditionContract
 {
     private ?int $job_id;

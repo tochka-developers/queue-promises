@@ -3,16 +3,20 @@
 namespace Tochka\Promises\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Tochka\Promises\Core\PromiseWatcherInterface;
 
 /**
+ * @api
  * @method static void watch(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
- * @see \Tochka\Promises\Core\PromiseWatcher
+ * @see PromiseWatcherInterface
  * @codeCoverageIgnore
+ *
+ * @deprecated Inject contract
  */
 class PromiseWatcher extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return self::class;
+        return PromiseWatcherInterface::class;
     }
 }

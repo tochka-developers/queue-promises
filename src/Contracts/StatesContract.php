@@ -5,7 +5,7 @@ namespace Tochka\Promises\Contracts;
 use Tochka\Promises\Enums\StateEnum;
 
 /**
- * @codeCoverageIgnore
+ * @api
  */
 interface StatesContract
 {

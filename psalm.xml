@@ -2,9 +2,10 @@
 <psalm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns="https://getpsalm.org/schema/config"
        xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
-       errorLevel="6"
-       findUnusedBaselineEntry="false"
-       findUnusedCode="false"
+       errorLevel="5"
+       findUnusedBaselineEntry="true"
+       findUnusedCode="true"
+       findUnusedPsalmSuppress="true"
 >
     <projectFiles>
         <directory name="src" />

@@ -18,6 +18,7 @@ use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseJobFactory;
 
 /**
+ * @api
  * @property int $id
  * @property int $promise_id
  * @property StateEnum $state
@@ -134,6 +135,7 @@ class PromiseJob extends Model
             return $job;
         }
 
+        /** @psalm-suppress UnusedMethodCall */
         $property->setAccessible(true);
         $internalJob = $property->getValue($job);
         if ($internalJob instanceof Job) {

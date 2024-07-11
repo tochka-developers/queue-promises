@@ -7,6 +7,9 @@ use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Events\StateChanged;
 
+/**
+ * @api
+ */
 class LogStateChanged
 {
     public function handle(StateChanged $event): void
@@ -20,7 +23,6 @@ class LogStateChanged
 
         switch (get_class($instance)) {
             case BasePromise::class:
-                /** @var BasePromise $instance */
                 $message = sprintf(
                     'Promise [%s:%s] change state from [%s] to [%s]',
                     get_class($instance->getPromiseHandler()),
@@ -32,7 +34,6 @@ class LogStateChanged
                 $context['promise_id'] = $instance->getPromiseId();
                 break;
             case BaseJob::class:
-                /** @var BaseJob $instance */
                 $message = sprintf(
                     'Promised job [%s:%s] change state from [%s] to [%s]',
                     get_class($instance->getInitialJob()),

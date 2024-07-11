@@ -11,7 +11,7 @@ use Tochka\Promises\Models\Promise;
  * Связь BasePromise с сущностью в БД
  * @codeCoverageIgnore
  */
-class PromiseRegistry
+class PromiseRegistry implements PromiseRegistryInterface
 {
     public function load(int $id): BasePromise
     {
@@ -40,10 +40,6 @@ class PromiseRegistry
         );
     }
 
-    /**
-     * @param callable $callback
-     * @param int      $chunk_size
-     */
     public function loadAllChunk(callable $callback, int $chunk_size = 1000): void
     {
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
@@ -58,11 +54,6 @@ class PromiseRegistry
         );
     }
 
-    /**
-     * @param array $states
-     *
-     * @return LazyCollection<int, BasePromise>
-     */
     public function loadInStatesCursor(array $states): LazyCollection
     {
         return LazyCollection::make(
@@ -76,11 +67,6 @@ class PromiseRegistry
         );
     }
 
-    /**
-     * @param array    $states
-     * @param callable $callback
-     * @param int      $chunk_size
-     */
     public function loadInStatesChunk(array $states, callable $callback, int $chunk_size = 1000): void
     {
         /** @noinspection PhpDynamicAsStaticMethodCallInspection */
@@ -95,19 +81,11 @@ class PromiseRegistry
         );
     }
 
-    /**
-     * @param BasePromise $promise
-     */
     public function save(BasePromise $promise): void
     {
         Promise::saveBasePromise($promise);
     }
 
-    /**
-     * @param int $id
-     *
-     * @throws \Exception
-     */
     public function delete(int $id): void
     {
         Promise::where('id', $id)->delete();

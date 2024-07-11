@@ -7,6 +7,9 @@ use Tochka\Promises\Events\PromiseStateChanging;
 use Tochka\Promises\Events\StateChanging;
 use Tochka\Promises\Models\Promise;
 
+/**
+ * @api
+ */
 class PromiseBeforeCommitObserver
 {
     public function updating(Promise $promise): void

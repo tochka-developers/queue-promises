@@ -5,6 +5,8 @@ namespace Tochka\Promises\Enums;
 use BenSampo\Enum\Enum;
 
 /**
+ * @api
+ *
  * @method static static WAITING()
  * @method static static RUNNING()
  * @method static static SUCCESS()

@@ -7,9 +7,10 @@ use Tochka\Promises\Contracts\MayPromised;
 use Tochka\Promises\Contracts\PromiseHandler;
 
 /**
+ * @api
  * @codeCoverageIgnore
  */
-class FakePromiseRunner
+class FakePromiseRunner implements PromiseRunnerInterface
 {
     /** @var array<string, PromiseHandler> */
     private array $promises = [];

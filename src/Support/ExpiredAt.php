@@ -8,6 +8,9 @@ use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\ConditionTransition;
 use Tochka\Promises\Enums\StateEnum;
 
+/**
+ * @api
+ */
 trait ExpiredAt
 {
     private ?Carbon $trait_expired_at = null;

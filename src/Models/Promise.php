@@ -20,6 +20,7 @@ use Tochka\Promises\Models\Casts\SerializableClassCast;
 use Tochka\Promises\Models\Factories\PromiseFactory;
 
 /**
+ * @api
  * @property int $id
  * @property int|null $parent_job_id
  * @property StateEnum $state

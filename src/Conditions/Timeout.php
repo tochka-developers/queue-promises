@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use Tochka\Promises\Contracts\ConditionContract;
 use Tochka\Promises\Core\BasePromise;
 
+/**
+ * @api
+ */
 final class Timeout implements ConditionContract
 {
     private Carbon $expired_at;

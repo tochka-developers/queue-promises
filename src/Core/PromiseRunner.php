@@ -10,7 +10,7 @@ use Tochka\Promises\Events\PromiseRunning;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
-class PromiseRunner
+class PromiseRunner implements PromiseRunnerInterface
 {
     /** @var array<string, array> */
     private array $traits = [];

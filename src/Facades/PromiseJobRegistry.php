@@ -4,24 +4,30 @@
 
 namespace Tochka\Promises\Facades;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\LazyCollection;
+use Tochka\Promises\Core\BaseJob;
+use Tochka\Promises\Registry\PromiseJobRegistryInterface;
 
 /**
- * @deprecated Use \Tochka\Promises\Models\PromiseJob
- * @method static save(\Tochka\Promises\Core\BaseJob $job)
- * @method static \Tochka\Promises\Core\BaseJob load(int $id)
- * @method static \Tochka\Promises\Core\BaseJob[]|\Illuminate\Support\LazyCollection loadByPromiseIdCursor(int $promise_id)
+ * @api
+ * @method static save(BaseJob $job)
+ * @method static BaseJob load(int $id)
+ * @method static LazyCollection<int, BaseJob> loadByPromiseIdCursor(int $promise_id)
  * @method static void loadByPromiseIdChunk(int $promise_id, callable $callback, int $chunk_size = 1000)
- * @method static \Tochka\Promises\Core\BaseJob[]|\Illuminate\Support\Collection loadByPromiseId(int $promise_id)
+ * @method static Collection<int, BaseJob> loadByPromiseId(int $promise_id)
  * @method static int countByPromiseId(int $promise_id)
  * @method static deleteByPromiseId(int $promise_id)
- * @see \Tochka\Promises\Registry\PromiseJobRegistry
+ * @see PromiseJobRegistryInterface
  * @codeCoverageIgnore
+ *
+ * @deprecated Inject contract
  */
 class PromiseJobRegistry extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return self::class;
+        return PromiseJobRegistryInterface::class;
     }
 }

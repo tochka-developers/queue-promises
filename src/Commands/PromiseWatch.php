@@ -5,7 +5,7 @@
 namespace Tochka\Promises\Commands;
 
 use Illuminate\Console\Command;
-use Tochka\Promises\Facades\PromiseWatcher;
+use Tochka\Promises\Core\PromiseWatcherInterface;
 
 /**
  * @codeCoverageIgnore
@@ -18,10 +18,13 @@ class PromiseWatch extends Command
 
     protected $description = 'Смотритель промисов';
 
-    public function handle(): void
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function handle(PromiseWatcherInterface $promiseWatcher): void
     {
         $this->subscribeSignals();
 
-        PromiseWatcher::watch($this->shouldQuit(...), $this->paused(...));
+        $promiseWatcher->watch($this->shouldQuit(...), $this->paused(...));
     }
 }

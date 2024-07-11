@@ -4,6 +4,9 @@ namespace Tochka\Promises\Events;
 
 use Tochka\Promises\Core\BasePromise;
 
+/**
+ * @api
+ */
 class PromiseHandlerDispatched
 {
     private BasePromise $promise;

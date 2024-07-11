@@ -2,11 +2,15 @@
 
 namespace Tochka\Promises\Listeners;
 
+use Illuminate\Support\Facades\App;
+use Tochka\Promises\Core\Support\BaseJobDispatcherInterface;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
-use Tochka\Promises\Facades\BaseJobDispatcher;
 use Tochka\Promises\Listeners\Support\FilterTransitionsTrait;
 
+/**
+ * @api
+ */
 class DispatchPromiseJob
 {
     use FilterTransitionsTrait;
@@ -16,7 +20,7 @@ class DispatchPromiseJob
             'from' => [
                 StateEnum::WAITING,
             ],
-            'to'   => [
+            'to' => [
                 StateEnum::RUNNING,
             ],
         ],
@@ -24,6 +28,8 @@ class DispatchPromiseJob
 
     public function dispatchJob(PromiseJobStateChanged $event): void
     {
-        BaseJobDispatcher::dispatch($event->getPromiseJob()->getInitialJob());
+        /** @var BaseJobDispatcherInterface $baseJobDispatcher */
+        $baseJobDispatcher = App::make(BaseJobDispatcherInterface::class);
+        $baseJobDispatcher->dispatch($event->getPromiseJob()->getInitialJob());
     }
 }

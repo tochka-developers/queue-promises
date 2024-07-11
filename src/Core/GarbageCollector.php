@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Core\Support\DaemonWorker;
 
-class GarbageCollector
+class GarbageCollector implements GarbageCollectorInterface
 {
     use DaemonWorker;
 
@@ -48,7 +48,6 @@ class GarbageCollector
     /**
      * @param null|callable(): bool $shouldQuitCallback
      * @param null|callable(): bool $shouldPausedCallback
-     * @return void
      */
     public function handle(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
@@ -60,7 +59,6 @@ class GarbageCollector
     /**
      * @param null|callable(): bool $shouldQuitCallback
      * @param null|callable(): bool $shouldPausedCallback
-     * @return void
      */
     public function clean(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
@@ -102,12 +100,11 @@ class GarbageCollector
      * @param array<int, int> $promiseIds
      * @param callable(): bool $shouldQuitCallback
      * @param callable(): bool $shouldPausedCallback
-     * @return bool
      */
-    private function handlePromiseChunks(array $promiseIds, callable $shouldQuitCallback, callable $shouldPausedCallback): bool
+    private function handlePromiseChunks(array $promiseIds, callable $shouldQuitCallback, callable $shouldPausedCallback): void
     {
         if ($shouldQuitCallback() || $shouldPausedCallback()) {
-            return false;
+            return;
         }
 
         DB::table($this->promiseJobsTable)
@@ -119,8 +116,6 @@ class GarbageCollector
             );
 
         DB::table($this->promisesTable)->whereIn('id', $promiseIds)->delete();
-
-        return true;
     }
 
     /**

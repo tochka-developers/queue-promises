@@ -12,6 +12,9 @@ use Tochka\Promises\Core\Support\Time;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Models\PromiseJob;
 
+/**
+ * @api
+ */
 class BaseJob implements StatesContract, ConditionTransitionsContract
 {
     use ConditionTransitions;
@@ -20,7 +23,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     use Time;
 
     private ?int $id = null;
-    private ?int $promise_id;
+    private int $promise_id;
     private MayPromised $initial_job;
     private MayPromised $result_job;
     private ?\Throwable $exception = null;

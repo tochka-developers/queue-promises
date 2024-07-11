@@ -15,6 +15,9 @@ use Tochka\Promises\Events\PromiseHandlerDispatching;
 use Tochka\Promises\Events\PromiseStateChanged;
 use Tochka\Promises\Listeners\Support\FilterTransitionsTrait;
 
+/**
+ * @api
+ */
 class DispatchPromise
 {
     use FilterTransitionsTrait;

@@ -5,7 +5,7 @@
 namespace Tochka\Promises\Commands;
 
 use Illuminate\Console\Command;
-use Tochka\Promises\Facades\GarbageCollector;
+use Tochka\Promises\Core\GarbageCollectorInterface;
 
 /**
  * @codeCoverageIgnore
@@ -17,10 +17,13 @@ class PromiseGc extends Command
     protected $signature = 'promise:gc';
     protected $description = 'Сборщик мусора';
 
-    public function handle(): void
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function handle(GarbageCollectorInterface $garbageCollector): void
     {
         $this->subscribeSignals();
 
-        GarbageCollector::handle($this->shouldQuit(...), $this->paused(...));
+        $garbageCollector->handle($this->shouldQuit(...), $this->paused(...));
     }
 }

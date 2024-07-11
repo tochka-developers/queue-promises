@@ -11,7 +11,7 @@ use Tochka\Promises\Models\PromiseJob;
 /**
  * @codeCoverageIgnore
  */
-class PromiseJobRegistry
+class PromiseJobRegistry implements PromiseJobRegistryInterface
 {
     public function load(int $id): BaseJob
     {
@@ -57,11 +57,6 @@ class PromiseJobRegistry
         );
     }
 
-    /**
-     * @param int      $promise_id
-     * @param callable $callback
-     * @param int      $chunk_size
-     */
     public function loadByPromiseIdChunk(int $promise_id, callable $callback, int $chunk_size = 1000): void
     {
         PromiseJob::byPromise($promise_id)->chunk(
@@ -80,9 +75,6 @@ class PromiseJobRegistry
         return PromiseJob::byPromise($promise_id)->count();
     }
 
-    /**
-     * @param BaseJob $job
-     */
     public function save(BaseJob $job): void
     {
         PromiseJob::saveBaseJob($job);

@@ -4,6 +4,9 @@ namespace Tochka\Promises\Events;
 
 use Tochka\Promises\Contracts\MayPromised;
 
+/**
+ * @api
+ */
 class PromiseJobStarted
 {
     private MayPromised $job;

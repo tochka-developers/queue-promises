@@ -14,6 +14,9 @@ use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Facades\Promises;
 use Tochka\Promises\Models\PromiseJob;
 
+/**
+ * @api
+ */
 trait DefaultPromise
 {
     use PromisedJob;

@@ -28,6 +28,9 @@ class PromiseMakeMigration extends Command
     /** @var array<MigrationContract> */
     private array $migrations;
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function __construct(Filesystem $files, Composer $composer)
     {
         parent::__construct();
@@ -44,9 +47,7 @@ class PromiseMakeMigration extends Command
     }
 
     /**
-     * Execute the console command.
-     *
-     * @throws \Exception
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function handle(): void
     {
@@ -94,7 +95,7 @@ class PromiseMakeMigration extends Command
     protected function createTableMigration(string $migrationName): string
     {
         /** @var MigrationCreator $migrationCreator */
-        $migrationCreator = $this->laravel['migration.creator'];
+        $migrationCreator = $this->laravel->make('migration.creator');
 
         return $migrationCreator->create(
             $migrationName,

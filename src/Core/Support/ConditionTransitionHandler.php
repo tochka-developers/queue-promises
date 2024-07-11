@@ -6,14 +6,8 @@ use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\StatesContract;
 use Tochka\Promises\Core\BasePromise;
 
-class ConditionTransitionHandler
+class ConditionTransitionHandler implements ConditionTransitionHandlerInterface
 {
-    /**
-     * @param StatesContract               $state
-     * @param ConditionTransitionsContract $conditionTransitions
-     *
-     * @return array<ConditionTransition>
-     */
     public function getConditionsForState(
         StatesContract $state,
         ConditionTransitionsContract $conditionTransitions,
@@ -28,12 +22,6 @@ class ConditionTransitionHandler
         );
     }
 
-    /**
-     * @param array<ConditionTransition> $conditionTransitions
-     * @param BasePromise                $promise
-     *
-     * @return ConditionTransition|null
-     */
     public function getTransitionForConditions(array $conditionTransitions, BasePromise $promise): ?ConditionTransition
     {
         foreach ($conditionTransitions as $conditionTransition) {

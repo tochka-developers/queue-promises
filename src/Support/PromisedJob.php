@@ -7,6 +7,9 @@ use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
+/**
+ * @api
+ */
 trait PromisedJob
 {
     use BaseJobId;
