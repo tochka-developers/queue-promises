@@ -20,7 +20,7 @@ class ConditionsCast implements CastsAttributes
         }
 
         return array_map(
-            static function ($conditionTransition) {
+            static function (array $conditionTransition) {
                 return ConditionTransition::fromArray($conditionTransition);
             },
             json_decode($value, true, 512, JSON_THROW_ON_ERROR),

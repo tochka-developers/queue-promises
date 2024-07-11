@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Tochka\Promises\Models\PromiseEvent;
 
 /**
- * @codeCoverageIgnore
  * @template-extends Factory<PromiseEvent>
  */
 class PromiseEventFactory extends Factory
 {
+    /** @var mixed */
     protected $model = PromiseEvent::class;
 
     public function definition(): array

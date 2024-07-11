@@ -18,10 +18,10 @@ trait DaemonWorker
     public function daemon(callable $callback, ?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void
     {
         if ($shouldQuitCallback === null) {
-            $shouldQuitCallback = fn() => false;
+            $shouldQuitCallback = fn(): bool => false;
         }
         if ($shouldPausedCallback === null) {
-            $shouldPausedCallback = fn() => false;
+            $shouldPausedCallback = fn(): bool => false;
         }
 
         while (true) {

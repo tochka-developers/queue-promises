@@ -9,7 +9,6 @@ use Tochka\Promises\Core\PromiseWatcherInterface;
  * @api
  * @method static void watch(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
  * @see PromiseWatcherInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

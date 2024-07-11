@@ -5,6 +5,9 @@ namespace Tochka\Promises\Commands;
 use Illuminate\Console\Command;
 use Tochka\Promises\Core\GarbageCollectorInterface;
 
+/**
+ * @psalm-suppress PropertyNotSetInConstructor
+ */
 class PromiseClean extends Command
 {
     use DaemonCommandSignals;

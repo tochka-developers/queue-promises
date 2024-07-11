@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpMissingFieldTypeInspection */
-
 namespace Tochka\Promises\Commands;
 
 use Illuminate\Console\Command;
@@ -17,10 +15,12 @@ use Tochka\Promises\Commands\Migrations\Promises;
 use Tochka\Promises\Commands\Migrations\UpdateV1;
 use Tochka\Promises\Commands\Migrations\UpdateV2;
 
+/**
+ * @psalm-suppress PropertyNotSetInConstructor
+ */
 class PromiseMakeMigration extends Command
 {
     protected $signature = 'promise:make-migration {name?}';
-
     protected $description = 'Create a migration for promises';
 
     private Filesystem $files;
@@ -51,7 +51,7 @@ class PromiseMakeMigration extends Command
      */
     public function handle(): void
     {
-        /** @var string $migrationName */
+        /** @var string|null $migrationName */
         $migrationName = $this->argument('name');
 
         if ($migrationName === null) {

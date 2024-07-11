@@ -1,14 +1,12 @@
 <?php
 
-/** @noinspection PhpMissingFieldTypeInspection */
-
 namespace Tochka\Promises\Commands;
 
 use Illuminate\Console\Command;
 use Tochka\Promises\Core\GarbageCollectorInterface;
 
 /**
- * @codeCoverageIgnore
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class PromiseGc extends Command
 {

@@ -29,6 +29,8 @@ use Tochka\Promises\Models\Factories\PromiseJobFactory;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Promise|null $promise
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class PromiseJob extends Model
 {
@@ -68,10 +70,6 @@ class PromiseJob extends Model
         return Config::get('promises.database.table_jobs', 'promise_jobs');
     }
 
-    /**
-     * @codeCoverageIgnore
-     * @return BelongsTo
-     */
     public function promise(): BelongsTo
     {
         return $this->belongsTo(Promise::class, 'promise_id', 'id');

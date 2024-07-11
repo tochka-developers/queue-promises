@@ -10,7 +10,6 @@ use Tochka\Promises\Core\GarbageCollectorInterface;
  * @method static void handle(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
  * @method static void clean(callable|null $shouldQuitCallback = null, callable|null $shouldPausedCallback = null)
  * @see GarbageCollectorInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

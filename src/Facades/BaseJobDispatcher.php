@@ -12,7 +12,6 @@ use Tochka\Promises\Core\Support\BaseJobDispatcherInterface;
  * @method static void addDispatcher(DispatcherContract $dispatcher)
  * @method static void dispatch(MayPromised $job)
  * @see BaseJobDispatcherInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

@@ -19,6 +19,7 @@ class QueuePromiseMiddleware
      * @throws \Exception
      *
      * @psalm-suppress PossiblyUnusedMethod
+     * @psalm-suppress MissingParamType
      */
     public function handle($queueJob, $next)
     {

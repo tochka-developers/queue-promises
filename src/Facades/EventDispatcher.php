@@ -10,7 +10,6 @@ use Tochka\Promises\Core\Support\EventDispatcherInterface;
  * @api
  * @method static void dispatch(PromisedEvent $event)
  * @see EventDispatcherInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

@@ -77,14 +77,12 @@ trait DefaultPromise
     }
 
     /**
-     * @return Collection<BaseJob>
+     * @return Collection<int, BaseJob>
      */
     public function getResults(): Collection
     {
-        return PromiseJob::byPromise($this->getPromiseId())->get()->map(
-            function (PromiseJob $job) {
-                return $job->getBaseJob();
-            },
-        );
+        return PromiseJob::byPromise($this->getPromiseId())
+            ->get()
+            ->map(fn(PromiseJob $job) => $job->getBaseJob());
     }
 }

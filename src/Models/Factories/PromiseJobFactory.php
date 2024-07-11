@@ -8,11 +8,11 @@ use Tochka\Promises\Models\PromiseJob;
 use Tochka\Promises\Tests\TestHelpers\TestJob;
 
 /**
- * @codeCoverageIgnore
  * @template-extends Factory<PromiseJob>
  */
 class PromiseJobFactory extends Factory
 {
+    /** @var mixed */
     protected $model = PromiseJob::class;
 
     public function definition(): array

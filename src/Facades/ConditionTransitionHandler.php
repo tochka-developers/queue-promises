@@ -15,7 +15,6 @@ use Tochka\Promises\Core\Support\ConditionTransitionHandlerInterface;
  * @method static ConditionTransition|null getTransitionForConditions(ConditionTransition[] $conditionTransitions, BasePromise $promise)
  * @method static bool checkConditionAndApplyTransition(StatesContract $statesInstance,ConditionTransitionsContract $conditionTransitionsInstance, BasePromise $basePromise)
  * @see ConditionTransitionHandlerInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

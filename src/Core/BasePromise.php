@@ -39,6 +39,8 @@ class BasePromise implements StatesContract, ConditionTransitionsContract
         $this->model = new Promise();
         $this->watchAt = Carbon::now()->addSeconds(watcher_watch_timeout());
         $this->timeoutAt = Carbon::now()->addSeconds(Config::get('promises.global_promise_timeout', 432000));
+        $this->created_at = Carbon::now();
+        $this->updated_at = Carbon::now();
     }
 
     public function getPromiseHandler(): PromiseHandler

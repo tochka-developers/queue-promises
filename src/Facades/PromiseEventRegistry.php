@@ -13,7 +13,6 @@ use Tochka\Promises\Support\WaitEvent;
  * @method static Collection<int, WaitEvent> loadByEvent(string $event_name, string $event_unique_id)
  * @method static delete(int $id)
  * @see PromiseEventRegistryInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

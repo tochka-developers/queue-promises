@@ -9,11 +9,11 @@ use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Tests\TestHelpers\TestPromise;
 
 /**
- * @codeCoverageIgnore
  * @template-extends Factory<Promise>
  */
 class PromiseFactory extends Factory
 {
+    /** @var mixed */
     protected $model = Promise::class;
 
     public function definition(): array

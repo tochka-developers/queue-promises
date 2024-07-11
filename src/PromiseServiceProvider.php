@@ -56,7 +56,6 @@ use Tochka\Promises\Registry\PromiseRegistry;
 use Tochka\Promises\Registry\PromiseRegistryInterface;
 
 /**
- * @codeCoverageIgnore
  * @api
  */
 class PromiseServiceProvider extends ServiceProvider
@@ -83,6 +82,7 @@ class PromiseServiceProvider extends ServiceProvider
         Bus::pipeThrough([QueuePromiseMiddleware::class]);
 
         Queue::createPayloadUsing(
+            /** @psalm-suppress MissingClosureParamType */
             static function ($connection, $queue, $payload) {
                 $job = $payload['data']['command'] ?? $payload['job'] ?? null;
 

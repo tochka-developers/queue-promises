@@ -8,9 +8,6 @@ use Illuminate\Support\LazyCollection;
 use Tochka\Promises\Core\BaseJob;
 use Tochka\Promises\Models\PromiseJob;
 
-/**
- * @codeCoverageIgnore
- */
 class PromiseJobRegistry implements PromiseJobRegistryInterface
 {
     public function load(int $id): BaseJob
@@ -60,8 +57,8 @@ class PromiseJobRegistry implements PromiseJobRegistryInterface
     {
         PromiseJob::byPromise($promise_id)->chunk(
             $chunk_size,
-            function ($jobs) use ($callback) {
-                /** @var PromiseJob $job */
+            function (Collection $jobs) use ($callback) {
+                /** @var Collection<int, PromiseJob> $jobs */
                 foreach ($jobs as $job) {
                     $callback($job->getBaseJob());
                 }

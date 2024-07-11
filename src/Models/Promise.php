@@ -32,6 +32,8 @@ use Tochka\Promises\Models\Factories\PromiseFactory;
  * @property Carbon $timeout_at
  * @property Collection<int, PromiseJob> $jobs
  * @property Collection<int, PromiseEvent> $events
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class Promise extends Model
 {
@@ -71,7 +73,6 @@ class Promise extends Model
     }
 
     /**
-     * @codeCoverageIgnore
      * @return HasMany
      */
     public function jobs(): HasMany
@@ -80,7 +81,6 @@ class Promise extends Model
     }
 
     /**
-     * @codeCoverageIgnore
      * @return HasMany
      */
     public function events(): HasMany

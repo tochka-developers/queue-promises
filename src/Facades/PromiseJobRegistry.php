@@ -20,7 +20,6 @@ use Tochka\Promises\Registry\PromiseJobRegistryInterface;
  * @method static int countByPromiseId(int $promise_id)
  * @method static deleteByPromiseId(int $promise_id)
  * @see PromiseJobRegistryInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

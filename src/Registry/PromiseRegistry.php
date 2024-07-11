@@ -3,21 +3,20 @@
 namespace Tochka\Promises\Registry;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Models\Promise;
 
 /**
  * Связь BasePromise с сущностью в БД
- * @codeCoverageIgnore
  */
 class PromiseRegistry implements PromiseRegistryInterface
 {
     public function load(int $id): BasePromise
     {
-        /** @var Promise $promiseModel */
         $promiseModel = Promise::find($id);
-        if (!$promiseModel) {
+        if ($promiseModel === null) {
             throw (new ModelNotFoundException())->setModel(Promise::class, $id);
         }
 
@@ -43,8 +42,8 @@ class PromiseRegistry implements PromiseRegistryInterface
     {
         Promise::query()->chunk(
             $chunk_size,
-            function ($promises) use ($callback) {
-                /** @var Promise $promise */
+            function (Collection $promises) use ($callback) {
+                /** @var Collection<int, Promise> $promises */
                 foreach ($promises as $promise) {
                     $callback($promise->getBasePromise());
                 }
@@ -56,8 +55,7 @@ class PromiseRegistry implements PromiseRegistryInterface
     {
         return LazyCollection::make(
             function () use ($states) {
-                /** @var Promise $promise */
-                foreach (Promise::query()->whereIn('state', $states)->cursor() as $promise) {
+                foreach (Promise::whereIn('state', $states)->cursor() as $promise) {
                     yield $promise->getBasePromise();
                 }
             },
@@ -66,10 +64,10 @@ class PromiseRegistry implements PromiseRegistryInterface
 
     public function loadInStatesChunk(array $states, callable $callback, int $chunk_size = 1000): void
     {
-        Promise::query()->whereIn('state', $states)->chunk(
+        Promise::whereIn('state', $states)->chunk(
             $chunk_size,
-            function ($promises) use ($callback) {
-                /** @var Promise $promise */
+            function (Collection $promises) use ($callback) {
+                /** @var Collection<int, Promise> $promises */
                 foreach ($promises as $promise) {
                     $callback($promise->getBasePromise());
                 }

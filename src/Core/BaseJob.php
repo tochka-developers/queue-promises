@@ -2,6 +2,7 @@
 
 namespace Tochka\Promises\Core;
 
+use Carbon\Carbon;
 use Illuminate\Queue\SerializesModels;
 use Tochka\Promises\Contracts\ConditionTransitionsContract;
 use Tochka\Promises\Contracts\MayPromised;
@@ -36,6 +37,8 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         $this->result_job = $result_job ?: $initial_job;
         $this->state = StateEnum::WAITING();
         $this->model = new PromiseJob();
+        $this->created_at = Carbon::now();
+        $this->updated_at = Carbon::now();
     }
 
     public function setInitial(MayPromised $job): void
@@ -43,7 +46,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
         $this->initial_job = $job;
     }
 
-    public function setResult($job): void
+    public function setResult(MayPromised $job): void
     {
         $this->result_job = $job;
     }

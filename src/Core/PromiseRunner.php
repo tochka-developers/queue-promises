@@ -49,7 +49,7 @@ class PromiseRunner implements PromiseRunnerInterface
         Event::dispatch(new PromiseRan($basePromise));
     }
 
-    public function hookTraitsMethod(PromiseHandler $handler, string $methodName, ...$args): void
+    public function hookTraitsMethod(PromiseHandler $handler, string $methodName, mixed ...$args): void
     {
         $loadedTraits = $this->getHandlerTraits($handler);
 

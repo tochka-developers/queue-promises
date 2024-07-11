@@ -8,14 +8,13 @@ use Illuminate\Console\Command;
 use Tochka\Promises\Core\PromiseWatcherInterface;
 
 /**
- * @codeCoverageIgnore
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class PromiseWatch extends Command
 {
     use DaemonCommandSignals;
 
     protected $signature = 'promise:watch';
-
     protected $description = 'Смотритель промисов';
 
     /**

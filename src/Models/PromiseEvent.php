@@ -24,6 +24,8 @@ use Tochka\Promises\Support\WaitEvent;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property PromiseJob|null $job
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class PromiseEvent extends Model
 {
@@ -50,7 +52,6 @@ class PromiseEvent extends Model
     }
 
     /**
-     * @codeCoverageIgnore
      * @return BelongsTo
      */
     public function job(): BelongsTo

@@ -8,7 +8,6 @@ use Tochka\Promises\Contracts\PromiseHandler;
 
 /**
  * @api
- * @codeCoverageIgnore
  */
 class FakePromiseRunner implements PromiseRunnerInterface
 {

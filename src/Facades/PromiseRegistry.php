@@ -17,7 +17,6 @@ use Tochka\Promises\Registry\PromiseRegistryInterface;
  * @method static void loadInStatesChunk(array $states, callable $callback, int $chunk_size = 1000)
  * @method static delete(int $id)
  * @see PromiseRegistryInterface
- * @codeCoverageIgnore
  *
  * @deprecated Inject contract
  */

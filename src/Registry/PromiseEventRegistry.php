@@ -8,7 +8,6 @@ use Tochka\Promises\Support\WaitEvent;
 
 /**
  * Связь WaitEvent с сущностью в БД
- * @codeCoverageIgnore
  */
 class PromiseEventRegistry implements PromiseEventRegistryInterface
 {
