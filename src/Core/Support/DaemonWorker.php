@@ -44,9 +44,9 @@ trait DaemonWorker
     private function sleep(int|float $seconds): void
     {
         if ($seconds < 1) {
-            usleep($seconds * 1000000);
+            usleep((int) ($seconds * 1000000));
         } else {
-            sleep($seconds);
+            sleep((int) $seconds);
         }
     }
 

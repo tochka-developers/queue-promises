@@ -23,6 +23,7 @@ trait FilterTransitionsTrait
 
     public function getTransitions(): array
     {
+        /** @psalm-suppress TypeDoesNotContainType */
         if (!isset($this->transitions) || !is_array($this->transitions)) {
             return [];
         }

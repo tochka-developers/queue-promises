@@ -32,8 +32,7 @@ class PromiseRegistry implements PromiseRegistryInterface
         return LazyCollection::make(
             function () {
                 /** @var Promise $promise */
-                /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-                foreach (Promise::cursor() as $promise) {
+                foreach (Promise::query()->cursor() as $promise) {
                     yield $promise->getBasePromise();
                 }
             },
@@ -42,8 +41,7 @@ class PromiseRegistry implements PromiseRegistryInterface
 
     public function loadAllChunk(callable $callback, int $chunk_size = 1000): void
     {
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        Promise::chunk(
+        Promise::query()->chunk(
             $chunk_size,
             function ($promises) use ($callback) {
                 /** @var Promise $promise */
@@ -59,8 +57,7 @@ class PromiseRegistry implements PromiseRegistryInterface
         return LazyCollection::make(
             function () use ($states) {
                 /** @var Promise $promise */
-                /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-                foreach (Promise::whereIn('state', $states)->cursor() as $promise) {
+                foreach (Promise::query()->whereIn('state', $states)->cursor() as $promise) {
                     yield $promise->getBasePromise();
                 }
             },
@@ -69,8 +66,7 @@ class PromiseRegistry implements PromiseRegistryInterface
 
     public function loadInStatesChunk(array $states, callable $callback, int $chunk_size = 1000): void
     {
-        /** @noinspection PhpDynamicAsStaticMethodCallInspection */
-        Promise::whereIn('state', $states)->chunk(
+        Promise::query()->whereIn('state', $states)->chunk(
             $chunk_size,
             function ($promises) use ($callback) {
                 /** @var Promise $promise */

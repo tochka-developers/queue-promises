@@ -26,17 +26,11 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     use Queueable;
     use PromisedJob;
 
-    private int $promise_id;
-    private PromiseHandler $promise_handler;
-    private StateEnum $state;
-    /** @var array<string, array<MayPromised> */
-    private array $job_results = [];
-
-    public function __construct(int $promise_id, PromiseHandler $promise_handler, StateEnum $state)
-    {
-        $this->promise_id = $promise_id;
-        $this->promise_handler = $promise_handler;
-        $this->state = $state;
+    public function __construct(
+        private readonly int $promise_id,
+        private readonly PromiseHandler $promise_handler,
+        private readonly StateEnum $state,
+    ) {
         $this->base_job_id = $this->promise_handler->getBaseJobId();
     }
 
@@ -47,45 +41,42 @@ class PromiseQueueJob implements ShouldQueue, MayPromised, JobStateContract, Job
     public function handle(): void
     {
         $this->promise_handler->setPromiseId($this->promise_id);
-        $this->job_results = $this->getResults();
 
-        $result = $this->dispatchMethodWithParams('before');
+        $results = $this->getResults();
+        $handleResult = $this->dispatchMethodWithParams('before', $results);
 
-        if ($result !== false) {
+        if ($handleResult !== false) {
             switch ($this->state->value) {
                 case StateEnum::SUCCESS:
-                    $this->dispatchMethodWithParams('success');
+                    $this->dispatchMethodWithParams('success', $results);
                     break;
                 case StateEnum::FAILED:
-                    $this->dispatchMethodWithParams('failed');
+                    $this->dispatchMethodWithParams('failed', $results);
                     break;
                 case StateEnum::TIMEOUT:
-                    $this->dispatchMethodWithParams('timeout');
+                    $this->dispatchMethodWithParams('timeout', $results);
                     break;
                 default:
                     break;
             }
 
-            $this->dispatchMethodWithParams('handle');
+            $this->dispatchMethodWithParams('handle', $results);
         }
 
-        $this->dispatchMethodWithParams('after');
+        $this->dispatchMethodWithParams('after', $results);
     }
 
     /**
-     * @param string $method
+     * @param array<class-string<MayPromised|PromisedEvent>, non-empty-list<MayPromised|PromisedEvent>> $results
      *
-     * @return mixed|bool
      * @throws \ReflectionException
      * @throws BindingResolutionException
      */
-    protected function dispatchMethodWithParams(string $method)
+    protected function dispatchMethodWithParams(string $method, array $results): mixed
     {
         if (!method_exists($this->promise_handler, $method)) {
             return true;
         }
-
-        $results = $this->job_results;
 
         $params = [];
         // подготавливаем аргументы для вызова метода
