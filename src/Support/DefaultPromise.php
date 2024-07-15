@@ -32,9 +32,11 @@ trait DefaultPromise
 
     public function run(): void
     {
-        /** @var PromiseHandler|self $this */
-        Promises::run($this, $this->jobs);
+        $jobs = $this->jobs;
         $this->jobs = [];
+
+        /** @var PromiseHandler|self $this */
+        Promises::run($this, $jobs);
     }
 
     public function promiseConditionsDefaultPromise(BasePromise $promise): void

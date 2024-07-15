@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Tochka\Promises\Core\Support\ConditionTransitionHandlerInterface;
 use Tochka\Promises\Core\Support\DaemonWorker;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Exceptions\IncorrectResolvingClass;
 use Tochka\Promises\Models\Promise;
 use Tochka\Promises\Models\PromiseJob;
 
@@ -96,28 +97,41 @@ class PromiseWatcher implements PromiseWatcherInterface
                     return null;
                 }
 
-                $basePromise = $lockedPromise->getBasePromise();
-                if ($basePromise->getTimeoutAt() <= Carbon::now()) {
-                    $basePromise->setState(StateEnum::TIMEOUT());
-                } else {
-                    $this->conditionTransitionHandler->checkConditionAndApplyTransition(
-                        $basePromise,
-                        $basePromise,
-                        $basePromise,
-                    );
-                }
+                try {
+                    $basePromise = $lockedPromise->getBasePromise();
+                    if ($basePromise->getTimeoutAt() <= Carbon::now()) {
+                        $basePromise->setState(StateEnum::TIMEOUT());
+                    } else {
+                        $this->conditionTransitionHandler->checkConditionAndApplyTransition(
+                            $basePromise,
+                            $basePromise,
+                            $basePromise,
+                        );
+                    }
 
-                $nextWatch = Carbon::now()->addSeconds(watcher_watch_timeout());
-                if ($nextWatch > $basePromise->getTimeoutAt()) {
-                    $nextWatch = $basePromise->getTimeoutAt();
-                }
-                if ($nextWatch > Carbon::now()) {
-                    $basePromise->setWatchAt($nextWatch);
-                }
+                    $nextWatch = Carbon::now()->addSeconds(watcher_watch_timeout());
+                    if ($nextWatch > $basePromise->getTimeoutAt()) {
+                        $nextWatch = $basePromise->getTimeoutAt();
+                    }
+                    if ($nextWatch > Carbon::now()) {
+                        $basePromise->setWatchAt($nextWatch);
+                    }
 
-                Promise::saveBasePromise($basePromise);
+                    Promise::saveBasePromise($basePromise);
 
-                return $basePromise;
+                    return $basePromise;
+                } catch (IncorrectResolvingClass $e) {
+                    $lockedPromise->state = StateEnum::INCORRECT();
+                    $lockedPromise->save();
+
+                    DB::table($this->promiseJobsTable)
+                        ->where('promise_id', $promiseId)
+                        ->update(['state' => StateEnum::CANCELED]);
+
+                    report($e);
+
+                    return null;
+                }
             },
             3,
         );
@@ -132,8 +146,19 @@ class PromiseWatcher implements PromiseWatcherInterface
             ->pluck('id')
             ->all();
 
+        $hasIncorrectResolveError = false;
         foreach ($jobsIds as $jobId) {
-            $this->checkJobConditions($jobId, $basePromise);
+            try {
+                $this->checkJobConditions($jobId, $basePromise);
+            } catch (IncorrectResolvingClass) {
+                $hasIncorrectResolveError = true;
+            }
+        }
+
+        if ($hasIncorrectResolveError) {
+            DB::table($this->promisesTable)
+                ->where('id', $promiseId)
+                ->update(['state' => StateEnum::INCORRECT]);
         }
     }
 
@@ -146,14 +171,22 @@ class PromiseWatcher implements PromiseWatcherInterface
                 if ($lockedJob === null) {
                     return;
                 }
-                $baseJob = $lockedJob->getBaseJob();
 
-                if ($this->conditionTransitionHandler->checkConditionAndApplyTransition(
-                    $baseJob,
-                    $baseJob,
-                    $basePromise,
-                )) {
-                    PromiseJob::saveBaseJob($baseJob);
+                try {
+                    $baseJob = $lockedJob->getBaseJob();
+
+                    if ($this->conditionTransitionHandler->checkConditionAndApplyTransition(
+                        $baseJob,
+                        $baseJob,
+                        $basePromise,
+                    )) {
+                        PromiseJob::saveBaseJob($baseJob);
+                    }
+                } catch (IncorrectResolvingClass $e) {
+                    $lockedJob->state = StateEnum::INCORRECT();
+                    $lockedJob->save();
+
+                    throw $e;
                 }
             },
             3,

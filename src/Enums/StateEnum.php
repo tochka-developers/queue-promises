@@ -13,6 +13,7 @@ use BenSampo\Enum\Enum;
  * @method static static FAILED()
  * @method static static TIMEOUT()
  * @method static static CANCELED()
+ * @method static static INCORRECT()
  *
  * @template-extends Enum<string>
  */
@@ -24,6 +25,7 @@ final class StateEnum extends Enum
     public const FAILED = 'failed';
     public const TIMEOUT = 'timeout';
     public const CANCELED = 'canceled';
+    public const INCORRECT = 'incorrect';
 
     public static function successStates(): array
     {
