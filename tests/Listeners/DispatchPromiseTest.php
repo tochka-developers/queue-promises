@@ -2,10 +2,13 @@
 
 namespace Tochka\Promises\Tests\Listeners;
 
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Core\BasePromise;
 use Tochka\Promises\Core\Support\PromiseQueueJob;
 use Tochka\Promises\Enums\StateEnum;
+use Tochka\Promises\Events\PromiseHandlerDispatched;
+use Tochka\Promises\Events\PromiseHandlerDispatching;
 use Tochka\Promises\Events\PromiseStateChanged;
 use Tochka\Promises\Listeners\DispatchPromise;
 use Tochka\Promises\Tests\TestCase;
@@ -21,7 +24,8 @@ class DispatchPromiseTest extends TestCase
      */
     public function testDispatchPromise(): void
     {
-        Queue::fake();
+        Event::fake();
+
         $promiseHandler = new TestPromise();
         $basePromise = new BasePromise($promiseHandler);
         $basePromise->setPromiseId(1);
@@ -29,17 +33,20 @@ class DispatchPromiseTest extends TestCase
 
         $event = new PromiseStateChanged($basePromise, StateEnum::RUNNING(), StateEnum::SUCCESS());
 
-        $listener = new DispatchPromise();
-        $listener->dispatchPromise($event);
-
-        Queue::assertPushed(
-            function (PromiseQueueJob $job) use ($basePromise) {
+        $dispatcher = \Mockery::mock(Dispatcher::class);
+        $dispatcher->shouldReceive('dispatch')
+            ->once()
+            ->withArgs(function (PromiseQueueJob $job) use ($basePromise) {
                 self::assertEquals($basePromise->getPromiseId(), $job->getPromiseId());
                 self::assertEquals($basePromise->getState(), $job->getState());
                 self::assertEquals($basePromise->getPromiseHandler(), $job->getPromiseHandler());
-
                 return true;
-            },
-        );
+            });
+
+        $listener = new DispatchPromise($dispatcher);
+        $listener->dispatchPromise($event);
+
+        Event::assertDispatched(PromiseHandlerDispatching::class);
+        Event::assertDispatched(PromiseHandlerDispatched::class);
     }
 }

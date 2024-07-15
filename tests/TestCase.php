@@ -7,11 +7,11 @@ use Tochka\Promises\PromiseServiceProvider;
 
 class TestCase extends BaseTestCase
 {
-    protected function setUp(): void
+    protected function defineDatabaseMigrations(): void
     {
-        parent::setUp();
-
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        $this->loadMigrationsFrom(
+            __DIR__ . '/database/migrations',
+        );
     }
 
     protected function getPackageProviders($app): array

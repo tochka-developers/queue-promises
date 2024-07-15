@@ -2,9 +2,7 @@
 
 namespace Tochka\Promises\Listeners;
 
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Bus\Dispatcher;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Event;
 use Tochka\Promises\Contracts\CustomConnection;
 use Tochka\Promises\Contracts\CustomQueue;
@@ -28,7 +26,7 @@ class DispatchPromise
                 StateEnum::WAITING,
                 StateEnum::RUNNING,
             ],
-            'to'   => [
+            'to' => [
                 StateEnum::SUCCESS,
                 StateEnum::FAILED,
                 StateEnum::TIMEOUT,
@@ -36,9 +34,10 @@ class DispatchPromise
         ],
     ];
 
-    /**
-     * @throws BindingResolutionException
-     */
+    public function __construct(
+        private readonly Dispatcher $dispatcher,
+    ) {}
+
     public function dispatchPromise(PromiseStateChanged $event): void
     {
         Event::dispatch(new PromiseHandlerDispatching($event->getPromise()));
@@ -59,8 +58,7 @@ class DispatchPromise
             $promiseQueueJob->onQueue($promiseHandler->getQueue());
         }
 
-        $dispatcher = Container::getInstance()->make(Dispatcher::class);
-        $dispatcher->dispatch($promiseQueueJob);
+        $this->dispatcher->dispatch($promiseQueueJob);
 
         Event::dispatch(new PromiseHandlerDispatched($event->getPromise()));
     }

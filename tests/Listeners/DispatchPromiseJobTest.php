@@ -3,9 +3,9 @@
 namespace Tochka\Promises\Tests\Listeners;
 
 use Tochka\Promises\Core\BaseJob;
+use Tochka\Promises\Core\Support\BaseJobDispatcherInterface;
 use Tochka\Promises\Enums\StateEnum;
 use Tochka\Promises\Events\PromiseJobStateChanged;
-use Tochka\Promises\Facades\BaseJobDispatcher;
 use Tochka\Promises\Listeners\DispatchPromiseJob;
 use Tochka\Promises\Tests\TestCase;
 use Tochka\Promises\Tests\TestHelpers\TestJob;
@@ -23,12 +23,13 @@ class DispatchPromiseJobTest extends TestCase
         $handleJob = new TestJob('initial');
         $baseJob = new BaseJob(1, $handleJob);
         $event = new PromiseJobStateChanged($baseJob, StateEnum::WAITING(), StateEnum::RUNNING());
-        $listener = new DispatchPromiseJob();
 
-        BaseJobDispatcher::shouldReceive('dispatch')
+        $baseJobDispatcher = \Mockery::mock(BaseJobDispatcherInterface::class);
+        $baseJobDispatcher->shouldReceive('dispatch')
             ->once()
             ->with($handleJob);
 
+        $listener = new DispatchPromiseJob($baseJobDispatcher);
         $listener->dispatchJob($event);
     }
 }

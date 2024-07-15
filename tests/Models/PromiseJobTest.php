@@ -73,13 +73,6 @@ class PromiseJobTest extends TestCase
      * @dataProvider saveProvider
      * @covers       \Tochka\Promises\Models\PromiseJob::saveBaseJob
      * @covers       \Tochka\Promises\Models\PromiseJob::getBaseJob
-     *
-     * @param int                                         $promiseId
-     * @param \Tochka\Promises\Enums\StateEnum|null       $state
-     * @param array                                       $conditions
-     * @param \Tochka\Promises\Contracts\MayPromised      $initialJob
-     * @param \Tochka\Promises\Contracts\MayPromised|null $resultJob
-     * @param \Throwable|null                             $exception
      */
     public function testSaveBaseJob(
         int $promiseId,
@@ -140,7 +133,6 @@ class PromiseJobTest extends TestCase
         PromiseJob::factory()->create(['id' => 3, 'promise_id' => 123]);
         PromiseJob::factory()->create(['id' => 4, 'promise_id' => 124]);
 
-        /** @var PromiseJob $promiseJob */
         $promiseJob = PromiseJob::byPromise(122)->first();
 
         self::assertEquals(2, $promiseJob->id);
@@ -151,10 +143,6 @@ class PromiseJobTest extends TestCase
      */
     public function testBoot(): void
     {
-        /** @var PromiseJob $job */
-        $job = PromiseJob::factory()->create(['state' => StateEnum::WAITING()]);
-        $job->state = StateEnum::SUCCESS();
-
         Event::fake(
             [
                 StateChanging::class,
@@ -164,6 +152,10 @@ class PromiseJobTest extends TestCase
             ],
         );
 
+        $job = PromiseJob::factory()->create(['state' => StateEnum::WAITING()]);
+        $job->setChangedState(StateEnum::WAITING());
+
+        $job->state = StateEnum::SUCCESS();
         $job->save();
 
         Event::assertDispatched(

@@ -114,10 +114,6 @@ class PromiseTest extends TestCase
      */
     public function testBoot(): void
     {
-        /** @var Promise $promise */
-        $promise = Promise::factory()->create(['state' => StateEnum::WAITING()]);
-        $promise->state = StateEnum::SUCCESS();
-
         Event::fake(
             [
                 StateChanging::class,
@@ -127,6 +123,10 @@ class PromiseTest extends TestCase
             ],
         );
 
+        $promise = Promise::factory()->create(['state' => StateEnum::WAITING()]);
+        $promise->setChangedState(StateEnum::WAITING());
+
+        $promise->state = StateEnum::SUCCESS();
         $promise->save();
 
         Event::assertDispatched(
