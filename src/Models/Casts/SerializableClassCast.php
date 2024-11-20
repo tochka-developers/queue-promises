@@ -4,6 +4,7 @@ namespace Tochka\Promises\Models\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Tochka\Promises\Exceptions\IncorrectResolvingClass;
+use Tochka\Promises\Exceptions\NonSerializableException;
 
 /**
  * @template-implements CastsAttributes<object, string>
@@ -35,11 +36,21 @@ class SerializableClassCast implements CastsAttributes
 
     /**
      * @throws \JsonException
+     * @throws \Throwable
      */
     public function set($model, string $key, $value, array $attributes): array
     {
+        try {
+            $serializedValue = serialize($value);
+        } catch (\Throwable $e) {
+            if ($value instanceof \Throwable) {
+                $serializedValue = serialize(new NonSerializableException($value));
+            } else {
+                throw $e;
+            }
+        }
         return [
-            $key => $value === null ? null : json_encode(serialize($value), JSON_THROW_ON_ERROR),
+            $key => $value === null ? null : json_encode($serializedValue, JSON_THROW_ON_ERROR),
         ];
     }
 }
