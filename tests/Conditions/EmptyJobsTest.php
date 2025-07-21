@@ -32,7 +32,7 @@ class EmptyJobsTest extends TestCase
             ->create(['id' => 2]);
     }
 
-    public function conditionProvider(): array
+    public static function conditionProvider(): array
     {
         return [
             'False' => [1, false],

@@ -32,7 +32,7 @@ class PromiseInStateTest extends TestCase
         $this->basePromise = $promise->getBasePromise();
     }
 
-    public function conditionProvider(): array
+    public static function conditionProvider(): array
     {
         return [
             'OneOf True'  => [[StateEnum::TIMEOUT(), StateEnum::FAILED()], true],

@@ -36,7 +36,7 @@ class OneJobInStateTest extends TestCase
             ->create(['id' => 2]);
     }
 
-    public function conditionProvider(): array
+    public static function conditionProvider(): array
     {
         return [
             'OneOf True'  => [[StateEnum::TIMEOUT(), StateEnum::FAILED()], 1, true],

@@ -14,7 +14,7 @@ use Tochka\Promises\Tests\TestCase;
  */
 class ConditionsCastTest extends TestCase
 {
-    public function getSetProvider(): array
+    public static function getSetProvider(): array
     {
         return [
             'Full'  => [

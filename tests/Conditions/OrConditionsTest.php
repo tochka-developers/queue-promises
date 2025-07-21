@@ -13,7 +13,7 @@ use Tochka\Promises\Tests\TestHelpers\TestPromise;
  */
 class OrConditionsTest extends TestCase
 {
-    public function conditionProvider(): array
+    public static function conditionProvider(): array
     {
         $trueMock = \Mockery::mock(ConditionContract::class);
         $trueMock->shouldReceive('condition')

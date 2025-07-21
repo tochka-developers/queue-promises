@@ -14,19 +14,12 @@ use Tochka\Promises\Tests\TestHelpers\TestPromise;
  */
 class TimeoutTest extends TestCase
 {
-    private Carbon $nowTime;
+    private const NOW_TIME = '2021-02-20T00:00:00+0000';
 
-    public function setUp(): void
+    public static function conditionProvider(): array
     {
-        parent::setUp();
-
-        $this->nowTime = Carbon::parse('2021-02-20T00:00:00');
-    }
-
-    public function conditionProvider(): array
-    {
-        $this->nowTime = Carbon::parse('2021-02-20T00:00:00');
-        Carbon::setTestNow($this->nowTime);
+        $nowTime = Carbon::parse(self::NOW_TIME);
+        Carbon::setTestNow($nowTime);
 
         return [
             'Carbon true'        => [
@@ -83,13 +76,14 @@ class TimeoutTest extends TestCase
      */
     public function testCondition($timeout, Carbon $expiredAt, bool $expected): void
     {
-        Carbon::setTestNow($this->nowTime);
+        $nowTime = Carbon::parse(self::NOW_TIME);
+        Carbon::setTestNow($nowTime);
         $basePromise = new BasePromise(new TestPromise());
         $condition = new Timeout($timeout);
         $expiredAtResult = $condition->getExpiredAt();
         self::assertEquals($expiredAt, $expiredAtResult);
 
-        Carbon::setTestNow($this->nowTime->addMinutes(2));
+        Carbon::setTestNow($nowTime->addMinutes(2));
         $result = $condition->condition($basePromise);
 
         self::assertEquals($expected, $result);

@@ -25,7 +25,7 @@ class PromiseJobTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function saveProvider(): array
+    public static function saveProvider(): array
     {
         $conditions = [
             new ConditionTransition(
