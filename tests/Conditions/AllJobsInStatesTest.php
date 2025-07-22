@@ -39,7 +39,7 @@ class AllJobsInStatesTest extends TestCase
             ->create(['id' => 2]);
     }
 
-    public function conditionProvider(): array
+    public static function conditionProvider(): array
     {
         return [
             'OneOf False' => [[StateEnum::TIMEOUT(), StateEnum::SUCCESS()], 1, false],

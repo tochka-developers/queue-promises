@@ -15,7 +15,7 @@ use Tochka\Promises\Tests\TestHelpers\TestPromise;
  */
 class ConditionTransitionHandlerTest extends TestCase
 {
-    public function getTransitionForConditionsProvider(): array
+    public static function getTransitionForConditionsProvider(): array
     {
         $trueMock = \Mockery::mock(ConditionContract::class);
         $trueMock->shouldReceive('condition')
@@ -59,7 +59,7 @@ class ConditionTransitionHandlerTest extends TestCase
         self::assertEquals($expected, $result);
     }
 
-    public function getConditionsForStateProvider(): array
+    public static function getConditionsForStateProvider(): array
     {
         $trueMock = \Mockery::mock(ConditionContract::class);
         $trueMock->shouldReceive('condition')

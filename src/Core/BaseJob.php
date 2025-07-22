@@ -30,7 +30,7 @@ class BaseJob implements StatesContract, ConditionTransitionsContract
     private ?\Throwable $exception = null;
     private PromiseJob $model;
 
-    public function __construct(int $promise_id, MayPromised $initial_job, MayPromised $result_job = null)
+    public function __construct(int $promise_id, MayPromised $initial_job, ?MayPromised $result_job = null)
     {
         $this->promise_id = $promise_id;
         $this->initial_job = $initial_job;
