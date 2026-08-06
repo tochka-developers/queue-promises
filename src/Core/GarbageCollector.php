@@ -42,7 +42,7 @@ class GarbageCollector implements GarbageCollectorInterface
         $this->promiseChunkSize = $promiseChunkSize;
         $this->jobsChunkSize = $jobsChunkSize;
 
-        $this->lastIteration = Carbon::minValue();
+        $this->lastIteration = $this->startOfTime();
     }
 
     /**
