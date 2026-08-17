@@ -26,7 +26,7 @@ class PromiseWatcher implements PromiseWatcherInterface
         private readonly int $promiseChunkSize = 100,
     ) {
         $this->sleepTime = $sleepTime;
-        $this->lastIteration = Carbon::minValue();
+        $this->lastIteration = $this->startOfTime();
     }
 
     public function watch(?callable $shouldQuitCallback = null, ?callable $shouldPausedCallback = null): void

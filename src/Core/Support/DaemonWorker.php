@@ -3,11 +3,12 @@
 namespace Tochka\Promises\Core\Support;
 
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 
 trait DaemonWorker
 {
     private int $sleepTime;
-    private Carbon $lastIteration;
+    private CarbonImmutable $lastIteration;
 
     /**
      * @param callable $callback
@@ -37,7 +38,7 @@ trait DaemonWorker
 
             $callback();
 
-            $this->lastIteration = Carbon::now();
+            $this->lastIteration = $this->startOfTime();
         }
     }
 
@@ -62,5 +63,12 @@ trait DaemonWorker
     private function sleepAfterLastIteration(): bool
     {
         return $this->lastIteration > Carbon::now()->subSeconds($this->sleepTime);
+    }
+
+    private function startOfTime(): CarbonImmutable
+    {
+        return method_exists(CarbonImmutable::class, 'startOfTime')
+            ? CarbonImmutable::startOfTime()
+            : Carbon::minValue()->toImmutable();
     }
 }
